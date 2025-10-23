@@ -19,30 +19,42 @@
 
 ---
 
-## 🖥️ Page Structure
+## 🖥️ Site Structure (Multi-Page)
 
-### 1. Hero Section
-- **Heading:** "Instant Garden Quotes. AI-Generated Designs."
-- **Subheading:** "Get a price and design concept in minutes — no pressure, no sales calls."
-- **CTA Button:** "Get Instant Quote" → scrolls to form
+The website now uses a **multi-page architecture** for better UX and SEO:
 
-### 2. About Section
-- Two-column layout: Text + Image
-- Trust-building, results-focused messaging
-- Clean, minimal, earthy tones
+### **index.html** (Homepage)
+1. **Hero Section**
+   - Heading: "Instant Garden Quotes. AI-Generated Designs."
+   - Subheading: "Get a price and design concept in minutes — no pressure, no sales calls."
+   - CTA Button: "Get Instant Quote" → links to quote.html
 
-### 3. Services Grid
-- 2-3 columns on mobile
-- Services include:
-  - Lawn Installation
-  - Decking
-  - Patio
-  - Fencing
-  - Lighting
-  - Full Redesigns
-- Icons/images with Tailwind hover animations
+2. **About Section**
+   - Two-column layout: Text + Image
+   - Trust-building, results-focused messaging
+   - Clean, minimal, earthy tones
 
-### 4. Instant Quote Engine
+3. **Services Grid**
+   - 2-3 columns on mobile
+   - Services: Lawn Installation, Decking, Patio, Fencing, Lighting, Full Redesigns
+   - Icons/images with Tailwind hover animations
+
+4. **Design Examples Gallery**
+   - Carousel of AI-generated example images
+   - Pre-generated with multiple styles and sizes
+   - Smooth scrolling with prev/next controls
+
+5. **Contact Section**
+   - Embedded contact form
+   - Click-to-call phone number
+   - WhatsApp link (pre-filled message)
+   - Business hours and location info
+
+### **quote.html** (Get Instant Quote Page)
+**Page Hero:**
+- "Get Your Instant Quote"
+- "AI-powered pricing in minutes. No sales calls, no pressure."
+
 **Form Fields:**
 - Natural language project description (textarea)
   - Users describe products with materials and sizes
@@ -56,13 +68,22 @@
 2. GPT analyzes description → queries pricing database
 3. Calculates labour + materials costs
 4. Returns itemized quote with breakdown
-5. Optional: "Download PDF Quote" button
-6. Optional: "Generate AI Design" button
+5. CTA: "Download PDF Quote" button
+6. CTA: "Generate AI Design" button → links to design.html
 
-### 5. AI Design Generator
+**Two-Column Layout:**
+- Left: Laptop image + benefits list
+- Right: Quote form
+
+### **design.html** (AI Design Generator Page)
+**Page Hero:**
+- "Instant Free Garden Design"
+- "AI-powered design concepts in minutes. See your dream garden come to life."
+
 **Form Fields:**
-- Image upload (optional)
-- Preferred style dropdown (Modern, Tropical, Low-Maintenance, etc.)
+- Preferred style dropdown (Modern, Tropical, Low-Maintenance, Cottage, Contemporary, Family)
+- Image upload (optional - user's current garden)
+- Email address
 
 **Workflow:**
 1. Submit → Make webhook
@@ -70,16 +91,8 @@
 3. Display returned image in browser or email
 4. Optional: carousel for multiple variants
 
-### 6. Design Examples
-- Carousel of AI-generated example images
-- Optional: "Before/After" mode
-- Pre-generated with multiple styles and sizes
-
-### 7. Contact Section
-- Embedded contact form
-- Click-to-call phone number
-- WhatsApp link (pre-filled message)
-- Optional: embedded map
+**Feature Benefits:**
+- Three benefit cards: AI-Powered, Instant Results, Multiple Styles
 
 ---
 
@@ -166,20 +179,18 @@ Auto-generates branded PDF with:
 ```
 /premium-landscapes/
 │
-├── index.html
-├── styles/
-│   └── tailwind.css
+├── index.html           (Homepage: Hero, About, Services, Gallery, Contact)
+├── quote.html           (Instant Quote Page with GPT-powered form)
+├── design.html          (AI Design Generator Page)
 ├── scripts/
-│   └── main.js
+│   ├── config.js        (White-label configuration)
+│   └── main.js          (Shared JavaScript for all pages)
 ├── images/
-│   └── logo.png
-│   └── examples/
-├── components/
-│   └── header.html
-│   └── footer.html
+│   ├── hero-garden.jpg  (Hero background image)
+│   └── quote-laptop.jpg (Quote page image)
 ├── .env
 ├── README.md
-└── replit.nix
+└── replit.md
 ```
 
 ---
@@ -249,28 +260,45 @@ A successful build must:
 
 **Created:** October 23, 2025
 **Last Updated:** October 23, 2025
-**Status:** Phase 1 Complete ✅ - Fully functional static website with placeholder integrations
+**Status:** Phase 1 Complete ✅ - Multi-page website with all features ready for integration
 
 ### ✅ Completed Features
-- All 7 sections implemented (Hero, About, Services, Quote Engine, AI Design Generator, Design Examples, Contact)
-- Mobile-responsive design with sophisticated color palette (charcoal, terracotta, gold)
-- Smooth scrolling navigation
-- Custom hero image showcasing premium outdoor living space
-- Mobile hamburger menu
-- Interactive carousel for design examples
-- **Modern Quote Form with Natural Language Input:**
-  - Redesigned with clean white card and gold accent borders
-  - Large textarea for natural product descriptions
-  - Users specify materials and quantities freely (e.g., "Porcelain patio 55sqm, artificial turf 25sqm")
-  - Helpful example chips for guidance
-  - Modern file upload with styled button
-  - Postcode and email fields
-  - Ready for GPT-powered pricing analysis
-- AI Design Generator Form (with style selection, image upload)
-- Contact Form
-- White-label configuration system in `scripts/config.js`
-- Demo mode with console logging (shows when webhooks not connected)
-- Proper error handling for all forms
+
+**Multi-Page Architecture:**
+- ✅ Separate dedicated pages for quote and design forms
+- ✅ Clean navigation across all pages (index.html, quote.html, design.html)
+- ✅ JavaScript guards prevent errors when forms absent on specific pages
+- ✅ Consistent header/footer navigation across all pages
+- ✅ SEO-friendly page structure with unique titles and meta descriptions
+
+**Homepage (index.html):**
+- ✅ Hero section with CTA linking to quote.html
+- ✅ About section with trust-building content
+- ✅ Services grid with hover animations
+- ✅ Design examples carousel with smooth scrolling
+- ✅ Contact section with form, phone, WhatsApp, business hours
+
+**Quote Page (quote.html):**
+- ✅ Modern quote form with natural language input
+- ✅ Large textarea for project descriptions (e.g., "Porcelain patio 55sqm, artificial turf 25sqm")
+- ✅ Helpful example chips for guidance
+- ✅ Modern file upload with styled button
+- ✅ Two-column layout: benefits/image + form
+- ✅ Ready for GPT-powered pricing analysis via Make.com
+
+**Design Page (design.html):**
+- ✅ AI Design Generator form with style dropdown
+- ✅ Image upload for user's current garden
+- ✅ Feature benefits section (3 cards)
+- ✅ Ready for DALL·E/Midjourney integration
+
+**Design System:**
+- ✅ Sophisticated color palette (charcoal #2c3e50, terracotta #c77d5c, gold #f59e0b)
+- ✅ Mobile-responsive across all pages
+- ✅ Mobile hamburger menu with smooth transitions
+- ✅ White-label configuration system in `scripts/config.js`
+- ✅ Demo mode with console logging for all forms
+- ✅ Proper error handling and existence checks in JavaScript
 
 ### 📝 Next Steps (Phase 2-5)
 1. **Phase 2:** Connect Make.com webhooks for quote calculation
