@@ -303,6 +303,7 @@ A successful build must:
 - ✅ quote-laptop.jpg - Quote page benefits image
 - ✅ garden-lighting.png - Garden lighting tile on homepage, Services page, Homepage carousel
 - ✅ decking.png - AI Design hero, Services decking card, Gallery decking items
+- ✅ family-garden-lighting.png - Gallery showcase of family garden with artificial lawn and evening lighting
 
 **Navigation & Mobile Experience:**
 - ✅ Consistent header/footer navigation across all 7 pages
