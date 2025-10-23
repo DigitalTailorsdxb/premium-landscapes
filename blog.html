@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garden Design & Landscaping Blog | Premium Landscapes</title>
+    <meta name="description" content="Expert advice on garden design, landscaping costs, maintenance tips, and modern outdoor living ideas from Premium Landscapes.">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb',
+                        'primary-light': '#60a5fa',
+                        'primary-dark': '#1e40af',
+                        secondary: '#3b82f6',
+                        accent: '#8b5cf6',
+                        'stone': '#f0f9ff',
+                    },
+                    fontFamily: {
+                        'heading': ['Inter', 'sans-serif'],
+                        'body': ['Open Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .blog-hero {
+            background-image: url('images/services-garden.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .text-shadow-strong {
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        
+        .blog-card {
+            transition: all 0.3s ease;
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(44, 62, 80, 0.15);
+        }
+        
+        .mobile-menu {
+            transition: transform 0.3s ease;
+        }
+    </style>
+    
+    <script src="scripts/config.js"></script>
+    <script src="scripts/main.js"></script>
+</head>
+<body class="bg-stone">
+
+    <!-- Header with Navigation -->
+    <header class="bg-white shadow-md fixed w-full top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <a href="index.html" class="flex items-center space-x-2">
+                    <i class="fas fa-leaf text-primary text-3xl"></i>
+                    <span class="text-2xl font-bold text-primary font-heading">Premium Landscapes</span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex space-x-8 items-center">
+                    <a href="index.html" class="text-gray-700 hover:text-primary transition">Home</a>
+                    <a href="about.html" class="text-gray-700 hover:text-primary transition">About</a>
+                    <a href="services.html" class="text-gray-700 hover:text-primary transition">Services</a>
+                    <a href="gallery.html" class="text-gray-700 hover:text-primary transition">Gallery</a>
+                    <a href="blog.html" class="text-primary font-semibold transition">Blog</a>
+                    <a href="quote.html" class="text-gray-700 hover:text-primary transition">Get Quote</a>
+                    <a href="design.html" class="text-gray-700 hover:text-primary transition">AI Design</a>
+                    <a href="contact.html" class="bg-primary text-white px-6 py-2 rounded-full hover:bg-primary-dark transition">Contact</a>
+                </nav>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-toggle" class="md:hidden text-primary text-2xl">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="mobile-menu hidden md:hidden mt-4 pb-4 space-y-4">
+                <a href="index.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Home</a>
+                <a href="about.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">About</a>
+                <a href="services.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Services</a>
+                <a href="gallery.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Gallery</a>
+                <a href="blog.html" class="block text-primary font-semibold transition text-lg mobile-menu-link">Blog</a>
+                <a href="quote.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Get Quote</a>
+                <a href="design.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">AI Design</a>
+                <a href="contact.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Contact</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Hero -->
+    <section class="blog-hero pt-32 pb-20 px-4 min-h-screen flex items-center relative">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="container mx-auto text-center text-white relative z-10">
+            <div class="max-w-3xl mx-auto">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-shadow-strong">Garden Design & Landscaping Blog</h1>
+                <p class="text-xl md:text-2xl mb-10 text-shadow-strong">Expert advice, design inspiration, and practical tips for creating your dream outdoor space.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Posts Grid -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Blog Post 1 -->
+                <article class="blog-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/services-garden.jpg" alt="Garden Redesign Cost" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-accent font-semibold mb-2">Cost Guide</div>
+                        <h2 class="text-xl font-bold text-primary mb-3">How Much Does a Garden Redesign Cost in the UK (2025 Guide)</h2>
+                        <p class="text-gray-600 mb-4">Your outdoor space has real potential — but before proceeding, many homeowners ask: How much will a full garden redesign cost in the UK in 2025?</p>
+                        <a href="blog-1.html" class="text-primary font-semibold hover:text-accent transition">Read More →</a>
+                    </div>
+                </article>
+
+                <!-- Blog Post 2 -->
+                <article class="blog-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/about-hero.jpg" alt="Small Garden Design" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-accent font-semibold mb-2">Design Ideas</div>
+                        <h2 class="text-xl font-bold text-primary mb-3">Top 7 Modern Garden Design Ideas for Small Spaces</h2>
+                        <p class="text-gray-600 mb-4">Living in the UK with limited outdoor space? You can still achieve a stylish, modern garden that maximises your area and creates impact.</p>
+                        <a href="blog-2.html" class="text-primary font-semibold hover:text-accent transition">Read More →</a>
+                    </div>
+                </article>
+
+                <!-- Blog Post 3 -->
+                <article class="blog-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/artificial-turf-family.png" alt="Artificial Grass Guide" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-accent font-semibold mb-2">Lawn Care</div>
+                        <h2 class="text-xl font-bold text-primary mb-3">Artificial Grass vs Natural Turf: Which is Right for Your UK Garden?</h2>
+                        <p class="text-gray-600 mb-4">Choosing between artificial grass and natural turf? We compare costs, maintenance, durability, and aesthetics to help you decide.</p>
+                        <a href="blog-3.html" class="text-primary font-semibold hover:text-accent transition">Read More →</a>
+                    </div>
+                </article>
+
+                <!-- Blog Post 4 -->
+                <article class="blog-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/gallery-patio.jpg" alt="Patio Materials" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-accent font-semibold mb-2">Patio Guide</div>
+                        <h2 class="text-xl font-bold text-primary mb-3">Choosing the Best Patio Materials for UK Weather</h2>
+                        <p class="text-gray-600 mb-4">Porcelain, natural stone, or block paving? Discover which patio materials best withstand UK weather conditions and offer the best value.</p>
+                        <a href="blog-4.html" class="text-primary font-semibold hover:text-accent transition">Read More →</a>
+                    </div>
+                </article>
+
+                <!-- Blog Post 5 -->
+                <article class="blog-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/decking-hero.jpg" alt="Decking Maintenance" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-accent font-semibold mb-2">Decking Tips</div>
+                        <h2 class="text-xl font-bold text-primary mb-3">Composite vs Timber Decking: Complete UK Buyer's Guide 2025</h2>
+                        <p class="text-gray-600 mb-4">Weighing up composite versus timber decking? Compare costs, maintenance, lifespan, and aesthetics in this comprehensive guide.</p>
+                        <a href="blog-5.html" class="text-primary font-semibold hover:text-accent transition">Read More →</a>
+                    </div>
+                </article>
+
+                <!-- Blog Post 6 -->
+                <article class="blog-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/garden-lighting.png" alt="Garden Lighting" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-accent font-semibold mb-2">Lighting Guide</div>
+                        <h2 class="text-xl font-bold text-primary mb-3">Outdoor Garden Lighting Ideas to Transform Your Evening Space</h2>
+                        <p class="text-gray-600 mb-4">Professional outdoor lighting extends your garden's usability and creates stunning evening ambiance. Explore the best options for UK gardens.</p>
+                        <a href="blog-6.html" class="text-primary font-semibold hover:text-accent transition">Read More →</a>
+                    </div>
+                </article>
+
+                <!-- Blog Post 7 -->
+                <article class="blog-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/family-garden-lighting.png" alt="Family Garden Design" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-accent font-semibold mb-2">Family Gardens</div>
+                        <h2 class="text-xl font-bold text-primary mb-3">Creating the Perfect Family Garden: Safe, Fun & Low-Maintenance</h2>
+                        <p class="text-gray-600 mb-4">Design a garden that works for the whole family - from play areas to relaxation zones, with safety and minimal upkeep in mind.</p>
+                        <a href="blog-7.html" class="text-primary font-semibold hover:text-accent transition">Read More →</a>
+                    </div>
+                </article>
+
+                <!-- Blog Post 8 -->
+                <article class="blog-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/hero-garden.jpg" alt="Seasonal Garden Maintenance" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-accent font-semibold mb-2">Maintenance</div>
+                        <h2 class="text-xl font-bold text-primary mb-3">Seasonal Garden Maintenance: Your Year-Round UK Calendar</h2>
+                        <p class="text-gray-600 mb-4">Keep your garden looking its best all year with this seasonal maintenance guide tailored to UK climate and conditions.</p>
+                        <a href="blog-8.html" class="text-primary font-semibold hover:text-accent transition">Read More →</a>
+                    </div>
+                </article>
+
+                <!-- Blog Post 9 -->
+                <article class="blog-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/decking-hero.jpg" alt="Garden ROI" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-accent font-semibold mb-2">Property Value</div>
+                        <h2 class="text-xl font-bold text-primary mb-3">How Much Value Does a Garden Makeover Add to Your UK Home?</h2>
+                        <p class="text-gray-600 mb-4">Discover the ROI of garden improvements and which landscaping projects add the most value to UK properties in 2025.</p>
+                        <a href="blog-9.html" class="text-primary font-semibold hover:text-accent transition">Read More →</a>
+                    </div>
+                </article>
+
+                <!-- Blog Post 10 -->
+                <article class="blog-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/quote-laptop.jpg" alt="AI Garden Design" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-accent font-semibold mb-2">Technology</div>
+                        <h2 class="text-xl font-bold text-primary mb-3">How AI Garden Design Tools Are Revolutionising UK Landscaping</h2>
+                        <p class="text-gray-600 mb-4">Explore how AI-powered design tools give homeowners instant visualisations and accurate quotes before committing to landscaping projects.</p>
+                        <a href="blog-10.html" class="text-primary font-semibold hover:text-accent transition">Read More →</a>
+                    </div>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-primary text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Transform Your Garden?</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">Get an instant AI-powered quote and see design concepts for your outdoor space in minutes.</p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="quote.html" class="bg-white text-primary px-8 py-4 rounded-full font-bold text-lg hover:bg-stone transition shadow-lg">Get Instant Quote</a>
+                <a href="design.html" class="bg-accent text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-purple-700 transition shadow-lg">Try AI Design Tool</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12 px-4">
+        <div class="container mx-auto">
+            <div class="grid md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fas fa-leaf text-primary text-2xl"></i>
+                        <span class="text-xl font-bold font-heading">Premium Landscapes</span>
+                    </div>
+                    <p class="text-gray-400">Professional landscaping services with AI-powered quotes and designs.</p>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-primary transition">Home</a></li>
+                        <li><a href="services.html" class="text-gray-400 hover:text-primary transition">Services</a></li>
+                        <li><a href="gallery.html" class="text-gray-400 hover:text-primary transition">Gallery</a></li>
+                        <li><a href="blog.html" class="text-gray-400 hover:text-primary transition">Blog</a></li>
+                        <li><a href="contact.html" class="text-gray-400 hover:text-primary transition">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Contact Us</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><i class="fas fa-phone mr-2"></i> <a href="tel:07444887813" class="hover:text-primary">07444 887813</a></li>
+                        <li><i class="fas fa-envelope mr-2"></i> <a href="mailto:info@premium-landscapes.co.uk" class="hover:text-primary">info@premium-landscapes.co.uk</a></li>
+                        <li><i class="fas fa-map-marker-alt mr-2"></i> Serving Midlands & Home Counties</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="text-center pt-8 border-t border-gray-800 text-gray-400">
+                <p>&copy; 2025 Premium Landscapes. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

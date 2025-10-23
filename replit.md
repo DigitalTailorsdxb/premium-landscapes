@@ -36,8 +36,8 @@ The website now uses a **multi-page architecture** for better UX and SEO:
 
 3. **Services Grid**
    - 2-3 columns on mobile
-   - Services: Lawn Installation, Decking, Patio, Fencing, Lighting, Full Redesigns
-   - Icons/images with Tailwind hover animations
+   - Services: Lawn Installation, Decking, Patio, Driveways, Lighting, Full Redesigns
+   - Real images with brightness enhancement (1.3x brightness, 1.1x contrast)
 
 4. **Design Examples Gallery**
    - Carousel of AI-generated example images
@@ -304,10 +304,11 @@ A successful build must:
 - ✅ garden-lighting.png - Garden lighting tile on homepage (brightened), Services page (brightened), Homepage carousel
 - ✅ decking-hero.jpg - Decking tile on homepage (brightened), AI Design hero, Services decking card, Gallery decking items
 - ✅ family-garden-lighting.png - Gallery showcase of family garden with artificial lawn and evening lighting
-- ✅ artificial-turf-family.png - Lawn tile on homepage (brightened), Fencing tile on homepage (brightened), Services lawn card (brightened), Gallery lawn showcase
+- ✅ artificial-turf-family.png - Lawn tile on homepage (brightened), Services lawn card (brightened), Gallery lawn showcase
+- ✅ driveway-block-paving.png - Driveways tile on homepage (brightened), Services driveways card (brightened)
 
 **Navigation & Mobile Experience:**
-- ✅ Consistent header/footer navigation across all 7 pages
+- ✅ Consistent header/footer navigation across all 8 pages (includes Blog)
 - ✅ Mobile hamburger menu with smooth open/close transitions
 - ✅ Mobile menu properly closes on navigation (mobile-menu-link class on all pages)
 - ✅ Active page highlighting in navigation
