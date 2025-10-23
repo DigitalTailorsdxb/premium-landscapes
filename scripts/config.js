@@ -26,6 +26,7 @@ function applyBranding() {
     
     setElement('companyName', brandConfig.companyName);
     setElement('footerCompanyName', brandConfig.companyName);
+    setElement('copyrightCompanyName', brandConfig.companyName);
     setElement('footerCopyright', brandConfig.companyName);
     
     setElement('contactPhone', brandConfig.phone, 'href', `tel:${brandConfig.phone}`);
