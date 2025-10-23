@@ -1,0 +1,283 @@
+You are building a high-converting, AI-powered landscaping website called Premium Landscapes using Replit.
+
+This project is a template and public demo, designed to be sold to future landscaping clients for £3,500 setup + £200/month retainer.
+
+You will use HTML, Tailwind CSS, and JavaScript on the frontend, with integrations to Make.com, Google Sheets, Airtable, DALL·E/Midjourney, and optionally Vapi + WhatsApp.
+
+All features must be modular, mobile-first, and white-label ready, allowing for fast rebranding (logo, colors, contact info) and client deployment.
+
+🖥️ PAGE STRUCTURE
+1. Hero Section
+
+Large heading: “Instant Garden Quotes. AI-Generated Designs.”
+
+Subheading: “Get a price and design concept in minutes — no pressure, no sales calls.”
+
+CTA button: “Get Instant Quote” → scrolls to form
+
+2. About
+
+Two-column layout: Text + image
+
+Short paragraph: Who we are, trust-building, results-focused
+
+Styled in clean, minimal, earthy tones
+
+3. Services
+
+Grid layout (2 or 3 columns on mobile)
+
+Each service has icon/image + name
+
+Lawn Installation
+
+Decking
+
+Patio
+
+Fencing
+
+Lighting
+
+Full Redesigns
+
+Tailwind hover animations
+
+4. Instant Quote Engine
+
+Embedded form (built natively or iframe from Tally/Typeform)
+
+Fields:
+
+Area size (sqm)
+
+Postcode
+
+Feature checkboxes (Lawn, Decking, Lighting, etc.)
+
+Optional image upload
+
+Email
+
+On submit:
+
+Data sent to Make.com webhook
+
+Make.com queries Google Sheet with supplier pricing
+
+Return:
+
+Estimated price range
+
+Optional: breakdown by feature
+
+Optional: “Download PDF Quote” button
+
+Optional: “Generate AI Design” button
+
+5. AI Design Generator
+
+Secondary form (can be combined with quote form or separate)
+
+Fields:
+
+Image upload (optional)
+
+Preferred style (dropdown: Modern, Tropical, Low-Maintenance, etc.)
+
+On submit:
+
+Sent to Make webhook
+
+Make → GPT-4o generates prompt → DALL·E or Midjourney API call
+
+Returned image displayed in browser or emailed
+
+Optional: carousel for multiple variants
+
+6. Design Examples
+
+Carousel of AI-generated example images
+
+Optional toggle: “Before / After” mode
+
+Pre-generated with multiple styles and sizes
+
+7. Contact
+
+Embedded contact form (or Tally)
+
+Click-to-call phone number
+
+WhatsApp link (pre-filled message)
+
+Embedded map (optional)
+
+🎨 DESIGN SYSTEM
+Visual Style
+
+Minimalist and earthy (think garden design meets modern SaaS)
+
+White background
+
+Muted greens, dark greys, hints of brown/stone/terracotta
+
+Rounded edges, clean icons
+
+Responsive layout across all devices
+
+Fonts
+
+Headings: Inter or Poppins (bold, clean)
+
+Body: Open Sans or Lato (professional, neutral)
+
+Components
+
+Reusable CTA buttons (primary: green, secondary: white outline)
+
+Mobile menu (hamburger)
+
+Modular components for forms, cards, popups
+
+⚙️ INTEGRATIONS
+Make.com
+
+Webhooks for:
+
+Instant Quote Submission
+
+Image Design Request
+
+CRM Entry
+
+Follow-up Automation (email/WhatsApp)
+
+Google Sheets / Airtable
+
+Pricing logic stored here (editable for each client)
+
+Connected via Make to calculate estimates
+
+DALL·E 3 (via GPT-4o) or Midjourney
+
+Design prompts generated based on user inputs
+
+Return 1–3 AI-generated garden designs
+
+CRM
+
+Airtable or Zoho: store name, email, postcode, features, quote, images
+
+Optionally push to Google Sheets or ReTool for dashboard views
+
+Follow-up Automation
+
+WhatsApp via 360dialog or Twilio (Make.com scenario)
+
+Email via Gmail or SendGrid
+
+Optional: AI voice agent via Vapi + ElevenLabs
+
+🧾 PDF QUOTE GENERATOR
+
+Auto-generate branded PDF with:
+
+Client name
+
+Quote breakdown
+
+Total range
+
+Logo, company details
+
+Styled as modern invoice
+
+Built using Make’s PDF tools or jsPDF in-browser
+
+🧩 REBRANDABLE TEMPLATE STRUCTURE
+
+Make all client elements easily editable:
+
+Element	How to Make Swappable
+Logo	/public/images/logo.png
+Primary Color	Stored in Tailwind config / CSS variables
+Company Name	In JSON config or global variable
+Contact Email	In .env or config
+Pricing Sheet URL	Stored in Make / Airtable scenario input
+WhatsApp Number	In .env or config block
+📦 DEPLOYMENT PLAN
+
+Live site hosted on Replit
+
+Use Cloudflare Pages + custom domain for production version
+
+Include:
+
+index.html, styles.css (Tailwind), scripts.js
+
+All Make webhook endpoints
+
+replit.nix for any required backend services (optional)
+
+📁 FILE STRUCTURE (Replit Project)
+/premium-landscapes/
+│
+├── index.html
+├── styles/
+│   └── tailwind.css
+├── scripts/
+│   └── main.js
+├── images/
+│   └── logo.png
+│   └── examples/
+├── components/
+│   └── header.html
+│   └── footer.html
+├── .env
+├── README.md
+└── replit.nix
+
+✅ SUCCESS CRITERIA
+
+A successful build must:
+
+Load fast on mobile
+
+Collect user inputs and trigger correct webhook logic
+
+Display quote + image instantly or email results
+
+Visually feel trustworthy, clean, and professional
+
+Be fully reusable for new clients in under 2 hours (clone + swap branding + connect pricing sheet)
+
+🛠️ ADDITIONAL NOTES
+
+This project should be built iteratively:
+
+Build static site with placeholder forms
+
+Connect Make.com quote logic
+
+Add PDF generation
+
+Add image generation
+
+Integrate CRM + follow-up automation
+
+Everything should be cleanly commented and modular
+
+🚀 CALL TO ACTION
+
+Start building now:
+
+Set up the HTML structure with Tailwind
+
+Create the quote form with mock inputs
+
+Link dummy buttons to webhook placeholders
+
+Add placeholder image carousel for design examples
+
+Test local form → console output, then replace with Make webhook
