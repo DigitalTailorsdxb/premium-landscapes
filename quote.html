@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Instant Quote - Premium Landscapes</title>
+    <meta name="description" content="Get an instant AI-powered quote for your landscaping project. Describe your needs and receive accurate pricing in minutes.">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2c3e50',
+                        'primary-light': '#455a64',
+                        'primary-dark': '#1a252f',
+                        secondary: '#c77d5c',
+                        accent: '#f59e0b',
+                        'stone': '#f5f1e8',
+                    },
+                    fontFamily: {
+                        'heading': ['Inter', 'sans-serif'],
+                        'body': ['Open Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .mobile-menu {
+            transition: transform 0.3s ease;
+        }
+        
+        .mobile-menu.active {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-800">
+    
+    <!-- Navigation Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-seedling text-primary text-3xl"></i>
+                <span class="font-heading font-bold text-2xl text-primary">Premium Landscapes</span>
+            </div>
+            
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="index.html" class="text-gray-700 hover:text-primary transition">Home</a>
+                <a href="index.html#about" class="text-gray-700 hover:text-primary transition">About</a>
+                <a href="index.html#services" class="text-gray-700 hover:text-primary transition">Services</a>
+                <a href="index.html#gallery" class="text-gray-700 hover:text-primary transition">Gallery</a>
+                <a href="quote.html" class="text-primary font-semibold transition">Get Quote</a>
+                <a href="design.html" class="text-gray-700 hover:text-primary transition">AI Design</a>
+                <a href="index.html#contact" class="bg-primary text-white px-6 py-2 rounded-full hover:bg-primary-dark transition">Contact</a>
+            </div>
+            
+            <button id="mobileMenuBtn" class="md:hidden text-primary text-2xl">
+                <i class="fas fa-bars"></i>
+            </button>
+        </nav>
+        
+        <div id="mobileMenu" class="mobile-menu fixed top-0 right-0 h-full w-64 bg-white shadow-2xl transform translate-x-full md:hidden z-50">
+            <div class="p-6">
+                <button id="closeMobileMenu" class="text-primary text-2xl mb-8">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="flex flex-col space-y-6">
+                    <a href="index.html" class="text-gray-700 hover:text-primary transition text-lg">Home</a>
+                    <a href="index.html#about" class="text-gray-700 hover:text-primary transition text-lg">About</a>
+                    <a href="index.html#services" class="text-gray-700 hover:text-primary transition text-lg">Services</a>
+                    <a href="index.html#gallery" class="text-gray-700 hover:text-primary transition text-lg">Gallery</a>
+                    <a href="quote.html" class="text-primary font-semibold transition text-lg">Get Quote</a>
+                    <a href="design.html" class="text-gray-700 hover:text-primary transition text-lg">AI Design</a>
+                    <a href="index.html#contact" class="text-gray-700 hover:text-primary transition text-lg">Contact</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Quote Page Hero -->
+    <section class="py-12 px-4 bg-gradient-to-br from-primary to-primary-dark text-white">
+        <div class="container mx-auto max-w-4xl text-center">
+            <h1 class="font-heading font-bold text-4xl md:text-5xl mb-4">
+                Get Your Instant Quote
+            </h1>
+            <p class="text-xl text-gray-200">
+                AI-powered pricing in minutes. No sales calls, no pressure.
+            </p>
+        </div>
+    </section>
+    
+    <!-- Instant Quote Engine Section -->
+    <section class="py-16 px-4 bg-white">
+        <div class="container mx-auto max-w-6xl">
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <!-- Image Column -->
+                <div class="order-2 md:order-1">
+                    <img 
+                        src="images/quote-laptop.jpg" 
+                        alt="Get an instant landscaping quote online" 
+                        class="rounded-2xl shadow-2xl w-full h-auto"
+                    >
+                    <div class="mt-6 bg-stone rounded-xl p-6">
+                        <h3 class="font-heading font-bold text-xl text-primary mb-3">Why Get an Instant Quote?</h3>
+                        <ul class="space-y-3 text-gray-700">
+                            <li class="flex items-start space-x-2">
+                                <i class="fas fa-check-circle text-accent mt-1"></i>
+                                <span>No pressure, no sales calls</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <i class="fas fa-check-circle text-accent mt-1"></i>
+                                <span>AI-powered accurate pricing</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <i class="fas fa-check-circle text-accent mt-1"></i>
+                                <span>Instant results in minutes</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <i class="fas fa-check-circle text-accent mt-1"></i>
+                                <span>Optional AI design generation</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Form Column -->
+                <div class="order-1 md:order-2">
+                    <form id="quoteForm" class="bg-white rounded-2xl p-8 shadow-xl border border-gray-200">
+                        <!-- Project Description -->
+                        <div class="mb-6">
+                            <label class="block text-primary font-heading font-bold text-lg mb-2" for="projectDescription">
+                                Describe Your Project *
+                            </label>
+                            <p class="text-gray-600 text-sm mb-3">Tell us what you need - be specific with materials and sizes</p>
+                            <textarea 
+                                id="projectDescription" 
+                                name="projectDescription"
+                                required
+                                rows="5"
+                                class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                                placeholder="e.g., Porcelain patio 55sqm, artificial turf 25sqm, fencing 25 meters"
+                            ></textarea>
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                <span class="text-xs bg-stone px-3 py-1 rounded-full text-gray-600">
+                                    <i class="fas fa-lightbulb text-accent"></i> Example: Indian sandstone patio 40sqm
+                                </span>
+                                <span class="text-xs bg-stone px-3 py-1 rounded-full text-gray-600">
+                                    <i class="fas fa-lightbulb text-accent"></i> Example: Composite decking 30sqm
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Postcode -->
+                        <div class="mb-6">
+                            <label class="block text-primary font-heading font-bold text-lg mb-2" for="postcode">
+                                Postcode *
+                            </label>
+                            <input 
+                                type="text" 
+                                id="postcode" 
+                                name="postcode"
+                                required
+                                class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                                placeholder="e.g., SW1A 1AA"
+                            >
+                        </div>
+                        
+                        <!-- Email -->
+                        <div class="mb-6">
+                            <label class="block text-primary font-heading font-bold text-lg mb-2" for="email">
+                                Email Address *
+                            </label>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email"
+                                required
+                                class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                                placeholder="your@email.com"
+                            >
+                        </div>
+                        
+                        <!-- Image Upload (Optional) -->
+                        <div class="mb-6">
+                            <label class="block text-primary font-heading font-bold text-lg mb-2" for="gardenImage">
+                                Upload Current Garden Photo (Optional)
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    type="file" 
+                                    id="gardenImage" 
+                                    name="gardenImage"
+                                    accept="image/*"
+                                    class="w-full px-5 py-4 rounded-xl border-2 border-dashed border-gray-300 focus:outline-none focus:border-accent transition-colors bg-stone cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-opacity-90"
+                                >
+                            </div>
+                            <p class="text-gray-500 text-xs mt-2">
+                                <i class="fas fa-info-circle"></i> Adding a photo helps us provide a more accurate quote
+                            </p>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button 
+                            type="submit"
+                            class="w-full bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition shadow-lg"
+                        >
+                            Get Instant Quote
+                        </button>
+                        
+                        <!-- Quote Result -->
+                        <div id="quoteResult" class="hidden mt-8 p-6 bg-white rounded-xl border-2 border-primary">
+                            <h3 class="font-heading font-bold text-2xl text-primary mb-4">Your Estimated Quote</h3>
+                            <div id="quoteDetails"></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="bg-primary text-white py-12 px-4">
+        <div class="container mx-auto max-w-6xl">
+            <div class="grid md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fas fa-seedling text-3xl"></i>
+                        <span class="font-heading font-bold text-2xl">Premium Landscapes</span>
+                    </div>
+                    <p class="text-gray-300">Transforming outdoor spaces with AI-powered design and instant quotes.</p>
+                </div>
+                
+                <div>
+                    <h4 class="font-heading font-bold text-lg mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="index.html#about" class="text-gray-300 hover:text-white transition">About Us</a></li>
+                        <li><a href="index.html#services" class="text-gray-300 hover:text-white transition">Services</a></li>
+                        <li><a href="quote.html" class="text-gray-300 hover:text-white transition">Get Quote</a></li>
+                        <li><a href="design.html" class="text-gray-300 hover:text-white transition">AI Design</a></li>
+                        <li><a href="index.html#contact" class="text-gray-300 hover:text-white transition">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-heading font-bold text-lg mb-4">Contact Info</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><i class="fas fa-phone mr-2"></i> 0800 123 4567</li>
+                        <li><i class="fas fa-envelope mr-2"></i> info@premiumlandscapes.co.uk</li>
+                        <li><i class="fas fa-map-marker-alt mr-2"></i> London, UK</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-600 pt-6 text-center text-gray-300">
+                <p>&copy; 2025 Premium Landscapes. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="scripts/config.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
+</html>
