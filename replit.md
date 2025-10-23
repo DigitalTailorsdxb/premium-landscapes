@@ -301,9 +301,10 @@ A successful build must:
 - ✅ hero-garden.jpg - Homepage hero background
 - ✅ about-hero.jpg - About page hero background (modern fire pit and seating area)
 - ✅ quote-laptop.jpg - Quote page benefits image
-- ✅ garden-lighting.png - Garden lighting tile on homepage, Services page, Homepage carousel
+- ✅ garden-lighting.png - Garden lighting tile on homepage (brightened), Services page (brightened), Homepage carousel
 - ✅ decking.png - AI Design hero, Services decking card, Gallery decking items
 - ✅ family-garden-lighting.png - Gallery showcase of family garden with artificial lawn and evening lighting
+- ✅ artificial-turf-family.png - Lawn service tile on homepage (brightened), Services lawn card (brightened), Gallery lawn showcase
 
 **Navigation & Mobile Experience:**
 - ✅ Consistent header/footer navigation across all 7 pages
