@@ -296,15 +296,15 @@ A successful build must:
 - ✅ Responsive typography (text-4xl md:text-5xl lg:text-6xl)
 
 **Real Landscaping Images Integrated:**
-- ✅ services-garden.jpg - Used in Services hero, Gallery, Homepage carousel
-- ✅ gallery-patio.jpg - Used in Gallery hero, Gallery grid, Homepage carousel
+- ✅ services-garden.jpg - Full Redesigns tile on homepage (brightened), Services hero, Gallery, Homepage carousel
+- ✅ gallery-patio.jpg - Patio tile on homepage (brightened), Gallery hero, Gallery grid, Homepage carousel
 - ✅ hero-garden.jpg - Homepage hero background
 - ✅ about-hero.jpg - About page hero background (modern fire pit and seating area)
 - ✅ quote-laptop.jpg - Quote page benefits image
 - ✅ garden-lighting.png - Garden lighting tile on homepage (brightened), Services page (brightened), Homepage carousel
-- ✅ decking.png - AI Design hero, Services decking card, Gallery decking items
+- ✅ decking-hero.jpg - Decking tile on homepage (brightened), AI Design hero, Services decking card, Gallery decking items
 - ✅ family-garden-lighting.png - Gallery showcase of family garden with artificial lawn and evening lighting
-- ✅ artificial-turf-family.png - Lawn service tile on homepage (brightened), Services lawn card (brightened), Gallery lawn showcase
+- ✅ artificial-turf-family.png - Lawn tile on homepage (brightened), Fencing tile on homepage (brightened), Services lawn card (brightened), Gallery lawn showcase
 
 **Navigation & Mobile Experience:**
 - ✅ Consistent header/footer navigation across all 7 pages
