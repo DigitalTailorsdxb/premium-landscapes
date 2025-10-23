@@ -98,14 +98,14 @@ The website now uses a **multi-page architecture** for better UX and SEO:
 
 ## 🎨 Design System
 
-### Visual Style
-- Sophisticated and modern (breaking away from typical green landscaping sites)
-- White background
-- Primary: Deep charcoal (#2c3e50) - professional, timeless
-- Secondary: Warm terracotta (#c77d5c) - inviting, natural
-- Accent: Gold/amber (#f59e0b) - premium, eye-catching
-- Stone/neutral: Warm beige (#f5f1e8)
-- Rounded edges, clean icons
+### Visual Style (Zoom-Inspired Clean Design)
+- **White backgrounds throughout** - clean, professional, minimal
+- **Primary:** Deep forest green (#1e4620) - natural, landscaping-appropriate, professional
+- **Secondary:** Neutral gray (#4a5568) - professional text and accents
+- **Accent:** Fresh green (#10b981) - CTAs and interactive elements
+- **Stone:** Very light gray (#f9fafb) - subtle backgrounds and cards
+- **No colorful gradients** - only subtle fades on buttons/CTAs
+- Clean, spacious design inspired by Zoom.com
 - Fully responsive across all devices
 
 ### Typography
@@ -315,8 +315,10 @@ A successful build must:
 - ✅ Real landscaping images displayed
 
 **Design System:**
-- ✅ Sophisticated color palette (charcoal #2c3e50, terracotta #c77d5c, gold #f59e0b)
-- ✅ Breaking away from typical green landscaping sites
+- ✅ **Clean Zoom-inspired color palette:** Forest green primary (#1e4620), neutral gray secondary (#4a5568), fresh accent (#10b981)
+- ✅ **White backgrounds throughout** - no colorful gradients, professional and minimal
+- ✅ Subtle color blending only on CTAs and accents
+- ✅ Spacious, modern design with plenty of breathing room
 - ✅ Mobile-first responsive design
 - ✅ White-label configuration system in `scripts/config.js` with defensive null checks
 - ✅ Demo mode with console logging for all forms
