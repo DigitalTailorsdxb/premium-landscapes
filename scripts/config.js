@@ -1,6 +1,8 @@
 const brandConfig = {
     companyName: "Premium Landscapes",
-    primaryColor: "#2d5016",
+    primaryColor: "#2c3e50",
+    secondaryColor: "#c77d5c",
+    accentColor: "#f59e0b",
     phone: "+44 1234 567890",
     email: "hello@premiumlandscapes.co.uk",
     whatsapp: "441234567890",

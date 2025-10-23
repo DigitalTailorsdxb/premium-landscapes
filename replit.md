@@ -84,9 +84,12 @@
 ## 🎨 Design System
 
 ### Visual Style
-- Minimalist and earthy (garden design meets modern SaaS)
+- Sophisticated and modern (breaking away from typical green landscaping sites)
 - White background
-- Muted greens, dark greys, hints of brown/stone/terracotta
+- Primary: Deep charcoal (#2c3e50) - professional, timeless
+- Secondary: Warm terracotta (#c77d5c) - inviting, natural
+- Accent: Gold/amber (#f59e0b) - premium, eye-catching
+- Stone/neutral: Warm beige (#f5f1e8)
 - Rounded edges, clean icons
 - Fully responsive across all devices
 
@@ -248,8 +251,9 @@ A successful build must:
 
 ### ✅ Completed Features
 - All 7 sections implemented (Hero, About, Services, Quote Engine, AI Design Generator, Design Examples, Contact)
-- Mobile-responsive design with earthy color palette (greens, greys, stone)
+- Mobile-responsive design with sophisticated color palette (charcoal, terracotta, gold)
 - Smooth scrolling navigation
+- Custom hero image showcasing premium outdoor living space
 - Mobile hamburger menu
 - Interactive carousel for design examples
 - Three functional forms ready for Make.com webhook integration:
