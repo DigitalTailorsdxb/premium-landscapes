@@ -116,36 +116,15 @@
                         Generate Your AI Design
                     </h2>
                     <p class="text-gray-600">
-                        Upload a photo of your current garden and select your preferred style. Our AI will create a custom design concept for you.
+                        Upload a photo of your current garden and describe your vision. Our AI will create a custom design concept for you.
                     </p>
                 </div>
                 
                 <form id="designForm">
-                    <!-- Design Style -->
-                    <div class="mb-6">
-                        <label class="block text-primary font-heading font-bold text-lg mb-2" for="designStyle">
-                            Preferred Style *
-                        </label>
-                        <select 
-                            id="designStyle" 
-                            name="designStyle"
-                            required
-                            class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
-                        >
-                            <option value="">Choose a style...</option>
-                            <option value="modern">Modern Minimalist</option>
-                            <option value="tropical">Tropical Paradise</option>
-                            <option value="lowmaint">Low-Maintenance</option>
-                            <option value="cottage">Cottage Garden</option>
-                            <option value="contemporary">Contemporary</option>
-                            <option value="family">Family-Friendly</option>
-                        </select>
-                    </div>
-                    
                     <!-- Image Upload -->
                     <div class="mb-6">
                         <label class="block text-primary font-heading font-bold text-lg mb-2" for="designImage">
-                            Upload Your Current Garden (Optional)
+                            Upload Your Current Garden *
                         </label>
                         <div class="relative">
                             <input 
@@ -153,11 +132,46 @@
                                 id="designImage" 
                                 name="designImage"
                                 accept="image/*"
+                                required
                                 class="w-full px-5 py-4 rounded-xl border-2 border-dashed border-gray-300 focus:outline-none focus:border-accent transition-colors bg-stone cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-opacity-90"
                             >
                         </div>
                         <p class="text-gray-500 text-xs mt-2">
-                            <i class="fas fa-info-circle"></i> Upload a photo to get a design based on your actual space
+                            <i class="fas fa-info-circle"></i> Required - Upload a photo of your current garden space
+                        </p>
+                    </div>
+                    
+                    <!-- Design Style (Free Text) -->
+                    <div class="mb-6">
+                        <label class="block text-primary font-heading font-bold text-lg mb-2" for="designStyle">
+                            Preferred Style (Optional)
+                        </label>
+                        <input 
+                            type="text" 
+                            id="designStyle" 
+                            name="designStyle"
+                            class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                            placeholder="e.g., Modern minimalist, Tropical paradise, Low-maintenance, Cottage garden..."
+                        >
+                        <p class="text-gray-500 text-xs mt-2">
+                            <i class="fas fa-lightbulb"></i> Describe your ideal garden style in your own words
+                        </p>
+                    </div>
+                    
+                    <!-- Garden Size -->
+                    <div class="mb-6">
+                        <label class="block text-primary font-heading font-bold text-lg mb-2" for="gardenSize">
+                            Garden Size (Optional)
+                        </label>
+                        <input 
+                            type="text" 
+                            id="gardenSize" 
+                            name="gardenSize"
+                            class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                            placeholder="e.g., 50 sqm, 200 square meters, 20x10 meters..."
+                        >
+                        <p class="text-gray-500 text-xs mt-2">
+                            <i class="fas fa-ruler-combined"></i> Helps us provide accurate pricing for implementing the design
                         </p>
                     </div>
                     

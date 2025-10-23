@@ -283,6 +283,7 @@ A successful build must:
 - ✅ services-garden.jpg - Used in Services hero, Gallery, Homepage carousel
 - ✅ gallery-patio.jpg - Used in Gallery hero, Gallery grid, Homepage carousel
 - ✅ hero-garden.jpg - Homepage hero background
+- ✅ about-hero.jpg - About page hero background (modern fire pit and seating area)
 - ✅ quote-laptop.jpg - Quote page benefits image
 
 **Navigation & Mobile Experience:**
@@ -300,10 +301,12 @@ A successful build must:
 - ✅ Ready for GPT-powered pricing analysis via Make.com
 
 **Design Page Features:**
-- ✅ Style dropdown (Modern, Tropical, Low-Maintenance, Cottage, Contemporary, Family)
-- ✅ Image upload for user's current garden
+- ✅ **Required** garden image upload (user's current garden photo is essential for AI design)
+- ✅ Free text style input (optional) - users describe their vision in natural language
+- ✅ Garden size field (optional) - enables accurate pricing quotes for implementing the design
+- ✅ Email address for receiving generated designs
 - ✅ Feature benefits section (3 cards)
-- ✅ Ready for DALL·E/Midjourney integration
+- ✅ Ready for DALL·E/Midjourney integration with image-to-image transformation
 
 **Gallery Features:**
 - ✅ Filter buttons for categories (All, Patios, Lawns, Gardens, Decking)
