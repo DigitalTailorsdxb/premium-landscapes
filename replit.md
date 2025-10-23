@@ -44,18 +44,20 @@
 
 ### 4. Instant Quote Engine
 **Form Fields:**
-- Area size (sqm)
+- Natural language project description (textarea)
+  - Users describe products with materials and sizes
+  - Example: "Porcelain patio 55sqm, artificial turf 25sqm, fencing 25 meters"
 - Postcode
-- Feature checkboxes (Lawn, Decking, Lighting, etc.)
-- Optional image upload
 - Email
+- Optional image upload
 
 **Workflow:**
-1. User submits → Make.com webhook
-2. Make.com queries Google Sheet with supplier pricing
-3. Returns estimated price range + optional breakdown
-4. Optional: "Download PDF Quote" button
-5. Optional: "Generate AI Design" button
+1. User submits project description → Make.com webhook
+2. GPT analyzes description → queries pricing database
+3. Calculates labour + materials costs
+4. Returns itemized quote with breakdown
+5. Optional: "Download PDF Quote" button
+6. Optional: "Generate AI Design" button
 
 ### 5. AI Design Generator
 **Form Fields:**
@@ -256,10 +258,16 @@ A successful build must:
 - Custom hero image showcasing premium outdoor living space
 - Mobile hamburger menu
 - Interactive carousel for design examples
-- Three functional forms ready for Make.com webhook integration:
-  - Instant Quote Form (with area size, postcode, features, email, image upload)
-  - AI Design Generator Form (with style selection, image upload)
-  - Contact Form
+- **Modern Quote Form with Natural Language Input:**
+  - Redesigned with clean white card and gold accent borders
+  - Large textarea for natural product descriptions
+  - Users specify materials and quantities freely (e.g., "Porcelain patio 55sqm, artificial turf 25sqm")
+  - Helpful example chips for guidance
+  - Modern file upload with styled button
+  - Postcode and email fields
+  - Ready for GPT-powered pricing analysis
+- AI Design Generator Form (with style selection, image upload)
+- Contact Form
 - White-label configuration system in `scripts/config.js`
 - Demo mode with console logging (shows when webhooks not connected)
 - Proper error handling for all forms

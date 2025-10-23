@@ -59,20 +59,16 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         
         const formData = new FormData(quoteForm);
-        const selectedFeatures = [];
-        formData.getAll('features').forEach(feature => {
-            selectedFeatures.push(feature);
-        });
         
         const quoteData = {
-            areaSize: formData.get('areaSize'),
+            projectDescription: formData.get('projectDescription'),
             postcode: formData.get('postcode'),
-            features: selectedFeatures,
             email: formData.get('email'),
             timestamp: new Date().toISOString()
         };
         
         console.log('Quote Request:', quoteData);
+        console.log('Project Description:', quoteData.projectDescription);
         
         try {
             const response = await fetch(brandConfig.webhooks.quote, {
@@ -88,23 +84,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 displayQuoteResult(result);
             } else {
                 displayQuoteResult({
-                    estimate: '£2,500 - £5,000',
-                    breakdown: selectedFeatures.map(f => ({
-                        feature: f.charAt(0).toUpperCase() + f.slice(1),
-                        price: '£500 - £1,500'
-                    })),
-                    message: 'This is a demo quote. Connect Make.com webhook for live pricing.'
+                    estimate: '£3,800 - £6,200',
+                    breakdown: [
+                        { feature: 'Project Analysis', price: 'Processing...' }
+                    ],
+                    message: 'Demo mode: Your quote will be calculated by AI based on materials and labour costs. Connect GPT workflow for live pricing.'
                 });
             }
         } catch (error) {
             console.log('Using demo mode - webhook not connected yet');
             displayQuoteResult({
-                estimate: '£2,500 - £5,000',
-                breakdown: selectedFeatures.map(f => ({
-                    feature: f.charAt(0).toUpperCase() + f.slice(1),
-                    price: '£500 - £1,500'
-                })),
-                message: 'This is a demo quote. Connect Make.com webhook for live pricing.'
+                estimate: '£3,800 - £6,200',
+                breakdown: [
+                    { feature: 'Project Analysis', price: 'Processing...' }
+                ],
+                message: 'Demo mode: Your quote will be calculated by AI based on materials and labour costs. Connect GPT workflow for live pricing.'
             });
         }
     });

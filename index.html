@@ -350,25 +350,34 @@
                 
                 <!-- Form Column -->
                 <div class="order-1 md:order-2">
-            <form id="quoteForm" class="bg-stone rounded-2xl p-8 shadow-lg">
-                <!-- Area Size -->
+            <form id="quoteForm" class="bg-white rounded-2xl p-8 shadow-xl border border-gray-200">
+                <!-- Project Description -->
                 <div class="mb-6">
-                    <label class="block text-gray-700 font-semibold mb-2" for="areaSize">
-                        Garden Area (sqm) *
+                    <label class="block text-primary font-heading font-bold text-lg mb-2" for="projectDescription">
+                        Describe Your Project *
                     </label>
-                    <input 
-                        type="number" 
-                        id="areaSize" 
-                        name="areaSize"
+                    <p class="text-gray-600 text-sm mb-3">Tell us what you need - be specific with materials and sizes</p>
+                    <textarea 
+                        id="projectDescription" 
+                        name="projectDescription"
                         required
-                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-primary"
-                        placeholder="e.g., 50"
-                    >
+                        rows="5"
+                        class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                        placeholder="e.g., Porcelain patio 55sqm, artificial turf 25sqm, fencing 25 meters"
+                    ></textarea>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <span class="text-xs bg-stone px-3 py-1 rounded-full text-gray-600">
+                            <i class="fas fa-lightbulb text-accent"></i> Example: Indian sandstone patio 40sqm
+                        </span>
+                        <span class="text-xs bg-stone px-3 py-1 rounded-full text-gray-600">
+                            <i class="fas fa-lightbulb text-accent"></i> Example: Composite decking 30sqm
+                        </span>
+                    </div>
                 </div>
                 
                 <!-- Postcode -->
                 <div class="mb-6">
-                    <label class="block text-gray-700 font-semibold mb-2" for="postcode">
+                    <label class="block text-primary font-heading font-bold text-lg mb-2" for="postcode">
                         Postcode *
                     </label>
                     <input 
@@ -376,47 +385,14 @@
                         id="postcode" 
                         name="postcode"
                         required
-                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-primary"
+                        class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
                         placeholder="e.g., SW1A 1AA"
                     >
                 </div>
                 
-                <!-- Features Checkboxes -->
-                <div class="mb-6">
-                    <label class="block text-gray-700 font-semibold mb-3">
-                        Select Features *
-                    </label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="checkbox" name="features" value="lawn" class="w-5 h-5 text-primary">
-                            <span>Lawn Installation</span>
-                        </label>
-                        <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="checkbox" name="features" value="decking" class="w-5 h-5 text-primary">
-                            <span>Decking</span>
-                        </label>
-                        <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="checkbox" name="features" value="patio" class="w-5 h-5 text-primary">
-                            <span>Patio</span>
-                        </label>
-                        <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="checkbox" name="features" value="fencing" class="w-5 h-5 text-primary">
-                            <span>Fencing</span>
-                        </label>
-                        <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="checkbox" name="features" value="lighting" class="w-5 h-5 text-primary">
-                            <span>Garden Lighting</span>
-                        </label>
-                        <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="checkbox" name="features" value="redesign" class="w-5 h-5 text-primary">
-                            <span>Full Redesign</span>
-                        </label>
-                    </div>
-                </div>
-                
                 <!-- Email -->
                 <div class="mb-6">
-                    <label class="block text-gray-700 font-semibold mb-2" for="email">
+                    <label class="block text-primary font-heading font-bold text-lg mb-2" for="email">
                         Email Address *
                     </label>
                     <input 
@@ -424,23 +400,28 @@
                         id="email" 
                         name="email"
                         required
-                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-primary"
+                        class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
                         placeholder="your@email.com"
                     >
                 </div>
                 
                 <!-- Image Upload (Optional) -->
                 <div class="mb-6">
-                    <label class="block text-gray-700 font-semibold mb-2" for="gardenImage">
+                    <label class="block text-primary font-heading font-bold text-lg mb-2" for="gardenImage">
                         Upload Current Garden Photo (Optional)
                     </label>
-                    <input 
-                        type="file" 
-                        id="gardenImage" 
-                        name="gardenImage"
-                        accept="image/*"
-                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-primary bg-white"
-                    >
+                    <div class="relative">
+                        <input 
+                            type="file" 
+                            id="gardenImage" 
+                            name="gardenImage"
+                            accept="image/*"
+                            class="w-full px-5 py-4 rounded-xl border-2 border-dashed border-gray-300 focus:outline-none focus:border-accent transition-colors bg-stone cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-opacity-90"
+                        >
+                    </div>
+                    <p class="text-gray-500 text-xs mt-2">
+                        <i class="fas fa-info-circle"></i> Adding a photo helps us provide a more accurate quote
+                    </p>
                 </div>
                 
                 <!-- Submit Button -->
