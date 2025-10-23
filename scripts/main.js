@@ -40,22 +40,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const carouselPrev = document.getElementById('carouselPrev');
     const carouselNext = document.getElementById('carouselNext');
     
-    carouselNext.addEventListener('click', function() {
-        carousel.scrollBy({
-            left: carousel.offsetWidth / 2 + 24,
-            behavior: 'smooth'
+    if (carousel && carouselNext && carouselPrev) {
+        carouselNext.addEventListener('click', function() {
+            carousel.scrollBy({
+                left: carousel.offsetWidth / 2 + 24,
+                behavior: 'smooth'
+            });
         });
-    });
-    
-    carouselPrev.addEventListener('click', function() {
-        carousel.scrollBy({
-            left: -(carousel.offsetWidth / 2 + 24),
-            behavior: 'smooth'
+        
+        carouselPrev.addEventListener('click', function() {
+            carousel.scrollBy({
+                left: -(carousel.offsetWidth / 2 + 24),
+                behavior: 'smooth'
+            });
         });
-    });
+    }
     
     const quoteForm = document.getElementById('quoteForm');
-    quoteForm.addEventListener('submit', async function(e) {
+    if (quoteForm) {
+        quoteForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const formData = new FormData(quoteForm);
@@ -101,7 +104,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 message: 'Demo mode: Your quote will be calculated by AI based on materials and labour costs. Connect GPT workflow for live pricing.'
             });
         }
-    });
+        });
+    }
     
     function displayQuoteResult(result) {
         const quoteResult = document.getElementById('quoteResult');
@@ -129,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         html += `
             <div class="flex gap-4 mt-6">
-                <button onclick="window.location.href='#design'" class="flex-1 bg-primary text-white px-6 py-3 rounded-full hover:bg-primary-dark transition">
+                <button onclick="window.location.href='design.html'" class="flex-1 bg-primary text-white px-6 py-3 rounded-full hover:bg-primary-dark transition">
                     Generate AI Design
                 </button>
                 <button onclick="alert('PDF download will be available once Make.com is connected')" class="flex-1 bg-white border-2 border-primary text-primary px-6 py-3 rounded-full hover:bg-stone transition">
@@ -145,7 +149,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     const designForm = document.getElementById('designForm');
-    designForm.addEventListener('submit', async function(e) {
+    if (designForm) {
+        designForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const formData = new FormData(designForm);
@@ -212,9 +217,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         designResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
+    }
     
     const contactForm = document.getElementById('contactForm');
-    contactForm.addEventListener('submit', async function(e) {
+    if (contactForm) {
+        contactForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const formData = new FormData(contactForm);
@@ -258,5 +265,6 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             resultDiv.classList.add('hidden');
         }, 5000);
-    });
+        });
+    }
 });
