@@ -16,20 +16,36 @@ const brandConfig = {
 };
 
 function applyBranding() {
-    document.getElementById('companyName').textContent = brandConfig.companyName;
-    document.getElementById('footerCompanyName').textContent = brandConfig.companyName;
-    document.getElementById('copyrightCompanyName').textContent = brandConfig.companyName;
+    const setElement = (id, text, attr = null, attrValue = null) => {
+        const el = document.getElementById(id);
+        if (el) {
+            if (text) el.textContent = text;
+            if (attr && attrValue) el.setAttribute(attr, attrValue);
+        }
+    };
     
-    document.getElementById('contactPhone').textContent = brandConfig.phone;
-    document.getElementById('contactPhone').href = `tel:${brandConfig.phone}`;
+    setElement('companyName', brandConfig.companyName);
+    setElement('footerCompanyName', brandConfig.companyName);
+    setElement('footerCopyright', brandConfig.companyName);
     
-    document.getElementById('contactEmail').textContent = brandConfig.email;
-    document.getElementById('contactEmail').href = `mailto:${brandConfig.email}`;
+    setElement('contactPhone', brandConfig.phone, 'href', `tel:${brandConfig.phone}`);
+    setElement('footerPhone', brandConfig.phone);
+    setElement('phoneLink', brandConfig.phone, 'href', `tel:${brandConfig.phone}`);
     
-    document.getElementById('contactLocation').textContent = brandConfig.location;
+    setElement('contactEmail', brandConfig.email, 'href', `mailto:${brandConfig.email}`);
+    setElement('footerEmail', brandConfig.email);
+    setElement('emailLink', brandConfig.email, 'href', `mailto:${brandConfig.email}`);
+    
+    setElement('contactLocation', brandConfig.location);
+    setElement('footerLocation', brandConfig.location);
+    setElement('addressLine1', 'Your Business Address');
+    setElement('addressLine2', 'Your City, County');
+    setElement('addressPostcode', 'Postcode');
+    setElement('serviceArea', 'Your Region');
     
     const whatsappMessage = encodeURIComponent("Hi, I'd like a quote for my garden");
-    document.getElementById('whatsappLink').href = `https://wa.me/${brandConfig.whatsapp}?text=${whatsappMessage}`;
+    const whatsappUrl = `https://wa.me/${brandConfig.whatsapp}?text=${whatsappMessage}`;
+    setElement('whatsappLink', null, 'href', whatsappUrl);
 }
 
 if (document.readyState === 'loading') {
