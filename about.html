@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Premium Landscapes</title>
+    <meta name="description" content="Learn about Premium Landscapes - your trusted partner in creating stunning outdoor spaces with professional landscaping and AI-powered design.">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2c3e50',
+                        'primary-light': '#455a64',
+                        'primary-dark': '#1a252f',
+                        secondary: '#c77d5c',
+                        accent: '#f59e0b',
+                        'stone': '#f5f1e8',
+                    },
+                    fontFamily: {
+                        'heading': ['Inter', 'sans-serif'],
+                        'body': ['Open Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .mobile-menu {
+            transition: transform 0.3s ease;
+        }
+        
+        .mobile-menu.active {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-800">
+    
+    <!-- Navigation Header -->
+    <header class="bg-white shadow-md fixed w-full top-0 z-50">
+        <nav class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-spa text-primary text-3xl"></i>
+                <span class="font-heading font-bold text-2xl text-primary" id="companyName">Premium Landscapes</span>
+            </div>
+            
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="index.html" class="text-gray-700 hover:text-primary transition">Home</a>
+                <a href="about.html" class="text-primary font-semibold transition">About</a>
+                <a href="services.html" class="text-gray-700 hover:text-primary transition">Services</a>
+                <a href="gallery.html" class="text-gray-700 hover:text-primary transition">Gallery</a>
+                <a href="quote.html" class="text-gray-700 hover:text-primary transition">Get Quote</a>
+                <a href="design.html" class="text-gray-700 hover:text-primary transition">AI Design</a>
+                <a href="contact.html" class="bg-primary text-white px-6 py-2 rounded-full hover:bg-primary-dark transition">Contact</a>
+            </div>
+            
+            <button id="mobileMenuBtn" class="md:hidden text-primary text-2xl">
+                <i class="fas fa-bars"></i>
+            </button>
+        </nav>
+        
+        <div id="mobileMenu" class="mobile-menu fixed top-0 right-0 h-full w-64 bg-white shadow-2xl transform translate-x-full md:hidden z-50">
+            <div class="p-6">
+                <button id="closeMobileMenu" class="text-primary text-2xl mb-8">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="flex flex-col space-y-6">
+                    <a href="index.html" class="text-gray-700 hover:text-primary transition text-lg">Home</a>
+                    <a href="about.html" class="text-primary font-semibold transition text-lg">About</a>
+                    <a href="services.html" class="text-gray-700 hover:text-primary transition text-lg">Services</a>
+                    <a href="gallery.html" class="text-gray-700 hover:text-primary transition text-lg">Gallery</a>
+                    <a href="quote.html" class="text-gray-700 hover:text-primary transition text-lg">Get Quote</a>
+                    <a href="design.html" class="text-gray-700 hover:text-primary transition text-lg">AI Design</a>
+                    <a href="contact.html" class="text-gray-700 hover:text-primary transition text-lg">Contact</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Hero -->
+    <section class="pt-32 pb-16 bg-gradient-to-br from-primary to-primary-light text-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6">About Premium Landscapes</h1>
+                <p class="text-xl text-stone opacity-90">Transforming outdoor spaces with expertise, innovation, and a passion for exceptional design.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Our Story -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl md:text-4xl font-bold text-primary mb-6">Our Story</h2>
+                    <p class="text-lg text-gray-700 mb-4">
+                        For over a decade, Premium Landscapes has been at the forefront of innovative garden design and landscaping excellence. What started as a small team of passionate landscapers has grown into a trusted name in transforming outdoor spaces.
+                    </p>
+                    <p class="text-lg text-gray-700 mb-4">
+                        We believe every garden tells a story. Whether it's a contemporary patio perfect for entertaining, a lush lawn where children play, or a tranquil retreat from daily life, we bring your vision to life with precision and care.
+                    </p>
+                    <p class="text-lg text-gray-700">
+                        Today, we're proud to combine traditional craftsmanship with cutting-edge AI technology, offering instant quotes and design concepts that make professional landscaping accessible to everyone.
+                    </p>
+                </div>
+                <div class="bg-stone rounded-2xl p-8 shadow-xl">
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="bg-accent text-white rounded-full p-3 flex-shrink-0">
+                                <i class="fas fa-award text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-xl text-primary mb-2">10+ Years Experience</h3>
+                                <p class="text-gray-700">A decade of transforming gardens across the region</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div class="bg-secondary text-white rounded-full p-3 flex-shrink-0">
+                                <i class="fas fa-users text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-xl text-primary mb-2">500+ Happy Clients</h3>
+                                <p class="text-gray-700">Trusted by homeowners throughout the UK</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div class="bg-primary text-white rounded-full p-3 flex-shrink-0">
+                                <i class="fas fa-robot text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-xl text-primary mb-2">AI-Powered Innovation</h3>
+                                <p class="text-gray-700">First landscaper offering instant AI designs and quotes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Our Values -->
+    <section class="py-16 bg-stone">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">Our Values</h2>
+                <p class="text-xl text-gray-700">The principles that guide everything we do</p>
+            </div>
+            
+            <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-xl p-8 shadow-lg text-center">
+                    <div class="bg-primary text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-heart text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-primary mb-4">Quality First</h3>
+                    <p class="text-gray-700">We never compromise on materials, workmanship, or attention to detail. Every project receives the same meticulous care.</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-8 shadow-lg text-center">
+                    <div class="bg-secondary text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-handshake text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-primary mb-4">Transparency</h3>
+                    <p class="text-gray-700">No hidden fees, no surprises. Our instant quotes and clear communication keep you informed every step of the way.</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-8 shadow-lg text-center">
+                    <div class="bg-accent text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-lightbulb text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-primary mb-4">Innovation</h3>
+                    <p class="text-gray-700">We embrace technology to enhance our service, from AI design tools to modern techniques that deliver superior results.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">What Our Clients Say</h2>
+                <p class="text-xl text-gray-700">Don't just take our word for it</p>
+            </div>
+            
+            <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
+                <div class="bg-stone rounded-xl p-8 shadow-lg">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                    </div>
+                    <p class="text-gray-700 text-lg mb-6 italic">"The instant quote feature was a game-changer. We got a clear price breakdown within minutes, and the AI design gave us exactly what we envisioned. The final garden exceeded our expectations!"</p>
+                    <div class="flex items-center">
+                        <div class="bg-primary text-white rounded-full w-12 h-12 flex items-center justify-center mr-4">
+                            <span class="font-bold text-lg">SJ</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-primary">Sarah Johnson</p>
+                            <p class="text-gray-600">Homeowner, Surrey</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-stone rounded-xl p-8 shadow-lg">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                    </div>
+                    <p class="text-gray-700 text-lg mb-6 italic">"Professional from start to finish. The team transformed our tired garden into a stunning outdoor entertaining space. The porcelain patio and artificial lawn look incredible - worth every penny!"</p>
+                    <div class="flex items-center">
+                        <div class="bg-secondary text-white rounded-full w-12 h-12 flex items-center justify-center mr-4">
+                            <span class="font-bold text-lg">MT</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-primary">Michael Thompson</p>
+                            <p class="text-gray-600">Homeowner, Hampshire</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-stone rounded-xl p-8 shadow-lg">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                    </div>
+                    <p class="text-gray-700 text-lg mb-6 italic">"We were hesitant about landscaping costs, but the transparent pricing and AI design tool made everything so easy. No pushy sales tactics - just honest advice and beautiful results."</p>
+                    <div class="flex items-center">
+                        <div class="bg-accent text-white rounded-full w-12 h-12 flex items-center justify-center mr-4">
+                            <span class="font-bold text-lg">DP</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-primary">David & Paula Chen</p>
+                            <p class="text-gray-600">Homeowners, Berkshire</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-stone rounded-xl p-8 shadow-lg">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                        <i class="fas fa-star text-accent text-xl"></i>
+                    </div>
+                    <p class="text-gray-700 text-lg mb-6 italic">"The decking and fencing completely changed our garden. The workmanship is outstanding, and the team cleaned up perfectly each day. Highly recommend Premium Landscapes!"</p>
+                    <div class="flex items-center">
+                        <div class="bg-primary text-white rounded-full w-12 h-12 flex items-center justify-center mr-4">
+                            <span class="font-bold text-lg">ER</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-primary">Emma Roberts</p>
+                            <p class="text-gray-600">Homeowner, Kent</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-gradient-to-r from-accent to-secondary text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Transform Your Garden?</h2>
+            <p class="text-xl mb-8 opacity-90">Get your instant quote and AI-generated design today</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="quote.html" class="bg-white text-primary px-8 py-4 rounded-full font-bold text-lg hover:bg-stone transition shadow-lg">Get Instant Quote</a>
+                <a href="design.html" class="bg-primary text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-primary-dark transition shadow-lg">Generate AI Design</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-primary text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fas fa-spa text-accent text-2xl"></i>
+                        <span class="font-heading font-bold text-xl" id="footerCompanyName">Premium Landscapes</span>
+                    </div>
+                    <p class="text-stone opacity-80">Transforming gardens with AI-powered design and expert craftsmanship.</p>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-stone opacity-80 hover:text-accent transition">Home</a></li>
+                        <li><a href="about.html" class="text-stone opacity-80 hover:text-accent transition">About</a></li>
+                        <li><a href="services.html" class="text-stone opacity-80 hover:text-accent transition">Services</a></li>
+                        <li><a href="gallery.html" class="text-stone opacity-80 hover:text-accent transition">Gallery</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Services</h4>
+                    <ul class="space-y-2">
+                        <li><a href="quote.html" class="text-stone opacity-80 hover:text-accent transition">Get Quote</a></li>
+                        <li><a href="design.html" class="text-stone opacity-80 hover:text-accent transition">AI Design</a></li>
+                        <li><a href="services.html" class="text-stone opacity-80 hover:text-accent transition">Landscaping</a></li>
+                        <li><a href="contact.html" class="text-stone opacity-80 hover:text-accent transition">Contact Us</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Contact</h4>
+                    <ul class="space-y-2 text-stone opacity-80">
+                        <li><i class="fas fa-phone mr-2"></i> <span id="footerPhone">01234 567890</span></li>
+                        <li><i class="fas fa-envelope mr-2"></i> <span id="footerEmail">info@premiumlandscapes.co.uk</span></li>
+                        <li><i class="fas fa-map-marker-alt mr-2"></i> <span id="footerLocation">Your City, UK</span></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-primary-light pt-8 text-center text-stone opacity-70">
+                <p>&copy; 2025 <span id="footerCopyright">Premium Landscapes</span>. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="scripts/config.js"></script>
+    <script src="scripts/main.js"></script>
+
+</body>
+</html>
