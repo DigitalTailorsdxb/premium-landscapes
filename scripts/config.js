@@ -1,12 +1,13 @@
 const brandConfig = {
     companyName: "Premium Landscapes",
-    primaryColor: "#2c3e50",
-    secondaryColor: "#c77d5c",
-    accentColor: "#f59e0b",
-    phone: "+44 1234 567890",
-    email: "hello@premiumlandscapes.co.uk",
-    whatsapp: "441234567890",
-    location: "Serving London & Home Counties",
+    primaryColor: "#2563eb",
+    secondaryColor: "#3b82f6",
+    accentColor: "#8b5cf6",
+    phone: "07444 887813",
+    email: "info@premium-landscapes.co.uk",
+    whatsapp: "447444887813",
+    location: "Serving Midlands & Home Counties",
+    address: "Leicester Forest East, Leicester",
     
     webhooks: {
         quote: "https://hook.eu2.make.com/your-quote-webhook-url",

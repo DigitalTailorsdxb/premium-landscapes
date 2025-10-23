@@ -246,6 +246,22 @@ A successful build must:
 
 ---
 
+## 📞 Contact Information
+
+**Real Business Details:**
+- **Phone:** 07444 887813
+- **Email:** info@premium-landscapes.co.uk
+- **WhatsApp:** 447444887813
+- **Location:** Serving Midlands & Home Counties
+- **Based in:** Leicester Forest East, Leicester
+- **Service Area:** Midlands & Home Counties (Leicester, Peterborough, and surrounding areas)
+
+**Business Details:**
+- Over a decade of experience in landscaping
+- Professional CAD drawings available (£100-£250, deducted if project proceeds)
+- Collaboration with award-winning local garden designers
+- Response time: 1-4 days for site visits
+
 ## 📝 Development Notes
 
 - Everything should be cleanly commented and modular
@@ -285,6 +301,8 @@ A successful build must:
 - ✅ hero-garden.jpg - Homepage hero background
 - ✅ about-hero.jpg - About page hero background (modern fire pit and seating area)
 - ✅ quote-laptop.jpg - Quote page benefits image
+- ✅ garden-lighting.png - Garden lighting tile on homepage, Services page, Homepage carousel
+- ✅ decking.png - AI Design hero, Services decking card, Gallery decking items
 
 **Navigation & Mobile Experience:**
 - ✅ Consistent header/footer navigation across all 7 pages
@@ -292,6 +310,8 @@ A successful build must:
 - ✅ Mobile menu properly closes on navigation (mobile-menu-link class on all pages)
 - ✅ Active page highlighting in navigation
 - ✅ Fully responsive on all device sizes
+- ✅ Real contact details: Phone (07444 887813), Email, WhatsApp integrated
+- ✅ Location updated to "Serving Midlands & Home Counties"
 
 **Quote Page Features:**
 - ✅ Natural language textarea for project descriptions
