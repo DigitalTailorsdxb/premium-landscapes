@@ -19,12 +19,12 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#1e4620',
-                        'primary-light': '#2d6930',
-                        'primary-dark': '#0f2310',
-                        secondary: '#4a5568',
-                        accent: '#10b981',
-                        'stone': '#f9fafb',
+                        primary: '#2563eb',
+                        'primary-light': '#60a5fa',
+                        'primary-dark': '#1e40af',
+                        secondary: '#3b82f6',
+                        accent: '#8b5cf6',
+                        'stone': '#f0f9ff',
                     },
                     fontFamily: {
                         'heading': ['Inter', 'sans-serif'],
@@ -49,6 +49,17 @@
         
         .mobile-menu.active {
             transform: translateX(0);
+        }
+        
+        .design-hero {
+            background-image: url('images/decking-hero.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .text-shadow-strong {
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7), 0px 0px 20px rgba(0, 0, 0, 0.5);
         }
     </style>
 </head>
@@ -96,14 +107,16 @@
     </header>
     
     <!-- Design Page Hero -->
-    <section class="pt-32 pb-12 px-4 bg-white">
-        <div class="container mx-auto max-w-4xl text-center">
-            <h1 class="font-heading font-bold text-4xl md:text-5xl mb-4 text-primary">
-                Instant Free Garden Design
-            </h1>
-            <p class="text-xl text-secondary">
-                AI-powered design concepts in minutes. See your dream garden come to life.
-            </p>
+    <section class="design-hero pt-32 pb-20 px-4 min-h-screen flex items-center relative text-white">
+        <div class="container mx-auto text-center">
+            <div class="max-w-3xl mx-auto">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-shadow-strong">
+                    Instant Free Garden Design
+                </h1>
+                <p class="text-xl md:text-2xl mb-10 text-shadow-strong">
+                    AI-powered design concepts in minutes. See your dream garden come to life.
+                </p>
+            </div>
         </div>
     </section>
     

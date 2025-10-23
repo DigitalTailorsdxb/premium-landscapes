@@ -98,14 +98,14 @@ The website now uses a **multi-page architecture** for better UX and SEO:
 
 ## 🎨 Design System
 
-### Visual Style (Zoom-Inspired Clean Design)
+### Visual Style (Modern SaaS Design)
 - **White backgrounds throughout** - clean, professional, minimal
-- **Primary:** Deep forest green (#1e4620) - natural, landscaping-appropriate, professional
-- **Secondary:** Neutral gray (#4a5568) - professional text and accents
-- **Accent:** Fresh green (#10b981) - CTAs and interactive elements
-- **Stone:** Very light gray (#f9fafb) - subtle backgrounds and cards
+- **Primary:** Vibrant blue (#2563eb) - modern, trustworthy, professional
+- **Secondary:** Light blue (#3b82f6) - fresh, clean accents
+- **Accent:** Purple (#8b5cf6) - creative, premium CTAs and highlights
+- **Stone:** Very light blue (#f0f9ff) - subtle backgrounds and cards
 - **No colorful gradients** - only subtle fades on buttons/CTAs
-- Clean, spacious design inspired by Zoom.com
+- Clean, spacious modern design
 - Fully responsive across all devices
 
 ### Typography
@@ -315,7 +315,7 @@ A successful build must:
 - ✅ Real landscaping images displayed
 
 **Design System:**
-- ✅ **Clean Zoom-inspired color palette:** Forest green primary (#1e4620), neutral gray secondary (#4a5568), fresh accent (#10b981)
+- ✅ **Modern blue/purple color palette:** Vibrant blue primary (#2563eb), light blue secondary (#3b82f6), purple accent (#8b5cf6)
 - ✅ **White backgrounds throughout** - no colorful gradients, professional and minimal
 - ✅ Subtle color blending only on CTAs and accents
 - ✅ Spacious, modern design with plenty of breathing room
