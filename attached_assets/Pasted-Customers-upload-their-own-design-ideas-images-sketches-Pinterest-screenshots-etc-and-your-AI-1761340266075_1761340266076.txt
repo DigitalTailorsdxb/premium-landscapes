@@ -1,0 +1,154 @@
+Customers upload their own design ideas (images, sketches, Pinterest screenshots, etc.), and your AI system automatically translates those visuals into structured prompt data — then uses that enriched information to create a personalised garden design for them.
+
+🌿 Feature: “AI Vision Translator for Design Ideas”
+🎯 GOAL
+
+When a client uploads their design inspiration images:
+
+The system analyses them using GPT-4 Vision,
+
+Extracts style, layout, and material cues,
+
+Combines that data with the client’s questionnaire (area, budget, style preferences),
+
+Generates a customised DALL·E prompt,
+
+And finally, produces AI-rendered design images that align closely with the client’s references.
+
+🧠 SYSTEM FLOW
+User uploads inspiration images + form → n8n Webhook /design
+→ GPT-4 Vision Node → “Prompt Builder” Function
+→ DALL·E Image Generation → Upload to Cloudflare Images
+→ Email + Instant Display on Replit
+
+⚙️ HOW IT WORKS (Node-by-Node Logic)
+🧩 1️⃣ Webhook Node — /design
+
+Accepts:
+
+Customer details (email, postcode)
+
+Project info (area, budget, style)
+
+Uploaded inspiration images (array of URLs or base64)
+
+Optional notes or Pinterest link
+
+Example JSON:
+
+{
+  "customer": { "name": "Laura", "email": "laura@example.com" },
+  "project": {
+    "style": "Modern",
+    "area": 85,
+    "notes": "Love clean lines, privacy, and warm lighting"
+  },
+  "inspirations": [
+    "https://uploads.premiumlandscapes.co.uk/laura_idea1.jpg",
+    "https://uploads.premiumlandscapes.co.uk/laura_idea2.jpg"
+  ]
+}
+
+🧩 2️⃣ GPT-4 Vision Node — “Analyse Inspiration Images”
+
+Purpose: Extracts style, mood, layout, materials, and design intent.
+
+Prompt Example:
+
+“You are an expert landscape designer.
+Analyse these uploaded images and describe:
+• Primary materials (stone, wood, grass, plants)
+• Garden style (modern, tropical, rustic, minimal)
+• Lighting, seating, and colour palette
+• Distinct features (fire pit, pergola, decking, raised beds, etc.)
+
+Return structured JSON with fields: style, key_materials, features, mood, layout.”
+
+Example output:
+
+{
+  "style": "Modern Minimalist",
+  "key_materials": ["porcelain paving", "composite decking", "white stone"],
+  "features": ["fire pit", "pergola", "LED uplighting"],
+  "mood": "calm, warm lighting, open space",
+  "layout": "split-level with defined seating zone and lawn"
+}
+
+🧩 3️⃣ Function Node — “Merge Client Data + AI Insights”
+
+Combines questionnaire data and AI analysis:
+
+const project = $json.project;
+const analysis = $json.analysis;
+
+return {
+  json: {
+    prompt: `Create a realistic ${analysis.style} garden design for ${project.area} m².
+Incorporate ${analysis.key_materials.join(", ")} materials with features such as ${analysis.features.join(", ")}.
+Mood: ${analysis.mood}. Layout: ${analysis.layout}.
+Also consider client notes: "${project.notes}".`
+  }
+};
+
+🧩 4️⃣ DALL·E 3 Node — “Generate Custom Design”
+
+Model: dall-e-3
+
+Input: prompt from previous node
+
+Output: 2–3 high-resolution garden renders
+
+Result: AI designs that visually match the client’s inspiration images.
+
+🧩 5️⃣ Cloudflare Images Upload + Email + Respond to Webhook
+
+Same as your previous AI Design workflow — you store, email, and display designs instantly.
+
+🧰 BACKEND REQUIREMENTS
+Requirement	Purpose
+GPT-4 Vision Access (OpenAI)	Needed for analysing uploaded images
+DALL·E 3 Access	Generates new designs from prompt
+Cloudflare Images or S3	Stores client uploads + AI outputs
+Webhook Storage	Replit form uploads via pre-signed link or Cloudflare upload widget
+n8n Nodes	Webhook → GPT Vision → Function → DALL·E → Upload → Email → Response
+💡 FRONTEND EXPERIENCE (Replit Site)
+
+On the AI Design Page, add an “Upload Inspiration Images” section:
+
+<label>Upload your design ideas or inspiration photos</label>
+<input type="file" multiple accept="image/*" id="inspirationUpload" />
+
+
+The JavaScript collects all uploaded images → converts to URLs/base64 → adds to the payload sent to the /design webhook.
+
+After the workflow runs:
+
+The user immediately sees AI-generated designs tailored to their uploaded ideas.
+
+They also receive an email with all visuals and “AI Analysis Summary.”
+
+🧱 WHY THIS IS POWERFUL
+Benefit	Description
+Personalisation	Every design is directly influenced by the client’s real tastes
+Automation	AI extracts design cues automatically — no manual interpretation
+Sales Tool	The email follow-up includes a “design summary” that your sales team can quote from
+Scalable	Works identically whether you receive 10 requests or 10,000
+Professional Output	Feels like a bespoke design service backed by human designers
+🧠 FUTURE ADD-ON
+
+Later, you can use this same logic to:
+
+Let users link Pinterest boards or Instagram images
+
+Use Whisper + Voice Notes → “Explain your dream garden” → transcribed into prompt
+
+Add a “Compare your inspiration vs AI result” slider directly on the page
+
+✅ Summary — “Best Implementation”
+Stage	Tool	Output
+Upload inspiration images	Replit (file input)	Base64 URLs
+AI visual analysis	GPT-4 Vision	JSON of design features
+Prompt fusion	n8n Function node	Rich, detailed text prompt
+AI design generation	DALL·E 3	3 realistic renders
+Image hosting	Cloudflare Images	CDN URLs
+Display + delivery	Replit frontend + Email	Instant on-site & inbox experience
