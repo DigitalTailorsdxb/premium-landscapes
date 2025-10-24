@@ -51,30 +51,49 @@
             transform: translateX(0);
         }
         
-        .design-hero {
-            background-image: url('images/decking-hero.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+        .feature-card {
+            transition: all 0.3s ease;
         }
         
-        .text-shadow-strong {
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7), 0px 0px 20px rgba(0, 0, 0, 0.5);
+        .feature-card.selected {
+            border-color: #8b5cf6;
+            background-color: #f3e8ff;
+            transform: scale(1.05);
+        }
+        
+        .style-card {
+            transition: all 0.3s ease;
+        }
+        
+        .style-card.selected {
+            border-color: #8b5cf6;
+            background-color: #f3e8ff;
+        }
+        
+        .step-container {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .step-transition {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
 <body class="bg-white text-gray-800">
     
     <!-- Navigation Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
+    <header class="bg-white shadow-md fixed w-full top-0 z-50">
         <nav class="container mx-auto px-4 py-0 flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <i class="fas fa-seedling text-primary text-3xl"></i>
-                <span class="font-heading font-bold text-2xl text-primary">Premium Landscapes</span>
-            </div>
+            <a href="index.html" class="flex items-center">
+                <img src="images/logo.png" alt="Premium Landscapes" class="h-16 md:h-20">
+            </a>
             
             <div class="hidden md:flex items-center space-x-8">
-                <a href="index.html" class="text-gray-700 hover:text-primary transition">Home</a>
                 <a href="index.html" class="text-gray-700 hover:text-primary transition">Home</a>
                 <a href="about.html" class="text-gray-700 hover:text-primary transition">About</a>
                 <a href="services.html" class="text-gray-700 hover:text-primary transition">Services</a>
@@ -94,200 +113,394 @@
                 <button id="closeMobileMenu" class="text-primary text-2xl mb-8">
                     <i class="fas fa-times"></i>
                 </button>
-                <div class="flex flex-col space-y-6">
-                    <a href="index.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Home</a>
-                    <a href="about.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">About</a>
-                    <a href="services.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Services</a>
-                    <a href="gallery.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Gallery</a>
-                    <a href="quote.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Instant Quote</a>
-                    <a href="design.html" class="text-primary font-semibold transition text-lg mobile-menu-link">AI Design</a>
-                    <a href="contact.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Contact</a>
+                <div class="flex flex-col space-y-4">
+                    <a href="index.html" class="text-gray-700 hover:text-primary transition mobile-menu-link">Home</a>
+                    <a href="about.html" class="text-gray-700 hover:text-primary transition mobile-menu-link">About</a>
+                    <a href="services.html" class="text-gray-700 hover:text-primary transition mobile-menu-link">Services</a>
+                    <a href="gallery.html" class="text-gray-700 hover:text-primary transition mobile-menu-link">Gallery</a>
+                    <a href="quote.html" class="text-gray-700 hover:text-primary transition mobile-menu-link">Instant Quote</a>
+                    <a href="design.html" class="text-primary font-semibold transition mobile-menu-link">AI Design</a>
+                    <a href="contact.html" class="text-gray-700 hover:text-primary transition mobile-menu-link">Contact</a>
                 </div>
             </div>
         </div>
     </header>
     
-    <!-- Design Page Hero -->
-    <section class="design-hero pt-32 pb-20 px-4 min-h-screen flex items-center relative text-white">
-        <div class="container mx-auto text-center">
-            <div class="max-w-3xl mx-auto">
-                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-shadow-strong">
-                    Instant Free Garden Design
-                </h1>
-                <p class="text-xl md:text-2xl mb-10 text-shadow-strong">
-                    AI-powered design concepts in minutes. See your dream garden come to life.
-                </p>
+    <!-- Page Title Section -->
+    <section class="pt-32 pb-12 px-4 bg-gradient-to-br from-primary to-accent text-white">
+        <div class="container mx-auto max-w-4xl text-center">
+            <h1 class="font-heading font-bold text-4xl md:text-5xl mb-4">
+                AI Garden Design Generator
+            </h1>
+            <p class="text-xl text-white/90 mb-2">
+                Get 3 stunning AI-generated design concepts in minutes. 100% free, no obligation.
+            </p>
+            <div class="flex items-center justify-center space-x-2 text-sm">
+                <i class="fas fa-robot"></i>
+                <span>Powered by DALL·E 3 • Average completion: 3 mins</span>
             </div>
         </div>
     </section>
     
-    <!-- AI Design Generator Section -->
-    <section class="py-16 px-4 bg-stone">
-        <div class="container mx-auto max-w-4xl">
-            <div class="bg-white rounded-2xl p-8 md:p-12 shadow-xl">
-                <div class="text-center mb-8">
-                    <h2 class="font-heading font-bold text-3xl text-primary mb-3">
-                        Generate Your AI Design
-                    </h2>
-                    <p class="text-gray-600">
-                        Upload a photo of your current garden and describe your vision. Our AI will create a custom design concept for you.
-                    </p>
+    <!-- Progress Bar -->
+    <div class="sticky top-20 z-40 bg-white shadow-sm">
+        <div class="container mx-auto max-w-6xl px-4 py-4">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-gray-600" id="progressText">Step 1 of 5</span>
+                <span class="text-xs text-gray-500" id="progressPercent">20%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="progressBar" class="bg-gradient-to-r from-primary to-accent h-2 rounded-full" style="width: 20%"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Design Section -->
+    <section class="py-8 px-4 bg-white min-h-screen">
+        <div class="container mx-auto max-w-6xl">
+            <div class="grid md:grid-cols-3 gap-8">
+                
+                <!-- Left: Multi-Step Form -->
+                <div class="md:col-span-2">
+                    <div class="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
+                        
+                        <!-- Step 1: Select Features for Design -->
+                        <div id="step1" class="step-container step-transition">
+                            <h2 class="font-heading font-bold text-2xl text-primary mb-3">What features do you want in your garden?</h2>
+                            <p class="text-gray-600 mb-6">Select all elements you'd like in your AI-generated design</p>
+                            
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="patio">
+                                    <i class="fas fa-th-large text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Patio/Terrace</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="decking">
+                                    <i class="fas fa-border-all text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Decking</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="lawn">
+                                    <i class="fas fa-seedling text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Lawn Area</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="water-feature">
+                                    <i class="fas fa-water text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Water Feature</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="garden-beds">
+                                    <i class="fas fa-leaf text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Garden Beds</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="seating">
+                                    <i class="fas fa-couch text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Seating Area</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="pergola">
+                                    <i class="fas fa-home text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Pergola/Gazebo</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="lighting">
+                                    <i class="fas fa-lightbulb text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Lighting</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="play-area">
+                                    <i class="fas fa-child text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Play Area</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="vegetable-garden">
+                                    <i class="fas fa-carrot text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Vegetable Garden</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="fire-pit">
+                                    <i class="fas fa-fire text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Fire Pit</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="other">
+                                    <i class="fas fa-plus-circle text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Other</p>
+                                </div>
+                            </div>
+                            
+                            <button onclick="nextStep()" class="w-full bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition shadow-lg">
+                                Continue <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Step 2: Feature Details -->
+                        <div id="step2" class="step-container hidden step-transition">
+                            <h2 class="font-heading font-bold text-2xl text-primary mb-3">Describe what you want for each feature</h2>
+                            <p class="text-gray-600 mb-6">The more detail, the better the AI design</p>
+                            
+                            <!-- Dynamic Feature Detail Fields -->
+                            <div id="featureDetailFields" class="space-y-4 mb-6"></div>
+                            
+                            <!-- General Design Notes -->
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-semibold mb-2">General Design Notes (Optional)</label>
+                                <p class="text-sm text-gray-600 mb-2">Overall vision, mood, must-haves, things to avoid</p>
+                                <textarea 
+                                    id="generalNotes" 
+                                    rows="4"
+                                    class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                                    placeholder="e.g., I want a relaxing space for entertaining, low maintenance, family-friendly, must work with existing oak tree..."
+                                ></textarea>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button onclick="prevStep()" class="px-8 py-4 rounded-full text-lg font-semibold border-2 border-gray-300 hover:border-primary transition">
+                                    <i class="fas fa-arrow-left mr-2"></i> Back
+                                </button>
+                                <button onclick="nextStep()" class="flex-1 bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition shadow-lg">
+                                    Continue <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 3: Style Selection -->
+                        <div id="step3" class="step-container hidden step-transition">
+                            <h2 class="font-heading font-bold text-2xl text-primary mb-3">Choose your preferred garden style</h2>
+                            <p class="text-gray-600 mb-6">Select one or describe your own unique style</p>
+                            
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                                <div class="style-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-style="modern">
+                                    <i class="fas fa-square text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Modern Minimalist</p>
+                                </div>
+                                <div class="style-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-style="traditional">
+                                    <i class="fas fa-home text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Traditional English</p>
+                                </div>
+                                <div class="style-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-style="cottage">
+                                    <i class="fas fa-flower-daffodil text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Cottage Garden</p>
+                                </div>
+                                <div class="style-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-style="mediterranean">
+                                    <i class="fas fa-sun text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Mediterranean</p>
+                                </div>
+                                <div class="style-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-style="japanese">
+                                    <i class="fas fa-tree text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Japanese Zen</p>
+                                </div>
+                                <div class="style-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-style="tropical">
+                                    <i class="fas fa-palm-tree text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Tropical Paradise</p>
+                                </div>
+                                <div class="style-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-style="contemporary">
+                                    <i class="fas fa-cube text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Contemporary</p>
+                                </div>
+                                <div class="style-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-style="wild">
+                                    <i class="fas fa-crow text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Wildlife Friendly</p>
+                                </div>
+                                <div class="style-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-style="custom">
+                                    <i class="fas fa-palette text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Custom Style</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Custom Style Description -->
+                            <div id="customStyleField" class="hidden mb-6">
+                                <label class="block text-gray-700 font-semibold mb-2">Describe Your Custom Style</label>
+                                <input 
+                                    type="text" 
+                                    id="customStyle" 
+                                    class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                                    placeholder="e.g., Industrial chic with reclaimed materials, Scandinavian hygge garden..."
+                                >
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button onclick="prevStep()" class="px-8 py-4 rounded-full text-lg font-semibold border-2 border-gray-300 hover:border-primary transition">
+                                    <i class="fas fa-arrow-left mr-2"></i> Back
+                                </button>
+                                <button onclick="nextStep()" class="flex-1 bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition shadow-lg">
+                                    Continue <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 4: Photo Upload -->
+                        <div id="step4" class="step-container hidden step-transition">
+                            <h2 class="font-heading font-bold text-2xl text-primary mb-3">Upload your current garden (Optional)</h2>
+                            <p class="text-gray-600 mb-6">Helps AI create more accurate designs, but not required</p>
+                            
+                            <div class="mb-6">
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-stone hover:border-accent transition cursor-pointer" id="dropZone">
+                                    <i class="fas fa-cloud-upload-alt text-6xl text-gray-400 mb-4"></i>
+                                    <p class="text-lg font-semibold text-gray-700 mb-2">Drag & drop your photo here</p>
+                                    <p class="text-sm text-gray-500 mb-4">or click to browse</p>
+                                    <input 
+                                        type="file" 
+                                        id="gardenPhoto" 
+                                        accept="image/*,video/*"
+                                        class="hidden"
+                                    >
+                                    <button type="button" onclick="document.getElementById('gardenPhoto').click()" class="bg-accent text-white px-6 py-3 rounded-full font-semibold hover:bg-opacity-90 transition">
+                                        Choose File
+                                    </button>
+                                </div>
+                                <div id="photoPreview" class="hidden mt-4">
+                                    <p class="text-sm text-green-600 flex items-center">
+                                        <i class="fas fa-check-circle mr-2"></i>
+                                        <span id="photoName"></span>
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-blue-50 border-l-4 border-primary p-4 mb-6">
+                                <p class="text-sm text-gray-700">
+                                    <i class="fas fa-info-circle text-primary mr-2"></i>
+                                    <strong>Tip:</strong> For best results, take a photo from the main viewpoint where you'll enjoy the garden most
+                                </p>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button onclick="prevStep()" class="px-8 py-4 rounded-full text-lg font-semibold border-2 border-gray-300 hover:border-primary transition">
+                                    <i class="fas fa-arrow-left mr-2"></i> Back
+                                </button>
+                                <button onclick="nextStep()" class="flex-1 bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition shadow-lg">
+                                    Continue <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 5: Final Details & Email -->
+                        <div id="step5" class="step-container hidden step-transition">
+                            <h2 class="font-heading font-bold text-2xl text-primary mb-3">Almost there! Final details</h2>
+                            <p class="text-gray-600 mb-6">Where should we send your AI-generated designs?</p>
+                            
+                            <!-- Garden Size -->
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-semibold mb-2">Garden Size (Optional)</label>
+                                <input 
+                                    type="text" 
+                                    id="gardenSize" 
+                                    class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                                    placeholder="e.g., 50 sqm, 200 square meters, 20x10 meters..."
+                                >
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <i class="fas fa-ruler-combined mr-1"></i>
+                                    Helps us provide accurate pricing for implementation
+                                </p>
+                            </div>
+                            
+                            <!-- Email -->
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-semibold mb-2">Email Address *</label>
+                                <input 
+                                    type="email" 
+                                    id="email" 
+                                    required
+                                    class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                                    placeholder="your@email.com"
+                                >
+                            </div>
+                            
+                            <!-- Phone (Optional) -->
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-semibold mb-2">Phone Number (Optional)</label>
+                                <input 
+                                    type="tel" 
+                                    id="phone" 
+                                    class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                                    placeholder="07444 887813"
+                                >
+                                <p class="text-xs text-gray-500 mt-1">
+                                    We'll only call if you want to discuss the design
+                                </p>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button onclick="prevStep()" class="px-8 py-4 rounded-full text-lg font-semibold border-2 border-gray-300 hover:border-primary transition">
+                                    <i class="fas fa-arrow-left mr-2"></i> Back
+                                </button>
+                                <button onclick="submitDesign()" class="flex-1 bg-gradient-to-r from-accent to-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl transition">
+                                    Generate AI Design <i class="fas fa-magic ml-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Loading State -->
+                        <div id="loadingState" class="step-container hidden text-center py-12">
+                            <div class="animate-spin rounded-full h-20 w-20 border-b-4 border-accent mx-auto mb-6"></div>
+                            <h3 class="font-heading font-bold text-2xl text-primary mb-3">Generating Your AI Designs...</h3>
+                            <p class="text-gray-600 mb-4">Our AI is creating 3 unique concepts for your garden</p>
+                            <div class="max-w-md mx-auto bg-stone rounded-xl p-4">
+                                <p class="text-sm text-gray-600">
+                                    <i class="fas fa-robot text-accent mr-2"></i>
+                                    This usually takes 2-3 minutes
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Success Result -->
+                        <div id="successResult" class="step-container hidden text-center py-12">
+                            <div class="bg-green-100 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-6">
+                                <i class="fas fa-check text-green-600 text-4xl"></i>
+                            </div>
+                            <h3 class="font-heading font-bold text-3xl text-primary mb-4">Designs Sent Successfully!</h3>
+                            <p class="text-lg text-gray-700 mb-6">
+                                Check your email for 3 stunning AI-generated garden designs
+                            </p>
+                            <div class="bg-stone rounded-xl p-6 max-w-md mx-auto mb-6">
+                                <p class="text-gray-600 mb-4">
+                                    <i class="fas fa-envelope text-accent mr-2"></i>
+                                    Designs sent to: <strong id="confirmEmail"></strong>
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    Didn't receive it? Check your spam folder or contact us at 07444 887813
+                                </p>
+                            </div>
+                            <a href="quote.html" class="inline-block bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition shadow-lg">
+                                Get Instant Quote <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                        
+                    </div>
                 </div>
                 
-                <form id="designForm">
-                    <!-- Image Upload -->
-                    <div class="mb-6">
-                        <label class="block text-primary font-heading font-bold text-lg mb-2" for="designImage">
-                            Upload Your Current Garden *
-                        </label>
-                        <div class="relative">
-                            <input 
-                                type="file" 
-                                id="designImage" 
-                                name="designImage"
-                                accept="image/*"
-                                required
-                                class="w-full px-5 py-4 rounded-xl border-2 border-dashed border-gray-300 focus:outline-none focus:border-accent transition-colors bg-stone cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-opacity-90"
-                            >
+                <!-- Right: Summary Panel -->
+                <div class="md:col-span-1">
+                    <div class="bg-stone rounded-2xl p-6 sticky top-32">
+                        <h3 class="font-heading font-bold text-xl text-primary mb-4">
+                            <i class="fas fa-clipboard-list mr-2"></i>Your Design Summary
+                        </h3>
+                        <div id="summaryContent">
+                            <p class="text-gray-500 text-sm italic">Select features to see your summary...</p>
                         </div>
-                        <p class="text-gray-500 text-xs mt-2">
-                            <i class="fas fa-info-circle"></i> Required - Upload a photo of your current garden space
-                        </p>
-                    </div>
-                    
-                    <!-- Design Style (Free Text) -->
-                    <div class="mb-6">
-                        <label class="block text-primary font-heading font-bold text-lg mb-2" for="designStyle">
-                            Preferred Style (Optional)
-                        </label>
-                        <input 
-                            type="text" 
-                            id="designStyle" 
-                            name="designStyle"
-                            class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
-                            placeholder="e.g., Modern minimalist, Tropical paradise, Low-maintenance, Cottage garden..."
-                        >
-                        <p class="text-gray-500 text-xs mt-2">
-                            <i class="fas fa-lightbulb"></i> Describe your ideal garden style in your own words
-                        </p>
-                    </div>
-                    
-                    <!-- Garden Size -->
-                    <div class="mb-6">
-                        <label class="block text-primary font-heading font-bold text-lg mb-2" for="gardenSize">
-                            Garden Size (Optional)
-                        </label>
-                        <input 
-                            type="text" 
-                            id="gardenSize" 
-                            name="gardenSize"
-                            class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
-                            placeholder="e.g., 50 sqm, 200 square meters, 20x10 meters..."
-                        >
-                        <p class="text-gray-500 text-xs mt-2">
-                            <i class="fas fa-ruler-combined"></i> Helps us provide accurate pricing for implementing the design
-                        </p>
-                    </div>
-                    
-                    <!-- Email for Design -->
-                    <div class="mb-6">
-                        <label class="block text-primary font-heading font-bold text-lg mb-2" for="designEmail">
-                            Email Address *
-                        </label>
-                        <input 
-                            type="email" 
-                            id="designEmail" 
-                            name="designEmail"
-                            required
-                            class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
-                            placeholder="your@email.com"
-                        >
-                    </div>
-                    
-                    <!-- Submit Button -->
-                    <button 
-                        type="submit"
-                        class="w-full bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition shadow-lg"
-                    >
-                        Generate AI Design
-                    </button>
-                    
-                    <!-- Design Result -->
-                    <div id="designResult" class="hidden mt-8 p-6 bg-stone rounded-xl">
-                        <h3 class="font-heading font-bold text-2xl text-primary mb-4">Your AI-Generated Design</h3>
-                        <div id="designDetails"></div>
-                    </div>
-                </form>
-            </div>
-            
-            <!-- Feature Benefits -->
-            <div class="mt-12 grid md:grid-cols-3 gap-6">
-                <div class="text-center">
-                    <div class="bg-white rounded-xl p-6 shadow-md">
-                        <i class="fas fa-magic text-accent text-4xl mb-3"></i>
-                        <h3 class="font-heading font-bold text-lg text-primary mb-2">AI-Powered</h3>
-                        <p class="text-gray-600">Advanced algorithms create stunning, realistic designs</p>
                     </div>
                 </div>
-                <div class="text-center">
-                    <div class="bg-white rounded-xl p-6 shadow-md">
-                        <i class="fas fa-bolt text-accent text-4xl mb-3"></i>
-                        <h3 class="font-heading font-bold text-lg text-primary mb-2">Instant Results</h3>
-                        <p class="text-gray-600">Get your design concept in just minutes</p>
-                    </div>
-                </div>
-                <div class="text-center">
-                    <div class="bg-white rounded-xl p-6 shadow-md">
-                        <i class="fas fa-palette text-accent text-4xl mb-3"></i>
-                        <h3 class="font-heading font-bold text-lg text-primary mb-2">Multiple Styles</h3>
-                        <p class="text-gray-600">Choose from modern, tropical, cottage, and more</p>
-                    </div>
-                </div>
+                
             </div>
         </div>
     </section>
     
     <!-- Footer -->
-    <footer class="bg-primary text-white py-12 px-4">
-        <div class="container mx-auto max-w-6xl">
-            <div class="grid md:grid-cols-3 gap-8 mb-8">
-                <div>
-                    <div class="flex items-center space-x-2 mb-4">
-                        <i class="fas fa-seedling text-3xl"></i>
-                        <span class="font-heading font-bold text-2xl">Premium Landscapes</span>
-                    </div>
-                    <p class="text-gray-300">Transforming outdoor spaces with AI-powered design and instant quotes.</p>
-                </div>
-                
-                <div>
-                    <h4 class="font-heading font-bold text-lg mb-4">Quick Links</h4>
-                    <ul class="space-y-2">
-                        <li><a href="index.html#about" class="text-gray-300 hover:text-white transition">About Us</a></li>
-                        <li><a href="index.html#services" class="text-gray-300 hover:text-white transition">Services</a></li>
-                        <li><a href="quote.html" class="text-gray-300 hover:text-white transition">Instant Quote</a></li>
-                        <li><a href="design.html" class="text-gray-300 hover:text-white transition">AI Design</a></li>
-                        <li><a href="blog.html" class="text-gray-300 hover:text-white transition">Blog</a></li>
-                        <li><a href="index.html#contact" class="text-gray-300 hover:text-white transition">Contact</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h4 class="font-heading font-bold text-lg mb-4">Contact Info</h4>
-                    <ul class="space-y-2 text-gray-300">
-                        <li><i class="fas fa-phone mr-2"></i> 0800 123 4567</li>
-                        <li><i class="fas fa-envelope mr-2"></i> info@premiumlandscapes.co.uk</li>
-                        <li><i class="fas fa-map-marker-alt mr-2"></i> London, UK</li>
-                    </ul>
-                </div>
+    <footer class="bg-white border-t-2 border-gray-200 py-12 px-4">
+        <div class="container mx-auto text-center">
+            <div class="flex items-center justify-center mb-6">
+                <img src="images/logo.png" alt="Premium Landscapes" class="h-24">
             </div>
-            
-            <div class="border-t border-gray-600 pt-6 text-center text-gray-300">
-                <p>&copy; 2025 Premium Landscapes. All rights reserved.</p>
+            <p class="text-gray-600 mb-6">
+                Professional landscaping services with AI-powered quotes and designs.
+            </p>
+            <div class="flex justify-center space-x-6 mb-6">
+                <a href="#about" class="text-gray-700 hover:text-primary transition">About</a>
+                <a href="#services" class="text-gray-700 hover:text-primary transition">Services</a>
+                <a href="quote.html" class="text-gray-700 hover:text-primary transition">Quote</a>
+                <a href="design.html" class="text-gray-700 hover:text-primary transition">AI Design</a>
+                <a href="blog.html" class="text-gray-700 hover:text-primary transition">Blog</a>
+                <a href="#contact" class="text-gray-700 hover:text-primary transition">Contact</a>
             </div>
+            <p class="text-sm text-gray-500">
+                &copy; 2025 <span id="copyrightCompanyName">Premium Landscapes</span>. All rights reserved.
+            </p>
         </div>
     </footer>
     
     <script src="scripts/config.js"></script>
+    <script src="scripts/design-engine.js"></script>
     <script src="scripts/main.js"></script>
 </body>
 </html>
