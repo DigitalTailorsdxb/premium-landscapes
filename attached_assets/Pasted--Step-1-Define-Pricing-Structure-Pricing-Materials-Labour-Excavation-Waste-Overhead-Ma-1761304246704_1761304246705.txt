@@ -1,0 +1,91 @@
+🧱 Step 1: Define Pricing Structure
+
+Pricing = Materials + Labour + Excavation + Waste + Overhead/Markup
+
+Category	Description	How to Gather / Store Data
+Material Costs	Price per m² (porcelain paving, decking, turf, fencing, etc.)	From your supplier sheet (Google Sheet → n8n read node)
+Labour Costs	Cost per m² or per hour (installation, joinery, electrical, etc.)	Based on crew daily rates or averages per trade
+Excavation / Base Prep	Cost per m³ of soil removed + hardcore, MOT, sand base	Add to every new hard surface area
+Waste & Skip	Price per skip or tonne (based on local disposal rates)	Use postcode-based modifier
+Overhead + Margin	Admin, transport, project management, profit	Fixed % markup (e.g. 25-30 %)
+⚙️ Step 2: n8n Pricing Logic (Data Flow)
+
+Webhook Node (Form Input)
+User submits:
+
+Area size(s)
+
+Material types
+
+Features (decking / lighting / turf / fence)
+
+Postcode
+
+OpenAI Node (Optional)
+Parse free-text like
+
+“Porcelain patio 55 sqm, artificial turf 25 sqm, fencing 25 m”
+into structured JSON fields.
+
+Google Sheet Lookup Node
+Retrieve cost data for each feature:
+
+Material | Unit | MatCost | LabourCost | Excavation | Waste | RegionFactor
+Porcelain Paving | m² | 65 | 45 | 12 | 8 | 1.05
+Artificial Turf | m² | 30 | 20 | 6 | 4 | 1.00
+Composite Decking | m² | 80 | 55 | 12 | 6 | 1.10
+Fence Panel | metre | 20 | 15 | 0 | 2 | 1.00
+
+
+Function Node (Calculation)
+Multiply each item’s area/length by cost components and region factor.
+Sum totals → add overhead %.
+Example formula:
+
+total = (MatCost + LabourCost + Excavation + Waste) * Area * RegionFactor
+final = total * 1.25  // 25% markup
+
+
+HTML Template → PDF Node
+Generate a branded quote with:
+
+Breakdown table
+
+Total range (Low / High)
+
+Confidence score
+
+Email / WhatsApp Node
+Deliver PDF instantly.
+Log project in Airtable for lead management.
+
+📊 Step 3: Pricing Example (Average 2025 UK Rates)
+Feature	Area/Length	All-in Rate (mat + lab + base)	Subtotal
+Porcelain Patio	55 m²	£120/m²	£6,600
+Artificial Turf	25 m²	£70/m²	£1,750
+Fencing (Timber Panels)	25 m	£70/m	£1,750
+Composite Decking	15 m²	£135/m²	£2,025
+Lighting & Electrics	8 uplights	£80 each	£640
+Excavation & Waste	3 skips + base prep	£600/skip avg	£1,800
+
+Estimated Total: £14,500 – £16,000 (all-in, inc. labour + materials + waste + markup)
+
+🧠 Step 4: Smart Enhancements
+
+AI Area Estimation – from photo: use GPT-4 Vision node to infer rough m², reducing user input friction.
+
+Regional Pricing Adjustment – add 5-10 % premium for South East/London postcodes.
+
+Material Swap Simulation – offer alternatives instantly (“Porcelain → Sandstone saves £900”).
+
+Confidence Meter – rate quote accuracy (e.g., “92 % accurate based on 64 similar jobs”).
+
+🧰 Step 5: Implementation Options
+
+If you upload your pricing document (labour + materials + base rates), I can:
+
+Convert it into a Google Sheet schema ready for n8n lookups, and
+
+Build the n8n workflow JSON including all logic (input → parse → calculate → PDF → email).
+
+Alternatively, if you want me to price this exact before/after project using verified 2025 UK average landscaping rates, I can calculate a full detailed estimate table for it right now.

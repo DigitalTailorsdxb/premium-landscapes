@@ -481,85 +481,242 @@ async function submitQuote() {
     document.getElementById('step5').classList.add('hidden');
     document.getElementById('loadingState').classList.remove('hidden');
     
-    // Simulate API call (replace with actual webhook)
-    console.log('Quote Data:', quoteData);
+    // ============================================================================
+    // WEBHOOK INTEGRATION POINT - Ready for Make.com/n8n Connection
+    // ============================================================================
     
-    // Demo: Show quote after 2 seconds
+    // Structure data for pricing workflow
+    const webhookPayload = prepareWebhookPayload();
+    console.log('Quote Data for Webhook:', webhookPayload);
+    
+    // Demo mode: Show quote after 2 seconds
     setTimeout(() => {
         showQuoteResult();
     }, 2000);
     
-    // Real implementation:
+    // ============================================================================
+    // PRODUCTION IMPLEMENTATION - Uncomment when ready to connect
+    // ============================================================================
+    // 
+    // Step 1: Set your Make.com webhook URL in scripts/config.js:
+    //   quoteWebhookUrl: 'https://hook.eu1.make.com/your-webhook-id'
+    //
+    // Step 2: Uncomment the code below to enable live pricing
+    //
     // const webhookUrl = window.CONFIG?.quoteWebhookUrl || 'https://your-make-webhook-url.com';
-    // const formData = new FormData();
-    // formData.append('features', JSON.stringify(quoteData.features));
-    // formData.append('productDetails', JSON.stringify(quoteData.productDetails));
-    // formData.append('additionalNotes', quoteData.additionalNotes);
-    // formData.append('area', quoteData.area);
-    // formData.append('budget', quoteData.budget);
-    // formData.append('postcode', quoteData.postcode);
-    // formData.append('email', quoteData.email);
-    // formData.append('phone', quoteData.phone);
-    // formData.append('aiDesign', quoteData.aiDesign);
-    // quoteData.files.forEach((file, index) => {
-    //     formData.append(`file${index}`, file);
-    // });
-    
+    // 
     // try {
     //     const response = await fetch(webhookUrl, {
     //         method: 'POST',
-    //         body: formData
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify(webhookPayload)
     //     });
+    //     
     //     const result = await response.json();
+    //     
+    //     // Expected response format from Make.com:
+    //     // {
+    //     //   success: true,
+    //     //   quoteId: "Q-2025-001",
+    //     //   breakdown: [...],
+    //     //   totalLow: 8500,
+    //     //   totalHigh: 12500,
+    //     //   confidence: 92,
+    //     //   pdfUrl: "https://...",
+    //     //   estimatedDays: 5
+    //     // }
+    //     
     //     showQuoteResult(result);
+    //     
     // } catch (error) {
     //     console.error('Error submitting quote:', error);
-    //     alert('There was an error processing your quote. Please try again.');
+    //     alert('There was an error processing your quote. Please try again or contact us at 07444887813');
     //     document.getElementById('loadingState').classList.add('hidden');
     //     document.getElementById('step5').classList.remove('hidden');
     // }
 }
 
+// ============================================================================
+// WEBHOOK PAYLOAD PREPARATION
+// Structures data for Make.com/n8n pricing workflow
+// ============================================================================
+function prepareWebhookPayload() {
+    // Format products with structured data for pricing lookups
+    const products = quoteData.features.map(feature => {
+        const featureName = feature.charAt(0).toUpperCase() + feature.slice(1).replace('-', ' ');
+        const details = quoteData.productDetails[feature] || '';
+        
+        return {
+            type: feature,              // e.g., "patio", "decking", "turf"
+            name: featureName,          // e.g., "Patio", "Decking", "Lawn/Turf"
+            description: details,       // User's detailed description
+            area: quoteData.area || 0,  // Total area (can be parsed from description)
+        };
+    });
+    
+    // Upload files as base64 for AI analysis (optional)
+    const filePromises = quoteData.files.map(file => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve({
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                data: e.target.result  // base64 data URL
+            });
+            reader.readAsDataURL(file);
+        });
+    });
+    
+    return Promise.all(filePromises).then(filesData => {
+        return {
+            // Customer Information
+            customer: {
+                email: quoteData.email,
+                phone: quoteData.phone || '',
+                postcode: quoteData.postcode,
+            },
+            
+            // Project Details (for Google Sheets lookup & GPT parsing)
+            project: {
+                products: products,
+                additionalNotes: quoteData.additionalNotes || '',
+                totalArea: quoteData.area,
+                budget: quoteData.budget || '',
+            },
+            
+            // Files for AI Vision Analysis (optional - GPT-4 Vision)
+            files: filesData,
+            
+            // Options
+            options: {
+                aiDesign: quoteData.aiDesign,
+                requestedAIDesign: quoteData.aiDesign && filesData.length > 0,
+            },
+            
+            // Metadata
+            metadata: {
+                timestamp: new Date().toISOString(),
+                source: 'website',
+                formVersion: '2.0',
+                confidence: calculateConfidenceScore(),
+            }
+        };
+    });
+}
+
+// ============================================================================
+// CONFIDENCE SCORE CALCULATION
+// Based on data completeness for accurate pricing
+// ============================================================================
+function calculateConfidenceScore() {
+    let score = 50; // Base score
+    
+    // Add points for data completeness
+    if (quoteData.features.length > 0) score += 10;
+    if (quoteData.area && quoteData.area > 0) score += 15;
+    if (quoteData.postcode) score += 10;
+    if (quoteData.files.length > 0) score += 15; // Photos help AI estimate
+    
+    // Add points for detailed descriptions
+    const hasDetailedDescriptions = quoteData.features.some(feature => {
+        const details = quoteData.productDetails[feature];
+        return details && details.length > 20;
+    });
+    if (hasDetailedDescriptions) score += 10;
+    
+    return Math.min(score, 95); // Cap at 95% (never 100% without site visit)
+}
+
+// ============================================================================
+// DISPLAY QUOTE RESULT
+// Handles both demo data and real webhook responses
+// ============================================================================
 function showQuoteResult(data) {
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('quoteResult').classList.remove('hidden');
     
-    // Demo breakdown
     const breakdown = document.getElementById('quoteBreakdown');
-    breakdown.innerHTML = `
-        <div class="flex justify-between items-center py-2 border-b">
-            <span class="text-gray-700">Patio (Porcelain 40m²)</span>
-            <span class="font-semibold">£3,200 - £4,800</span>
-        </div>
-        <div class="flex justify-between items-center py-2 border-b">
-            <span class="text-gray-700">Artificial Turf (25m²)</span>
-            <span class="font-semibold">£1,200 - £2,400</span>
-        </div>
-        <div class="flex justify-between items-center py-2 border-b">
-            <span class="text-gray-700">Labour & Installation</span>
-            <span class="font-semibold">£3,100 - £4,300</span>
-        </div>
-        <div class="flex justify-between items-center py-2 border-b">
-            <span class="text-gray-700">Materials Delivery</span>
-            <span class="font-semibold">£500 - £700</span>
-        </div>
-        <div class="flex justify-between items-center py-2 border-b">
-            <span class="text-gray-700">Waste Removal</span>
-            <span class="font-semibold">£300 - £500</span>
-        </div>
-        <div class="flex justify-between items-center py-3 font-bold text-lg">
-            <span class="text-primary">Total (inc. VAT)</span>
-            <span class="text-primary">£8,500 - £12,500</span>
-        </div>
-    `;
+    
+    // If real data from webhook, use it
+    if (data && data.breakdown && data.totalLow && data.totalHigh) {
+        // Real webhook response
+        let breakdownHTML = '';
+        data.breakdown.forEach(item => {
+            breakdownHTML += `
+                <div class="flex justify-between items-center py-2 border-b">
+                    <span class="text-gray-700">${item.description}</span>
+                    <span class="font-semibold">£${item.low.toLocaleString()} - £${item.high.toLocaleString()}</span>
+                </div>
+            `;
+        });
+        
+        breakdownHTML += `
+            <div class="flex justify-between items-center py-3 font-bold text-lg">
+                <span class="text-primary">Total (inc. VAT)</span>
+                <span class="text-primary">£${data.totalLow.toLocaleString()} - £${data.totalHigh.toLocaleString()}</span>
+            </div>
+        `;
+        
+        breakdown.innerHTML = breakdownHTML;
+        
+    } else {
+        // Demo mode - show example breakdown
+        breakdown.innerHTML = `
+            <div class="flex justify-between items-center py-2 border-b">
+                <span class="text-gray-700">Materials & Installation</span>
+                <span class="font-semibold">£6,500 - £9,200</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b">
+                <span class="text-gray-700">Base Preparation & Excavation</span>
+                <span class="font-semibold">£1,200 - £1,800</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b">
+                <span class="text-gray-700">Waste Removal (3 skips)</span>
+                <span class="font-semibold">£600 - £900</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b">
+                <span class="text-gray-700">Project Management & Overhead</span>
+                <span class="font-semibold">£800 - £1,200</span>
+            </div>
+            <div class="flex justify-between items-center py-3 font-bold text-lg">
+                <span class="text-primary">Total (inc. VAT)</span>
+                <span class="text-primary">£9,100 - £13,100</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-2 text-center">
+                <i class="fas fa-info-circle mr-1"></i>
+                Demo pricing - Connect to Make.com for accurate regional quotes
+            </p>
+        `;
+    }
     
     // Scroll to result
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// ============================================================================
+// EMAIL QUOTE FUNCTION
+// Triggers Make.com webhook to send PDF via email
+// ============================================================================
 function emailQuote() {
     alert(`Quote will be emailed to: ${quoteData.email}\n\nIn production, this will trigger an automated email with PDF attachment.`);
     console.log('Email quote to:', quoteData.email);
     
-    // Real implementation would call Make.com webhook to send email
+    // ============================================================================
+    // PRODUCTION IMPLEMENTATION - Email webhook
+    // ============================================================================
+    // const emailWebhookUrl = window.CONFIG?.emailWebhookUrl || 'https://hook.eu1.make.com/your-email-webhook';
+    // 
+    // fetch(emailWebhookUrl, {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({
+    //         email: quoteData.email,
+    //         quoteData: quoteData,
+    //         sendPDF: true,
+    //         timestamp: new Date().toISOString()
+    //     })
+    // });
 }

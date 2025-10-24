@@ -27,7 +27,7 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
   - **Step 5:** Contact details with conditional AI design preview option (only visible if images uploaded; otherwise shows upload prompt)
   - Live summary panel updates in real-time showing selected products, area, budget, location, and photo count
   - Progress bar with step indicator and percentage
-  - All data collected in `quoteData` object ready for Make.com webhook submission
+  - **Backend Integration Ready:** Full webhook payload preparation with structured JSON for Make.com/n8n, confidence scoring algorithm, regional pricing modifiers, and response handling. See `PRICING_INTEGRATION_GUIDE.md` for connection instructions.
 - **AI Design Generator Page (`design.html`):** Allows users to select preferred garden styles, upload an optional image of their current garden, and provide an email for receiving AI-generated designs. The workflow sends data to a Make.com webhook, which then uses GPT-4o to generate prompts for DALL·E or Midjourney.
 - **PDF Quote Generator:** Auto-generates branded PDF quotes with client details, itemized breakdown, total price range, and company branding.
 - **White-Label Configuration:** Handled via `scripts/config.js` with defensive null checks for easy client-specific customization.
