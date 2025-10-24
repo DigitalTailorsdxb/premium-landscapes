@@ -9,6 +9,7 @@ const designData = {
     styleDescription: '',
     photo: null,
     gardenSize: '',
+    budget: '',
     email: '',
     phone: ''
 };
@@ -40,9 +41,25 @@ function setupFeatureCards() {
     });
 }
 
-// Style description update (Step 3)
+// Style description update (Step 2)
 function updateStyleDescription(value) {
     designData.styleDescription = value;
+    updateSummary();
+}
+
+// Budget selection
+function selectBudget(button) {
+    // Remove selection from all budget options
+    document.querySelectorAll('.budget-option').forEach(opt => {
+        opt.classList.remove('border-accent', 'bg-blue-50');
+        opt.classList.add('border-gray-200');
+    });
+    
+    // Select this option
+    button.classList.remove('border-gray-200');
+    button.classList.add('border-accent', 'bg-blue-50');
+    
+    designData.budget = button.getAttribute('data-budget');
     updateSummary();
 }
 
@@ -190,6 +207,22 @@ function updateSummary() {
         `;
     }
     
+    // Budget
+    if (designData.budget) {
+        let budgetText = '';
+        switch(designData.budget) {
+            case '<5000': budgetText = 'Under £5k'; break;
+            case '5000-10000': budgetText = '£5k - £10k'; break;
+            case '10000-20000': budgetText = '£10k - £20k'; break;
+            case '>20000': budgetText = '£20k+'; break;
+        }
+        html += `
+            <div class="summary-item bg-white px-3 py-2 rounded-lg mt-2">
+                <p class="text-sm"><i class="fas fa-pound-sign text-accent mr-2"></i>Budget: <strong>${budgetText}</strong></p>
+            </div>
+        `;
+    }
+    
     if (html === '') {
         html = '<p class="text-gray-500 text-sm italic">Select features to see your summary...</p>';
     }
@@ -219,6 +252,8 @@ async function submitDesign() {
         designData.gardenSize = sizeInput.value.trim();
     }
     
+    // Budget is already saved in designData via selectBudget function
+    
     // Hide form, show loading
     document.getElementById('step4').classList.add('hidden');
     document.getElementById('loadingState').classList.remove('hidden');
@@ -232,7 +267,8 @@ async function submitDesign() {
         design: {
             features: designData.features,
             styleDescription: designData.styleDescription,
-            gardenSize: designData.gardenSize
+            gardenSize: designData.gardenSize,
+            budget: designData.budget
         },
         photo: null, // Will be populated with base64 if photo exists
         metadata: {
