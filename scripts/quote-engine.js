@@ -337,11 +337,6 @@ function nextStep() {
         return;
     }
     
-    if (currentStep === 2) {
-        // Build product detail fields for the first time when entering step 2
-        buildProductDetailFields();
-    }
-    
     if (currentStep === 4) {
         const postcodeInput = document.getElementById('postcode');
         if (!postcodeInput.value.trim()) {
@@ -352,17 +347,22 @@ function nextStep() {
         quoteData.postcode = postcodeInput.value.trim();
     }
     
-    if (currentStep === 5) {
-        // Update AI design visibility before showing step 5
-        updateAIDesignVisibility();
-    }
-    
     // Hide current step
     document.getElementById(`step${currentStep}`).classList.add('hidden');
     
     // Show next step
     currentStep++;
     document.getElementById(`step${currentStep}`).classList.remove('hidden');
+    
+    // Build product detail fields when entering step 2
+    if (currentStep === 2) {
+        buildProductDetailFields();
+    }
+    
+    // Update AI design visibility when entering step 5
+    if (currentStep === 5) {
+        updateAIDesignVisibility();
+    }
     
     // Update progress
     updateProgress();
