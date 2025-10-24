@@ -2,12 +2,10 @@
 // Handles multi-step form, feature selection, and design generation
 
 let currentStep = 1;
-const totalSteps = 5;
+const totalSteps = 4;
 
 const designData = {
     features: [],
-    featureDetails: {},
-    generalNotes: '',
     styleDescription: '',
     photo: null,
     gardenSize: '',
@@ -109,18 +107,7 @@ function nextStep() {
         return;
     }
     
-    if (currentStep === 2) {
-        // Generate feature detail fields for step 2
-        generateFeatureDetailFields();
-        
-        // Save general notes
-        const generalNotesField = document.getElementById('generalNotes');
-        if (generalNotesField) {
-            designData.generalNotes = generalNotesField.value;
-        }
-    }
-    
-    if (currentStep === 3 && !designData.styleDescription.trim()) {
+    if (currentStep === 2 && !designData.styleDescription.trim()) {
         alert('Please describe your desired garden style');
         return;
     }
@@ -146,43 +133,6 @@ function prevStep() {
     
     updateProgress();
     window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// Generate dynamic feature detail fields (Step 2)
-function generateFeatureDetailFields() {
-    const container = document.getElementById('featureDetailFields');
-    container.innerHTML = '';
-    
-    if (designData.features.length === 0) {
-        container.innerHTML = '<p class="text-gray-500 italic">No features selected</p>';
-        return;
-    }
-    
-    designData.features.forEach(feature => {
-        const featureName = feature.charAt(0).toUpperCase() + feature.slice(1).replace('-', ' ');
-        
-        const fieldHTML = `
-            <div class="feature-detail-item bg-white border-2 border-gray-200 rounded-xl p-4">
-                <label class="block text-gray-700 font-semibold mb-2">
-                    <i class="fas fa-leaf text-accent mr-2"></i>${featureName}
-                </label>
-                <textarea 
-                    id="detail-${feature}" 
-                    rows="2"
-                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-accent transition-colors text-base"
-                    placeholder="e.g., Size, materials, specific requirements..."
-                    oninput="updateFeatureDetail('${feature}', this.value)"
-                >${designData.featureDetails[feature] || ''}</textarea>
-            </div>
-        `;
-        
-        container.innerHTML += fieldHTML;
-    });
-}
-
-function updateFeatureDetail(feature, value) {
-    designData.featureDetails[feature] = value;
-    updateSummary();
 }
 
 // Update progress bar
@@ -270,7 +220,7 @@ async function submitDesign() {
     }
     
     // Hide form, show loading
-    document.getElementById('step5').classList.add('hidden');
+    document.getElementById('step4').classList.add('hidden');
     document.getElementById('loadingState').classList.remove('hidden');
     
     // Prepare webhook payload
@@ -281,8 +231,6 @@ async function submitDesign() {
         },
         design: {
             features: designData.features,
-            featureDetails: designData.featureDetails,
-            generalNotes: designData.generalNotes,
             styleDescription: designData.styleDescription,
             gardenSize: designData.gardenSize
         },

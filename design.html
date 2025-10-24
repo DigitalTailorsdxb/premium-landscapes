@@ -133,7 +133,7 @@
                 AI Garden Design Generator
             </h1>
             <p class="text-xl text-white/90 mb-2">
-                Get 3 stunning AI-generated design concepts in minutes. 100% free, no obligation.
+                Transform your vision into stunning AI-generated designs in minutes. 100% free, no obligation.
             </p>
             <div class="flex items-center justify-center space-x-2 text-sm">
                 <i class="fas fa-robot"></i>
@@ -146,11 +146,11 @@
     <div class="sticky top-20 z-40 bg-white shadow-sm">
         <div class="container mx-auto max-w-6xl px-4 py-4">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-semibold text-gray-600" id="progressText">Step 1 of 5</span>
-                <span class="text-xs text-gray-500" id="progressPercent">20%</span>
+                <span class="text-sm font-semibold text-gray-600" id="progressText">Step 1 of 4</span>
+                <span class="text-xs text-gray-500" id="progressPercent">25%</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2">
-                <div id="progressBar" class="bg-gradient-to-r from-primary to-accent h-2 rounded-full" style="width: 20%"></div>
+                <div id="progressBar" class="bg-gradient-to-r from-primary to-accent h-2 rounded-full" style="width: 25%"></div>
             </div>
         </div>
     </div>
@@ -225,38 +225,8 @@
                             </button>
                         </div>
                         
-                        <!-- Step 2: Feature Details -->
+                        <!-- Step 2: Style & Vision -->
                         <div id="step2" class="step-container hidden step-transition">
-                            <h2 class="font-heading font-bold text-2xl text-primary mb-3">Describe what you want for each feature</h2>
-                            <p class="text-gray-600 mb-6">The more detail, the better the AI design</p>
-                            
-                            <!-- Dynamic Feature Detail Fields -->
-                            <div id="featureDetailFields" class="space-y-4 mb-6"></div>
-                            
-                            <!-- General Design Notes -->
-                            <div class="mb-6">
-                                <label class="block text-gray-700 font-semibold mb-2">General Design Notes (Optional)</label>
-                                <p class="text-sm text-gray-600 mb-2">Overall vision, mood, must-haves, things to avoid</p>
-                                <textarea 
-                                    id="generalNotes" 
-                                    rows="4"
-                                    class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
-                                    placeholder="e.g., I want a relaxing space for entertaining, low maintenance, family-friendly, must work with existing oak tree..."
-                                ></textarea>
-                            </div>
-                            
-                            <div class="flex gap-3">
-                                <button onclick="prevStep()" class="px-8 py-4 rounded-full text-lg font-semibold border-2 border-gray-300 hover:border-primary transition">
-                                    <i class="fas fa-arrow-left mr-2"></i> Back
-                                </button>
-                                <button onclick="nextStep()" class="flex-1 bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition shadow-lg">
-                                    Continue <i class="fas fa-arrow-right ml-2"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Step 3: Style & Vision -->
-                        <div id="step3" class="step-container hidden step-transition">
                             <h2 class="font-heading font-bold text-2xl text-primary mb-3">Describe your dream garden style</h2>
                             <p class="text-gray-600 mb-6">Be as creative as you like - describe the look, feel, and atmosphere you want</p>
                             
@@ -292,8 +262,8 @@
                             </div>
                         </div>
                         
-                        <!-- Step 4: Photo Upload -->
-                        <div id="step4" class="step-container hidden step-transition">
+                        <!-- Step 3: Photo Upload -->
+                        <div id="step3" class="step-container hidden step-transition">
                             <h2 class="font-heading font-bold text-2xl text-primary mb-3">Upload your current garden (Optional)</h2>
                             <p class="text-gray-600 mb-6">Helps AI create more accurate designs, but not required</p>
                             
@@ -337,8 +307,8 @@
                             </div>
                         </div>
                         
-                        <!-- Step 5: Final Details & Email -->
-                        <div id="step5" class="step-container hidden step-transition">
+                        <!-- Step 4: Final Details & Email -->
+                        <div id="step4" class="step-container hidden step-transition">
                             <h2 class="font-heading font-bold text-2xl text-primary mb-3">Almost there! Final details</h2>
                             <p class="text-gray-600 mb-6">Where should we send your AI-generated designs?</p>
                             
@@ -413,7 +383,7 @@
                             </div>
                             <h3 class="font-heading font-bold text-3xl text-primary mb-4">Designs Sent Successfully!</h3>
                             <p class="text-lg text-gray-700 mb-6">
-                                Check your email for 3 stunning AI-generated garden designs
+                                Check your email for stunning AI-generated garden designs
                             </p>
                             <div class="bg-stone rounded-xl p-6 max-w-md mx-auto mb-6">
                                 <p class="text-gray-600 mb-4">
