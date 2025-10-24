@@ -203,35 +203,27 @@
                         
                         <!-- Step 2: Project Details -->
                         <div id="step2" class="step-container hidden step-transition">
-                            <h2 class="font-heading font-bold text-2xl text-primary mb-3">Tell us about your project</h2>
+                            <h2 class="font-heading font-bold text-2xl text-primary mb-3">Add details for each item</h2>
                             <p class="text-gray-600 mb-6">The more detail, the more accurate your quote</p>
                             
-                            <textarea 
-                                id="projectDescription" 
-                                rows="6"
-                                class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base mb-4"
-                                placeholder="Describe your project in detail...&#10;&#10;Examples:&#10;• Porcelain patio 40 sqm with outdoor seating area&#10;• Artificial turf 30 sqm to replace existing lawn&#10;• Composite decking 25 sqm with built-in planters&#10;• 20 meters of close-board fencing, 1.8m high"
-                            ></textarea>
+                            <!-- Dynamic Product Detail Fields -->
+                            <div id="productDetailFields" class="space-y-4 mb-6"></div>
                             
+                            <!-- Add More Products Button -->
+                            <button type="button" onclick="showAddProductMenu()" class="w-full mb-6 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-accent hover:text-accent transition flex items-center justify-center">
+                                <i class="fas fa-plus-circle mr-2"></i> Add Another Product
+                            </button>
+                            
+                            <!-- Additional Details Text Box -->
                             <div class="mb-6">
-                                <p class="text-sm font-semibold text-gray-700 mb-3">Quick examples (click to add):</p>
-                                <div class="flex flex-wrap gap-2">
-                                    <button type="button" class="example-chip text-sm bg-stone px-4 py-2 rounded-full hover:bg-accent hover:text-white transition" data-text="Indian sandstone patio 35 sqm">
-                                        <i class="fas fa-plus-circle mr-1"></i> Sandstone patio 35m²
-                                    </button>
-                                    <button type="button" class="example-chip text-sm bg-stone px-4 py-2 rounded-full hover:bg-accent hover:text-white transition" data-text="Composite decking 30 sqm">
-                                        <i class="fas fa-plus-circle mr-1"></i> Composite decking 30m²
-                                    </button>
-                                    <button type="button" class="example-chip text-sm bg-stone px-4 py-2 rounded-full hover:bg-accent hover:text-white transition" data-text="Artificial turf 25 sqm with drainage">
-                                        <i class="fas fa-plus-circle mr-1"></i> Artificial turf 25m²
-                                    </button>
-                                    <button type="button" class="example-chip text-sm bg-stone px-4 py-2 rounded-full hover:bg-accent hover:text-white transition" data-text="15 meters close-board fencing 1.8m high">
-                                        <i class="fas fa-plus-circle mr-1"></i> 15m fencing
-                                    </button>
-                                    <button type="button" class="example-chip text-sm bg-stone px-4 py-2 rounded-full hover:bg-accent hover:text-white transition" data-text="LED garden lighting system with 8 uplights">
-                                        <i class="fas fa-plus-circle mr-1"></i> LED lighting system
-                                    </button>
-                                </div>
+                                <label class="block text-gray-700 font-semibold mb-2">Additional Notes (Optional)</label>
+                                <p class="text-sm text-gray-600 mb-2">Any other details not related to specific products</p>
+                                <textarea 
+                                    id="additionalNotes" 
+                                    rows="4"
+                                    class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                                    placeholder="e.g., Need work completed by summer, sloped garden, existing tree to work around..."
+                                ></textarea>
                             </div>
                             
                             <div class="flex gap-3">
@@ -240,6 +232,42 @@
                                 </button>
                                 <button onclick="nextStep()" class="flex-1 bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition shadow-lg">
                                     Continue <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Add Product Modal -->
+                        <div id="addProductModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                            <div class="bg-white rounded-2xl p-6 max-w-md w-full">
+                                <h3 class="font-heading font-bold text-xl text-primary mb-4">Add Product</h3>
+                                <div class="grid grid-cols-2 gap-3 mb-4">
+                                    <button type="button" class="add-product-btn p-3 border-2 border-gray-200 rounded-xl hover:border-accent transition text-center" data-feature="patio">
+                                        <i class="fas fa-th-large text-2xl text-primary mb-1"></i>
+                                        <p class="font-semibold text-sm">Patio</p>
+                                    </button>
+                                    <button type="button" class="add-product-btn p-3 border-2 border-gray-200 rounded-xl hover:border-accent transition text-center" data-feature="decking">
+                                        <i class="fas fa-border-all text-2xl text-primary mb-1"></i>
+                                        <p class="font-semibold text-sm">Decking</p>
+                                    </button>
+                                    <button type="button" class="add-product-btn p-3 border-2 border-gray-200 rounded-xl hover:border-accent transition text-center" data-feature="turf">
+                                        <i class="fas fa-seedling text-2xl text-primary mb-1"></i>
+                                        <p class="font-semibold text-sm">Lawn/Turf</p>
+                                    </button>
+                                    <button type="button" class="add-product-btn p-3 border-2 border-gray-200 rounded-xl hover:border-accent transition text-center" data-feature="driveway">
+                                        <i class="fas fa-car text-2xl text-primary mb-1"></i>
+                                        <p class="font-semibold text-sm">Driveway</p>
+                                    </button>
+                                    <button type="button" class="add-product-btn p-3 border-2 border-gray-200 rounded-xl hover:border-accent transition text-center" data-feature="fencing">
+                                        <i class="fas fa-border-style text-2xl text-primary mb-1"></i>
+                                        <p class="font-semibold text-sm">Fencing</p>
+                                    </button>
+                                    <button type="button" class="add-product-btn p-3 border-2 border-gray-200 rounded-xl hover:border-accent transition text-center" data-feature="lighting">
+                                        <i class="fas fa-lightbulb text-2xl text-primary mb-1"></i>
+                                        <p class="font-semibold text-sm">Lighting</p>
+                                    </button>
+                                </div>
+                                <button type="button" onclick="closeAddProductMenu()" class="w-full px-4 py-3 border-2 border-gray-300 rounded-full hover:border-primary transition">
+                                    Cancel
                                 </button>
                             </div>
                         </div>
@@ -355,14 +383,34 @@
                                 <p class="text-xs text-gray-500 mt-2"><i class="fas fa-info-circle"></i> We'll only call if you request a site visit</p>
                             </div>
                             
-                            <div class="mb-6 bg-stone p-4 rounded-xl">
+                            <!-- AI Design Section - Shows if photos uploaded -->
+                            <div id="aiDesignSection" class="mb-6 bg-gradient-to-br from-accent to-primary bg-opacity-10 p-6 rounded-xl border-2 border-accent">
                                 <label class="flex items-start space-x-3 cursor-pointer">
                                     <input type="checkbox" id="aiDesign" class="mt-1 w-5 h-5 text-accent rounded">
                                     <div>
-                                        <p class="font-semibold text-gray-800">Generate AI design preview (Free)</p>
-                                        <p class="text-sm text-gray-600">See visual concepts of your new garden in 60 seconds</p>
+                                        <p class="font-semibold text-gray-900 flex items-center">
+                                            <i class="fas fa-magic text-accent mr-2"></i>
+                                            Generate AI design preview (Free)
+                                        </p>
+                                        <p class="text-sm text-gray-700 mt-1">See photorealistic visual concepts of your new garden in 60 seconds</p>
                                     </div>
                                 </label>
+                            </div>
+                            
+                            <!-- No Photo Uploaded - Prompt to Upload -->
+                            <div id="noPhotoPrompt" class="hidden mb-6 bg-stone p-6 rounded-xl border-2 border-dashed border-gray-300">
+                                <div class="text-center mb-4">
+                                    <i class="fas fa-camera text-4xl text-gray-400 mb-3"></i>
+                                    <h4 class="font-semibold text-gray-900 mb-2">Want AI design previews?</h4>
+                                    <p class="text-sm text-gray-600 mb-4">Upload a photo of your garden to unlock AI-generated design concepts</p>
+                                </div>
+                                <div class="border-2 border-dashed border-accent rounded-xl p-6 text-center hover:bg-white transition-colors cursor-pointer" id="dropZoneStep5">
+                                    <i class="fas fa-cloud-upload-alt text-3xl text-accent mb-2"></i>
+                                    <p class="text-gray-700 font-semibold mb-1">Upload Photo Now</p>
+                                    <p class="text-xs text-gray-500">Click to browse or drag & drop</p>
+                                    <input type="file" id="fileInputStep5" class="hidden" accept="image/*,video/*" multiple>
+                                </div>
+                                <div id="filePreviewStep5" class="mt-4 grid grid-cols-3 gap-3"></div>
                             </div>
                             
                             <div class="flex gap-3">

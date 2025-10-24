@@ -5,7 +5,8 @@ let currentStep = 1;
 const totalSteps = 5;
 let quoteData = {
     features: [],
-    description: '',
+    productDetails: {}, // Stores details for each product
+    additionalNotes: '',
     area: 40,
     budget: '',
     postcode: '',
@@ -15,13 +16,26 @@ let quoteData = {
     files: []
 };
 
+// Product examples for suggestions
+const productExamples = {
+    'patio': 'Indian sandstone patio 40 sqm',
+    'decking': 'Composite decking 30 sqm',
+    'turf': 'Artificial turf 25 sqm with drainage',
+    'driveway': 'Block paving driveway 50 sqm',
+    'fencing': '20 meters close-board fencing 1.8m high',
+    'lighting': 'LED garden lighting system with 10 uplights',
+    'full-redesign': 'Complete garden transformation',
+    'other': 'Additional features'
+};
+
 // Initialize quote engine
 document.addEventListener('DOMContentLoaded', function() {
     initializeFeatureCards();
-    initializeExampleChips();
     initializeAreaSlider();
     initializeBudgetOptions();
     initializeFileUpload();
+    initializeFileUploadStep5();
+    initializeAddProductButtons();
     updateSummary();
 });
 
@@ -36,9 +50,11 @@ function initializeFeatureCards() {
             if (this.classList.contains('selected')) {
                 if (!quoteData.features.includes(feature)) {
                     quoteData.features.push(feature);
+                    quoteData.productDetails[feature] = ''; // Initialize with empty details
                 }
             } else {
                 quoteData.features = quoteData.features.filter(f => f !== feature);
+                delete quoteData.productDetails[feature];
             }
             
             updateSummary();
@@ -46,32 +62,109 @@ function initializeFeatureCards() {
     });
 }
 
-// Example chip functionality
-function initializeExampleChips() {
-    const exampleChips = document.querySelectorAll('.example-chip');
-    const descriptionField = document.getElementById('projectDescription');
+// Build product detail fields for Step 2
+function buildProductDetailFields() {
+    const container = document.getElementById('productDetailFields');
+    container.innerHTML = '';
     
-    exampleChips.forEach(chip => {
-        chip.addEventListener('click', function(e) {
-            e.preventDefault();
-            const text = this.dataset.text;
-            const currentValue = descriptionField.value.trim();
-            
-            if (currentValue) {
-                descriptionField.value = currentValue + '\n• ' + text;
-            } else {
-                descriptionField.value = '• ' + text;
-            }
-            
-            quoteData.description = descriptionField.value;
-            updateSummary();
-        });
+    quoteData.features.forEach((feature, index) => {
+        const featureName = feature.charAt(0).toUpperCase() + feature.slice(1).replace('-', ' ');
+        const fieldHtml = `
+            <div class="bg-stone p-5 rounded-xl border-2 border-gray-200 product-detail-field" data-feature="${feature}">
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="font-semibold text-gray-900 flex items-center">
+                        <i class="fas fa-th-large text-primary mr-2"></i>
+                        ${featureName}
+                    </h4>
+                    <button type="button" onclick="removeProduct('${feature}')" class="text-red-500 hover:text-red-700 text-sm">
+                        <i class="fas fa-times mr-1"></i> Remove
+                    </button>
+                </div>
+                <textarea 
+                    id="detail-${feature}" 
+                    rows="2"
+                    class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                    placeholder="e.g., ${productExamples[feature] || 'Add details...'}"
+                ></textarea>
+            </div>
+        `;
+        container.innerHTML += fieldHtml;
     });
     
-    // Update on manual typing
-    descriptionField.addEventListener('input', function() {
-        quoteData.description = this.value;
-        updateSummary();
+    // Restore previously entered details
+    quoteData.features.forEach(feature => {
+        const textarea = document.getElementById(`detail-${feature}`);
+        if (textarea && quoteData.productDetails[feature]) {
+            textarea.value = quoteData.productDetails[feature];
+        }
+        
+        // Add event listener to save details
+        if (textarea) {
+            textarea.addEventListener('input', function() {
+                quoteData.productDetails[feature] = this.value;
+                updateSummary();
+            });
+        }
+    });
+    
+    // Also listen to additional notes
+    const additionalNotes = document.getElementById('additionalNotes');
+    if (additionalNotes) {
+        additionalNotes.value = quoteData.additionalNotes;
+        additionalNotes.addEventListener('input', function() {
+            quoteData.additionalNotes = this.value;
+        });
+    }
+}
+
+// Remove product
+function removeProduct(feature) {
+    quoteData.features = quoteData.features.filter(f => f !== feature);
+    delete quoteData.productDetails[feature];
+    
+    // Update Step 1 visual
+    const featureCard = document.querySelector(`.feature-card[data-feature="${feature}"]`);
+    if (featureCard) {
+        featureCard.classList.remove('selected');
+    }
+    
+    buildProductDetailFields();
+    updateSummary();
+}
+
+// Show add product menu
+function showAddProductMenu() {
+    document.getElementById('addProductModal').classList.remove('hidden');
+}
+
+// Close add product menu
+function closeAddProductMenu() {
+    document.getElementById('addProductModal').classList.add('hidden');
+}
+
+// Initialize add product buttons in modal
+function initializeAddProductButtons() {
+    const addProductBtns = document.querySelectorAll('.add-product-btn');
+    addProductBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const feature = this.dataset.feature;
+            
+            if (!quoteData.features.includes(feature)) {
+                quoteData.features.push(feature);
+                quoteData.productDetails[feature] = '';
+                
+                // Update Step 1 visual
+                const featureCard = document.querySelector(`.feature-card[data-feature="${feature}"]`);
+                if (featureCard) {
+                    featureCard.classList.add('selected');
+                }
+                
+                buildProductDetailFields();
+                updateSummary();
+            }
+            
+            closeAddProductMenu();
+        });
     });
 }
 
@@ -106,7 +199,7 @@ function initializeBudgetOptions() {
     });
 }
 
-// File upload with drag & drop
+// File upload with drag & drop (Step 4)
 function initializeFileUpload() {
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
@@ -139,51 +232,101 @@ function initializeFileUpload() {
     
     function handleFiles(files) {
         quoteData.files = Array.from(files);
-        displayFilePreview(files);
+        displayFilePreview(files, filePreview);
         updateSummary();
-    }
-    
-    function displayFilePreview(files) {
-        filePreview.innerHTML = '';
-        Array.from(files).forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const preview = document.createElement('div');
-                preview.className = 'relative';
-                preview.innerHTML = `
-                    <img src="${e.target.result}" class="w-full h-24 object-cover rounded-lg" alt="Preview ${index + 1}">
-                    <button type="button" onclick="removeFile(${index})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs">×</button>
-                `;
-                filePreview.appendChild(preview);
-            };
-            reader.readAsDataURL(file);
-        });
+        updateAIDesignVisibility();
     }
 }
 
-function removeFile(index) {
-    quoteData.files.splice(index, 1);
-    const fileInput = document.getElementById('fileInput');
-    const dt = new DataTransfer();
-    quoteData.files.forEach(file => dt.items.add(file));
-    fileInput.files = dt.files;
+// File upload for Step 5
+function initializeFileUploadStep5() {
+    const dropZone = document.getElementById('dropZoneStep5');
+    const fileInput = document.getElementById('fileInputStep5');
+    const filePreview = document.getElementById('filePreviewStep5');
     
-    // Re-display preview
-    const filePreview = document.getElementById('filePreview');
-    filePreview.innerHTML = '';
-    quoteData.files.forEach((file, i) => {
+    if (!dropZone || !fileInput) return;
+    
+    // Click to upload
+    dropZone.addEventListener('click', () => fileInput.click());
+    
+    // Drag and drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('bg-white');
+    });
+    
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('bg-white');
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('bg-white');
+        handleFilesStep5(e.dataTransfer.files);
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+        handleFilesStep5(e.target.files);
+    });
+    
+    function handleFilesStep5(files) {
+        quoteData.files = Array.from(files);
+        displayFilePreview(files, filePreview);
+        updateSummary();
+        updateAIDesignVisibility();
+    }
+}
+
+function displayFilePreview(files, previewContainer) {
+    previewContainer.innerHTML = '';
+    Array.from(files).forEach((file, index) => {
         const reader = new FileReader();
         reader.onload = (e) => {
             const preview = document.createElement('div');
             preview.className = 'relative';
             preview.innerHTML = `
-                <img src="${e.target.result}" class="w-full h-24 object-cover rounded-lg" alt="Preview ${i + 1}">
-                <button type="button" onclick="removeFile(${i})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs">×</button>
+                <img src="${e.target.result}" class="w-full h-24 object-cover rounded-lg border-2 border-accent" alt="Preview ${index + 1}">
+                <button type="button" onclick="removeFile(${index})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600">×</button>
             `;
-            filePreview.appendChild(preview);
+            previewContainer.appendChild(preview);
         };
         reader.readAsDataURL(file);
     });
+}
+
+function removeFile(index) {
+    quoteData.files.splice(index, 1);
+    
+    // Update both file previews
+    const filePreview = document.getElementById('filePreview');
+    const filePreviewStep5 = document.getElementById('filePreviewStep5');
+    
+    if (quoteData.files.length > 0) {
+        displayFilePreview(quoteData.files, filePreview);
+        displayFilePreview(quoteData.files, filePreviewStep5);
+    } else {
+        filePreview.innerHTML = '';
+        filePreviewStep5.innerHTML = '';
+    }
+    
+    updateAIDesignVisibility();
+    updateSummary();
+}
+
+// Update AI design section visibility based on whether photos are uploaded
+function updateAIDesignVisibility() {
+    const aiDesignSection = document.getElementById('aiDesignSection');
+    const noPhotoPrompt = document.getElementById('noPhotoPrompt');
+    
+    if (quoteData.files.length > 0) {
+        // Show AI design checkbox
+        aiDesignSection.classList.remove('hidden');
+        noPhotoPrompt.classList.add('hidden');
+    } else {
+        // Hide checkbox, show upload prompt
+        aiDesignSection.classList.add('hidden');
+        noPhotoPrompt.classList.remove('hidden');
+    }
 }
 
 // Navigation functions
@@ -194,6 +337,11 @@ function nextStep() {
         return;
     }
     
+    if (currentStep === 2) {
+        // Build product detail fields for the first time when entering step 2
+        buildProductDetailFields();
+    }
+    
     if (currentStep === 4) {
         const postcodeInput = document.getElementById('postcode');
         if (!postcodeInput.value.trim()) {
@@ -202,6 +350,11 @@ function nextStep() {
             return;
         }
         quoteData.postcode = postcodeInput.value.trim();
+    }
+    
+    if (currentStep === 5) {
+        // Update AI design visibility before showing step 5
+        updateAIDesignVisibility();
     }
     
     // Hide current step
@@ -250,10 +403,13 @@ function updateSummary() {
         html += '<div class="space-y-2">';
         quoteData.features.forEach(feature => {
             const featureName = feature.charAt(0).toUpperCase() + feature.slice(1).replace('-', ' ');
+            const details = quoteData.productDetails[feature] || '';
+            const displayText = details ? details.substring(0, 30) + (details.length > 30 ? '...' : '') : featureName;
+            
             html += `
                 <div class="summary-item flex items-center space-x-2 bg-stone px-3 py-2 rounded-lg">
                     <i class="fas fa-check-circle text-accent"></i>
-                    <span class="text-sm font-semibold">${featureName}</span>
+                    <span class="text-sm font-semibold">${displayText}</span>
                 </div>
             `;
         });
@@ -317,7 +473,7 @@ async function submitQuote() {
     }
     
     const aiDesignCheckbox = document.getElementById('aiDesign');
-    if (aiDesignCheckbox) {
+    if (aiDesignCheckbox && !aiDesignCheckbox.disabled) {
         quoteData.aiDesign = aiDesignCheckbox.checked;
     }
     
@@ -337,7 +493,8 @@ async function submitQuote() {
     // const webhookUrl = window.CONFIG?.quoteWebhookUrl || 'https://your-make-webhook-url.com';
     // const formData = new FormData();
     // formData.append('features', JSON.stringify(quoteData.features));
-    // formData.append('description', quoteData.description);
+    // formData.append('productDetails', JSON.stringify(quoteData.productDetails));
+    // formData.append('additionalNotes', quoteData.additionalNotes);
     // formData.append('area', quoteData.area);
     // formData.append('budget', quoteData.budget);
     // formData.append('postcode', quoteData.postcode);
