@@ -8,8 +8,7 @@ const designData = {
     features: [],
     featureDetails: {},
     generalNotes: '',
-    style: '',
-    customStyle: '',
+    styleDescription: '',
     photo: null,
     gardenSize: '',
     email: '',
@@ -19,7 +18,6 @@ const designData = {
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     setupFeatureCards();
-    setupStyleCards();
     setupPhotoUpload();
     updateProgress();
 });
@@ -44,40 +42,10 @@ function setupFeatureCards() {
     });
 }
 
-// Style card selection (Step 3)
-function setupStyleCards() {
-    const cards = document.querySelectorAll('.style-card');
-    cards.forEach(card => {
-        card.addEventListener('click', function() {
-            // Remove selection from all cards
-            cards.forEach(c => c.classList.remove('selected'));
-            
-            // Select this card
-            this.classList.add('selected');
-            const style = this.getAttribute('data-style');
-            designData.style = style;
-            
-            // Show custom style field if "custom" is selected
-            const customField = document.getElementById('customStyleField');
-            if (style === 'custom') {
-                customField.classList.remove('hidden');
-            } else {
-                customField.classList.add('hidden');
-                designData.customStyle = '';
-            }
-            
-            updateSummary();
-        });
-    });
-    
-    // Custom style input
-    const customStyleInput = document.getElementById('customStyle');
-    if (customStyleInput) {
-        customStyleInput.addEventListener('input', function() {
-            designData.customStyle = this.value;
-            updateSummary();
-        });
-    }
+// Style description update (Step 3)
+function updateStyleDescription(value) {
+    designData.styleDescription = value;
+    updateSummary();
 }
 
 // Photo upload handling
@@ -152,8 +120,8 @@ function nextStep() {
         }
     }
     
-    if (currentStep === 3 && !designData.style) {
-        alert('Please select a garden style');
+    if (currentStep === 3 && !designData.styleDescription.trim()) {
+        alert('Please describe your desired garden style');
         return;
     }
     
@@ -251,13 +219,14 @@ function updateSummary() {
         html += `</div></div>`;
     }
     
-    // Style
-    if (designData.style) {
-        const styleName = designData.style === 'custom' ? designData.customStyle || 'Custom Style' : 
-                         designData.style.charAt(0).toUpperCase() + designData.style.slice(1).replace('-', ' ');
+    // Style Description
+    if (designData.styleDescription) {
+        const truncatedStyle = designData.styleDescription.length > 60 
+            ? designData.styleDescription.substring(0, 60) + '...' 
+            : designData.styleDescription;
         html += `
             <div class="summary-item bg-white px-3 py-2 rounded-lg mt-2">
-                <p class="text-sm"><i class="fas fa-palette text-accent mr-2"></i>Style: <strong>${styleName}</strong></p>
+                <p class="text-sm"><i class="fas fa-palette text-accent mr-2"></i>Style: <strong>${truncatedStyle}</strong></p>
             </div>
         `;
     }
@@ -314,8 +283,7 @@ async function submitDesign() {
             features: designData.features,
             featureDetails: designData.featureDetails,
             generalNotes: designData.generalNotes,
-            style: designData.style,
-            customStyle: designData.customStyle,
+            styleDescription: designData.styleDescription,
             gardenSize: designData.gardenSize
         },
         photo: null, // Will be populated with base64 if photo exists
