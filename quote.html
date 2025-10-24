@@ -3,15 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Get Instant Quote - Premium Landscapes</title>
-    <meta name="description" content="Get an instant AI-powered quote for your landscaping project. Describe your needs and receive accurate pricing in minutes.">
+    <title>Instant Quote - Premium Landscapes</title>
+    <meta name="description" content="Get an instant AI-powered quote for your landscaping project in minutes.">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script>
@@ -43,240 +39,451 @@
             font-family: 'Inter', sans-serif;
         }
         
-        .mobile-menu {
-            transition: transform 0.3s ease;
+        .step-transition {
+            animation: slideIn 0.4s ease-out;
         }
         
-        .mobile-menu.active {
-            transform: translateX(0);
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .summary-item {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-4px);
+        }
+        
+        .feature-card.selected {
+            border-color: #8b5cf6;
+            background-color: #f0f9ff;
+        }
+
+        .progress-bar {
+            transition: width 0.5s ease;
         }
     </style>
 </head>
 <body class="bg-white text-gray-800">
     
     <!-- Navigation Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <nav class="container mx-auto px-4 py-4 flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <i class="fas fa-seedling text-primary text-3xl"></i>
-                <span class="font-heading font-bold text-2xl text-primary">Premium Landscapes</span>
-            </div>
-            
-            <div class="hidden md:flex items-center space-x-8">
-                <a href="index.html" class="text-gray-700 hover:text-primary transition">Home</a>
-                <a href="about.html" class="text-gray-700 hover:text-primary transition">About</a>
-                <a href="services.html" class="text-gray-700 hover:text-primary transition">Services</a>
-                <a href="gallery.html" class="text-gray-700 hover:text-primary transition">Gallery</a>
-                <a href="quote.html" class="text-primary font-semibold transition">Get Quote</a>
-                <a href="design.html" class="text-gray-700 hover:text-primary transition">AI Design</a>
-                <a href="contact.html" class="bg-primary text-white px-6 py-2 rounded-full hover:bg-primary-dark transition">Contact</a>
-            </div>
-            
-            <button id="mobileMenuBtn" class="md:hidden text-primary text-2xl">
-                <i class="fas fa-bars"></i>
-            </button>
-        </nav>
-        
-        <div id="mobileMenu" class="mobile-menu fixed top-0 right-0 h-full w-64 bg-white shadow-2xl transform translate-x-full md:hidden z-50">
-            <div class="p-6">
-                <button id="closeMobileMenu" class="text-primary text-2xl mb-8">
-                    <i class="fas fa-times"></i>
+    <header class="bg-white shadow-md fixed w-full top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <a href="index.html" class="flex items-center space-x-2">
+                    <i class="fas fa-leaf text-primary text-3xl"></i>
+                    <span class="text-2xl font-bold text-primary font-heading">Premium Landscapes</span>
+                </a>
+                <nav class="hidden md:flex space-x-8 items-center">
+                    <a href="index.html" class="text-gray-700 hover:text-primary transition">Home</a>
+                    <a href="about.html" class="text-gray-700 hover:text-primary transition">About</a>
+                    <a href="services.html" class="text-gray-700 hover:text-primary transition">Services</a>
+                    <a href="gallery.html" class="text-gray-700 hover:text-primary transition">Gallery</a>
+                    <a href="blog.html" class="text-gray-700 hover:text-primary transition">Blog</a>
+                    <a href="quote.html" class="text-primary font-semibold transition">Get Quote</a>
+                    <a href="design.html" class="text-gray-700 hover:text-primary transition">AI Design</a>
+                    <a href="contact.html" class="bg-primary text-white px-6 py-2 rounded-full hover:bg-primary-dark transition">Contact</a>
+                </nav>
+                <button id="mobile-menu-toggle" class="md:hidden text-primary text-2xl">
+                    <i class="fas fa-bars"></i>
                 </button>
-                <div class="flex flex-col space-y-6">
-                    <a href="index.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Home</a>
-                    <a href="about.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">About</a>
-                    <a href="services.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Services</a>
-                    <a href="gallery.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Gallery</a>
-                    <a href="quote.html" class="text-primary font-semibold transition text-lg mobile-menu-link">Get Quote</a>
-                    <a href="design.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">AI Design</a>
-                    <a href="contact.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Contact</a>
-                </div>
+            </div>
+            <div id="mobile-menu" class="mobile-menu hidden md:hidden mt-4 pb-4 space-y-4">
+                <a href="index.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Home</a>
+                <a href="about.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">About</a>
+                <a href="services.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Services</a>
+                <a href="gallery.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Gallery</a>
+                <a href="blog.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Blog</a>
+                <a href="quote.html" class="block text-primary font-semibold transition text-lg mobile-menu-link">Get Quote</a>
+                <a href="design.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">AI Design</a>
+                <a href="contact.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Contact</a>
             </div>
         </div>
     </header>
     
     <!-- Quote Page Hero -->
-    <section class="pt-32 pb-12 px-4 bg-white">
-        <div class="container mx-auto max-w-4xl text-center">
+    <section class="pt-32 pb-8 px-4 bg-gradient-to-br from-stone to-white">
+        <div class="container mx-auto max-w-6xl text-center">
             <h1 class="font-heading font-bold text-4xl md:text-5xl mb-4 text-primary">
-                Get Your Instant Quote
+                Instant Quote
             </h1>
-            <p class="text-xl text-secondary">
+            <p class="text-xl text-gray-600 mb-2">
                 AI-powered pricing in minutes. No sales calls, no pressure.
             </p>
+            <div class="flex items-center justify-center space-x-2 text-sm text-accent">
+                <i class="fas fa-robot"></i>
+                <span>Powered by AI • Average completion: 2 mins</span>
+            </div>
         </div>
     </section>
     
-    <!-- Instant Quote Engine Section -->
-    <section class="py-16 px-4 bg-white">
+    <!-- Progress Bar -->
+    <div class="sticky top-20 z-40 bg-white shadow-sm">
+        <div class="container mx-auto max-w-6xl px-4 py-4">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-gray-600" id="progressText">Step 1 of 5</span>
+                <span class="text-xs text-gray-500" id="progressPercent">20%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="progressBar" class="progress-bar bg-gradient-to-r from-primary to-accent h-2 rounded-full" style="width: 20%"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Quote Section -->
+    <section class="py-8 px-4 bg-white min-h-screen">
         <div class="container mx-auto max-w-6xl">
-            <div class="grid md:grid-cols-2 gap-8 items-start">
-                <!-- Image Column -->
-                <div class="order-2 md:order-1">
-                    <img 
-                        src="images/quote-laptop.jpg" 
-                        alt="Get an instant landscaping quote online" 
-                        class="rounded-2xl shadow-2xl w-full h-auto"
-                    >
-                    <div class="mt-6 bg-stone rounded-xl p-6">
-                        <h3 class="font-heading font-bold text-xl text-primary mb-3">Why Get an Instant Quote?</h3>
-                        <ul class="space-y-3 text-gray-700">
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-accent mt-1"></i>
-                                <span>No pressure, no sales calls</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-accent mt-1"></i>
-                                <span>AI-powered accurate pricing</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-accent mt-1"></i>
-                                <span>Instant results in minutes</span>
-                            </li>
-                            <li class="flex items-start space-x-2">
-                                <i class="fas fa-check-circle text-accent mt-1"></i>
-                                <span>Optional AI design generation</span>
-                            </li>
-                        </ul>
+            <div class="grid md:grid-cols-3 gap-8">
+                
+                <!-- Left: Multi-Step Form -->
+                <div class="md:col-span-2">
+                    <div class="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
+                        
+                        <!-- Step 1: Project Type -->
+                        <div id="step1" class="step-container step-transition">
+                            <h2 class="font-heading font-bold text-2xl text-primary mb-3">What would you like us to help with?</h2>
+                            <p class="text-gray-600 mb-6">Select all that apply—you can add details next</p>
+                            
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="patio">
+                                    <i class="fas fa-th-large text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Patio</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="decking">
+                                    <i class="fas fa-border-all text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Decking</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="turf">
+                                    <i class="fas fa-seedling text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Lawn/Turf</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="driveway">
+                                    <i class="fas fa-car text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Driveway</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="fencing">
+                                    <i class="fas fa-border-style text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Fencing</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="lighting">
+                                    <i class="fas fa-lightbulb text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Lighting</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="full-redesign">
+                                    <i class="fas fa-magic text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Full Redesign</p>
+                                </div>
+                                <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg" data-feature="other">
+                                    <i class="fas fa-plus-circle text-4xl text-primary mb-2"></i>
+                                    <p class="font-semibold">Other</p>
+                                </div>
+                            </div>
+                            
+                            <button onclick="nextStep()" class="w-full bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition shadow-lg">
+                                Continue <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Step 2: Project Details -->
+                        <div id="step2" class="step-container hidden step-transition">
+                            <h2 class="font-heading font-bold text-2xl text-primary mb-3">Tell us about your project</h2>
+                            <p class="text-gray-600 mb-6">The more detail, the more accurate your quote</p>
+                            
+                            <textarea 
+                                id="projectDescription" 
+                                rows="6"
+                                class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base mb-4"
+                                placeholder="Describe your project in detail...&#10;&#10;Examples:&#10;• Porcelain patio 40 sqm with outdoor seating area&#10;• Artificial turf 30 sqm to replace existing lawn&#10;• Composite decking 25 sqm with built-in planters&#10;• 20 meters of close-board fencing, 1.8m high"
+                            ></textarea>
+                            
+                            <div class="mb-6">
+                                <p class="text-sm font-semibold text-gray-700 mb-3">Quick examples (click to add):</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <button type="button" class="example-chip text-sm bg-stone px-4 py-2 rounded-full hover:bg-accent hover:text-white transition" data-text="Indian sandstone patio 35 sqm">
+                                        <i class="fas fa-plus-circle mr-1"></i> Sandstone patio 35m²
+                                    </button>
+                                    <button type="button" class="example-chip text-sm bg-stone px-4 py-2 rounded-full hover:bg-accent hover:text-white transition" data-text="Composite decking 30 sqm">
+                                        <i class="fas fa-plus-circle mr-1"></i> Composite decking 30m²
+                                    </button>
+                                    <button type="button" class="example-chip text-sm bg-stone px-4 py-2 rounded-full hover:bg-accent hover:text-white transition" data-text="Artificial turf 25 sqm with drainage">
+                                        <i class="fas fa-plus-circle mr-1"></i> Artificial turf 25m²
+                                    </button>
+                                    <button type="button" class="example-chip text-sm bg-stone px-4 py-2 rounded-full hover:bg-accent hover:text-white transition" data-text="15 meters close-board fencing 1.8m high">
+                                        <i class="fas fa-plus-circle mr-1"></i> 15m fencing
+                                    </button>
+                                    <button type="button" class="example-chip text-sm bg-stone px-4 py-2 rounded-full hover:bg-accent hover:text-white transition" data-text="LED garden lighting system with 8 uplights">
+                                        <i class="fas fa-plus-circle mr-1"></i> LED lighting system
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button onclick="prevStep()" class="px-8 py-4 rounded-full text-lg font-semibold border-2 border-gray-300 hover:border-primary transition">
+                                    <i class="fas fa-arrow-left mr-2"></i> Back
+                                </button>
+                                <button onclick="nextStep()" class="flex-1 bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition shadow-lg">
+                                    Continue <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 3: Area & Budget -->
+                        <div id="step3" class="step-container hidden step-transition">
+                            <h2 class="font-heading font-bold text-2xl text-primary mb-3">Project size & budget</h2>
+                            <p class="text-gray-600 mb-6">Help us understand the scope</p>
+                            
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-semibold mb-3">Approximate total area (optional)</label>
+                                <div class="flex items-center gap-4">
+                                    <input type="range" id="areaSlider" min="10" max="150" value="40" class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-accent">
+                                    <span class="text-2xl font-bold text-primary w-24 text-right"><span id="areaValue">40</span> m²</span>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-500 mt-2">
+                                    <span>Small (10m²)</span>
+                                    <span>Medium (75m²)</span>
+                                    <span>Large (150m²)</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-semibold mb-3">Budget range (optional)</label>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <button type="button" class="budget-option p-3 border-2 border-gray-200 rounded-xl hover:border-accent transition" data-budget="<5000">
+                                        <p class="font-semibold">Under £5k</p>
+                                    </button>
+                                    <button type="button" class="budget-option p-3 border-2 border-gray-200 rounded-xl hover:border-accent transition" data-budget="5000-10000">
+                                        <p class="font-semibold">£5k - £10k</p>
+                                    </button>
+                                    <button type="button" class="budget-option p-3 border-2 border-gray-200 rounded-xl hover:border-accent transition" data-budget="10000-20000">
+                                        <p class="font-semibold">£10k - £20k</p>
+                                    </button>
+                                    <button type="button" class="budget-option p-3 border-2 border-gray-200 rounded-xl hover:border-accent transition" data-budget=">20000">
+                                        <p class="font-semibold">£20k+</p>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button onclick="prevStep()" class="px-8 py-4 rounded-full text-lg font-semibold border-2 border-gray-300 hover:border-primary transition">
+                                    <i class="fas fa-arrow-left mr-2"></i> Back
+                                </button>
+                                <button onclick="nextStep()" class="flex-1 bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition shadow-lg">
+                                    Continue <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 4: Location & Photo -->
+                        <div id="step4" class="step-container hidden step-transition">
+                            <h2 class="font-heading font-bold text-2xl text-primary mb-3">Location & visuals</h2>
+                            <p class="text-gray-600 mb-6">This helps us provide accurate regional pricing</p>
+                            
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-semibold mb-2">Postcode *</label>
+                                <input 
+                                    type="text" 
+                                    id="postcode" 
+                                    required
+                                    class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                                    placeholder="e.g., B15 2TT"
+                                >
+                                <p class="text-xs text-gray-500 mt-2"><i class="fas fa-info-circle"></i> We use this to calculate local material and labour costs</p>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-semibold mb-2">Upload photos or videos (optional)</label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-accent transition-colors cursor-pointer" id="dropZone">
+                                    <i class="fas fa-cloud-upload-alt text-5xl text-gray-400 mb-3"></i>
+                                    <p class="text-gray-600 mb-2">Drag & drop photos here, or click to browse</p>
+                                    <p class="text-sm text-gray-500">AI will help identify dimensions and features</p>
+                                    <input type="file" id="fileInput" class="hidden" accept="image/*,video/*" multiple>
+                                </div>
+                                <div id="filePreview" class="mt-4 grid grid-cols-3 gap-3"></div>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button onclick="prevStep()" class="px-8 py-4 rounded-full text-lg font-semibold border-2 border-gray-300 hover:border-primary transition">
+                                    <i class="fas fa-arrow-left mr-2"></i> Back
+                                </button>
+                                <button onclick="nextStep()" class="flex-1 bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition shadow-lg">
+                                    Continue <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 5: Contact Details -->
+                        <div id="step5" class="step-container hidden step-transition">
+                            <h2 class="font-heading font-bold text-2xl text-primary mb-3">Where should we send your quote?</h2>
+                            <p class="text-gray-600 mb-6">Your information is secure and never shared</p>
+                            
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-semibold mb-2">Email Address *</label>
+                                <input 
+                                    type="email" 
+                                    id="email" 
+                                    required
+                                    class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                                    placeholder="your@email.com"
+                                >
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label class="block text-gray-700 font-semibold mb-2">Phone (optional)</label>
+                                <input 
+                                    type="tel" 
+                                    id="phone" 
+                                    class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                                    placeholder="07XXX XXXXXX"
+                                >
+                                <p class="text-xs text-gray-500 mt-2"><i class="fas fa-info-circle"></i> We'll only call if you request a site visit</p>
+                            </div>
+                            
+                            <div class="mb-6 bg-stone p-4 rounded-xl">
+                                <label class="flex items-start space-x-3 cursor-pointer">
+                                    <input type="checkbox" id="aiDesign" class="mt-1 w-5 h-5 text-accent rounded">
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Generate AI design preview (Free)</p>
+                                        <p class="text-sm text-gray-600">See visual concepts of your new garden in 60 seconds</p>
+                                    </div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button onclick="prevStep()" class="px-8 py-4 rounded-full text-lg font-semibold border-2 border-gray-300 hover:border-primary transition">
+                                    <i class="fas fa-arrow-left mr-2"></i> Back
+                                </button>
+                                <button onclick="submitQuote()" class="flex-1 bg-gradient-to-r from-primary to-accent text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl transition">
+                                    <i class="fas fa-magic mr-2"></i> Get My Instant Quote
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Loading State -->
+                        <div id="loadingState" class="hidden text-center py-12">
+                            <div class="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-accent mx-auto mb-4"></div>
+                            <h3 class="font-heading font-bold text-xl text-primary mb-2">Analysing your project...</h3>
+                            <p class="text-gray-600">Calculating local material and labour prices</p>
+                        </div>
+                        
+                        <!-- Quote Result -->
+                        <div id="quoteResult" class="hidden">
+                            <div class="text-center mb-6">
+                                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-check text-3xl text-green-600"></i>
+                                </div>
+                                <h2 class="font-heading font-bold text-3xl text-primary mb-2">Your Instant Quote is Ready!</h2>
+                                <p class="text-gray-600">Based on 120+ similar projects in your area</p>
+                            </div>
+                            
+                            <div class="bg-gradient-to-br from-primary to-accent text-white p-8 rounded-2xl mb-6">
+                                <p class="text-sm opacity-90 mb-2">Estimated Investment</p>
+                                <p class="text-5xl font-bold mb-2">£8,500 - £12,500</p>
+                                <p class="text-sm opacity-90">Including materials, labour & VAT</p>
+                            </div>
+                            
+                            <div class="bg-stone p-6 rounded-xl mb-6">
+                                <h3 class="font-semibold text-lg mb-4">Breakdown</h3>
+                                <div id="quoteBreakdown" class="space-y-3"></div>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button onclick="emailQuote()" class="flex-1 bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-primary-dark transition">
+                                    <i class="fas fa-envelope mr-2"></i> Email Me This Quote
+                                </button>
+                                <a href="design.html" class="flex-1 bg-accent text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition text-center">
+                                    <i class="fas fa-magic mr-2"></i> See AI Design
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Form Column -->
-                <div class="order-1 md:order-2">
-                    <form id="quoteForm" class="bg-white rounded-2xl p-8 shadow-xl border border-gray-200">
-                        <!-- Project Description -->
-                        <div class="mb-6">
-                            <label class="block text-primary font-heading font-bold text-lg mb-2" for="projectDescription">
-                                Describe Your Project *
-                            </label>
-                            <p class="text-gray-600 text-sm mb-3">Tell us what you need - be specific with materials and sizes</p>
-                            <textarea 
-                                id="projectDescription" 
-                                name="projectDescription"
-                                required
-                                rows="5"
-                                class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
-                                placeholder="e.g., Porcelain patio 55sqm, artificial turf 25sqm, fencing 25 meters"
-                            ></textarea>
-                            <div class="mt-3 flex flex-wrap gap-2">
-                                <span class="text-xs bg-stone px-3 py-1 rounded-full text-gray-600">
-                                    <i class="fas fa-lightbulb text-accent"></i> Example: Indian sandstone patio 40sqm
-                                </span>
-                                <span class="text-xs bg-stone px-3 py-1 rounded-full text-gray-600">
-                                    <i class="fas fa-lightbulb text-accent"></i> Example: Composite decking 30sqm
-                                </span>
+                <!-- Right: Live Summary -->
+                <div class="md:col-span-1">
+                    <div class="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 sticky top-32">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-heading font-bold text-lg text-primary">Your Project</h3>
+                            <div class="w-8 h-8 bg-accent bg-opacity-10 rounded-full flex items-center justify-center">
+                                <i class="fas fa-robot text-accent"></i>
                             </div>
                         </div>
                         
-                        <!-- Postcode -->
-                        <div class="mb-6">
-                            <label class="block text-primary font-heading font-bold text-lg mb-2" for="postcode">
-                                Postcode *
-                            </label>
-                            <input 
-                                type="text" 
-                                id="postcode" 
-                                name="postcode"
-                                required
-                                class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
-                                placeholder="e.g., SW1A 1AA"
-                            >
+                        <div id="summaryContent" class="space-y-3 mb-6">
+                            <p class="text-gray-500 text-sm italic">Select features to see your summary...</p>
                         </div>
                         
-                        <!-- Email -->
-                        <div class="mb-6">
-                            <label class="block text-primary font-heading font-bold text-lg mb-2" for="email">
-                                Email Address *
-                            </label>
-                            <input 
-                                type="email" 
-                                id="email" 
-                                name="email"
-                                required
-                                class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
-                                placeholder="your@email.com"
-                            >
-                        </div>
-                        
-                        <!-- Image Upload (Optional) -->
-                        <div class="mb-6">
-                            <label class="block text-primary font-heading font-bold text-lg mb-2" for="gardenImage">
-                                Upload Current Garden Photo (Optional)
-                            </label>
-                            <div class="relative">
-                                <input 
-                                    type="file" 
-                                    id="gardenImage" 
-                                    name="gardenImage"
-                                    accept="image/*"
-                                    class="w-full px-5 py-4 rounded-xl border-2 border-dashed border-gray-300 focus:outline-none focus:border-accent transition-colors bg-stone cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-opacity-90"
-                                >
+                        <div class="border-t pt-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-600">Confidence Score</span>
+                                <span class="text-sm font-semibold text-accent">92%</span>
                             </div>
-                            <p class="text-gray-500 text-xs mt-2">
-                                <i class="fas fa-info-circle"></i> Adding a photo helps us provide a more accurate quote
-                            </p>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-accent h-2 rounded-full" style="width: 92%"></div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Based on similar projects in your area</p>
                         </div>
-                        
-                        <!-- Submit Button -->
-                        <button 
-                            type="submit"
-                            class="w-full bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition shadow-lg"
-                        >
-                            Get Instant Quote
-                        </button>
-                        
-                        <!-- Quote Result -->
-                        <div id="quoteResult" class="hidden mt-8 p-6 bg-white rounded-xl border-2 border-primary">
-                            <h3 class="font-heading font-bold text-2xl text-primary mb-4">Your Estimated Quote</h3>
-                            <div id="quoteDetails"></div>
-                        </div>
-                    </form>
+                    </div>
                 </div>
+                
             </div>
         </div>
     </section>
     
     <!-- Footer -->
-    <footer class="bg-primary text-white py-12 px-4">
-        <div class="container mx-auto max-w-6xl">
+    <footer class="bg-gray-900 text-white py-12 px-4">
+        <div class="container mx-auto">
             <div class="grid md:grid-cols-3 gap-8 mb-8">
                 <div>
                     <div class="flex items-center space-x-2 mb-4">
-                        <i class="fas fa-seedling text-3xl"></i>
-                        <span class="font-heading font-bold text-2xl">Premium Landscapes</span>
+                        <i class="fas fa-leaf text-primary text-2xl"></i>
+                        <span class="text-xl font-bold font-heading">Premium Landscapes</span>
                     </div>
-                    <p class="text-gray-300">Transforming outdoor spaces with AI-powered design and instant quotes.</p>
+                    <p class="text-gray-400">Professional landscaping services with AI-powered quotes and designs.</p>
                 </div>
-                
                 <div>
-                    <h4 class="font-heading font-bold text-lg mb-4">Quick Links</h4>
+                    <h3 class="font-bold text-lg mb-4">Quick Links</h3>
                     <ul class="space-y-2">
-                        <li><a href="index.html#about" class="text-gray-300 hover:text-white transition">About Us</a></li>
-                        <li><a href="index.html#services" class="text-gray-300 hover:text-white transition">Services</a></li>
-                        <li><a href="quote.html" class="text-gray-300 hover:text-white transition">Get Quote</a></li>
-                        <li><a href="design.html" class="text-gray-300 hover:text-white transition">AI Design</a></li>
-                        <li><a href="blog.html" class="text-gray-300 hover:text-white transition">Blog</a></li>
-                        <li><a href="index.html#contact" class="text-gray-300 hover:text-white transition">Contact</a></li>
+                        <li><a href="index.html" class="text-gray-400 hover:text-primary transition">Home</a></li>
+                        <li><a href="services.html" class="text-gray-400 hover:text-primary transition">Services</a></li>
+                        <li><a href="gallery.html" class="text-gray-400 hover:text-primary transition">Gallery</a></li>
+                        <li><a href="blog.html" class="text-gray-400 hover:text-primary transition">Blog</a></li>
+                        <li><a href="contact.html" class="text-gray-400 hover:text-primary transition">Contact</a></li>
                     </ul>
                 </div>
-                
                 <div>
-                    <h4 class="font-heading font-bold text-lg mb-4">Contact Info</h4>
-                    <ul class="space-y-2 text-gray-300">
-                        <li><i class="fas fa-phone mr-2"></i> 0800 123 4567</li>
-                        <li><i class="fas fa-envelope mr-2"></i> info@premiumlandscapes.co.uk</li>
-                        <li><i class="fas fa-map-marker-alt mr-2"></i> London, UK</li>
+                    <h3 class="font-bold text-lg mb-4">Contact Us</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><i class="fas fa-phone mr-2"></i> <a href="tel:07444887813" class="hover:text-primary">07444 887813</a></li>
+                        <li><i class="fas fa-envelope mr-2"></i> <a href="mailto:info@premium-landscapes.co.uk" class="hover:text-primary">info@premium-landscapes.co.uk</a></li>
+                        <li><i class="fas fa-map-marker-alt mr-2"></i> Serving Midlands & Home Counties</li>
                     </ul>
                 </div>
             </div>
-            
-            <div class="border-t border-gray-600 pt-6 text-center text-gray-300">
+            <div class="text-center pt-8 border-t border-gray-800 text-gray-400">
                 <p>&copy; 2025 Premium Landscapes. All rights reserved.</p>
             </div>
         </div>
     </footer>
     
     <script src="scripts/config.js"></script>
+    <script src="scripts/quote-engine.js"></script>
     <script src="scripts/main.js"></script>
 </body>
 </html>
