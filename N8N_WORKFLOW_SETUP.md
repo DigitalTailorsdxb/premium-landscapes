@@ -315,6 +315,25 @@ Each client needs to customize:
 4. **CRM integration** - Client's Airtable/Sheets
 5. **Regional pricing** - Adjust for client's service area
 
+### Logo URL for PDF/Email Templates
+
+**For Premium Landscapes Demo:**
+```
+{{brand_logo}} = "https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev/static/logo.png"
+{{company_name}} = "Premium Landscapes"
+{{contact_phone}} = "07444 887813"
+{{contact_email}} = "info@premium-landscapes.co.uk"
+```
+
+**For White-Label Clients:**
+Each client uploads their logo to their website's static folder and updates:
+```
+{{brand_logo}} = "https://client-domain.com/static/logo.png"
+{{company_name}} = "Client Company Name"
+{{contact_phone}} = "Client Phone"
+{{contact_email}} = "Client Email"
+```
+
 ---
 
 ## Summary Recommendation
