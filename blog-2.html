@@ -55,44 +55,44 @@
 </head>
 <body class="bg-white">
 
-    <!-- Header with Navigation -->
+    <!-- Navigation Header -->
     <header class="bg-white shadow-md fixed w-full top-0 z-50">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <a href="index.html" class="flex items-center space-x-2">
+        <nav class="container mx-auto px-4 py-0 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <a href="index.html">
                     <img src="images/logo.png" alt="Premium Landscapes" class="h-16 md:h-20">
-                    <span class="text-2xl font-bold text-primary font-heading">Premium Landscapes</span>
                 </a>
-                
-                <!-- Desktop Navigation -->
-                <nav class="hidden md:flex space-x-8 items-center">
-                    <a href="index.html" class="text-gray-700 hover:text-primary transition">Home</a>
-                    <a href="index.html" class="text-gray-700 hover:text-primary transition">Home</a>
-                <a href="about.html" class="text-gray-700 hover:text-primary transition">About</a>
-                    <a href="services.html" class="text-gray-700 hover:text-primary transition">Services</a>
-                    <a href="gallery.html" class="text-gray-700 hover:text-primary transition">Gallery</a>
-                    <a href="blog.html" class="text-primary font-semibold transition">Blog</a>
-                    <a href="quote.html" class="text-gray-700 hover:text-primary transition">Instant Quote</a>
-                    <a href="design.html" class="text-gray-700 hover:text-primary transition">AI Design</a>
-                    <a href="contact.html" class="bg-primary text-white px-6 py-2 rounded-full hover:bg-primary-dark transition">Contact</a>
-                </nav>
-                
-                <!-- Mobile Menu Button -->
-                <button id="mobile-menu-toggle" class="md:hidden text-primary text-2xl">
-                    <i class="fas fa-bars"></i>
-                </button>
             </div>
             
-            <!-- Mobile Navigation -->
-            <div id="mobile-menu" class="mobile-menu hidden md:hidden mt-4 pb-4 space-y-4">
-                <a href="index.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Home</a>
-                <a href="about.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">About</a>
-                <a href="services.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Services</a>
-                <a href="gallery.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Gallery</a>
-                <a href="blog.html" class="block text-primary font-semibold transition text-lg mobile-menu-link">Blog</a>
-                <a href="quote.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Instant Quote</a>
-                <a href="design.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">AI Design</a>
-                <a href="contact.html" class="block text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Contact</a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="index.html" class="text-gray-700 hover:text-primary transition">Home</a>
+                <a href="about.html" class="text-gray-700 hover:text-primary transition">About</a>
+                <a href="services.html" class="text-gray-700 hover:text-primary transition">Services</a>
+                <a href="gallery.html" class="text-gray-700 hover:text-primary transition">Gallery</a>
+                <a href="quote.html" class="text-gray-700 hover:text-primary transition">Instant Quote</a>
+                <a href="design.html" class="text-gray-700 hover:text-primary transition">AI Design</a>
+                <a href="contact.html" class="text-white bg-primary px-6 py-2 rounded-full hover:bg-primary-dark transition">Contact</a>
+            </div>
+            
+            <button id="mobileMenuBtn" class="md:hidden text-primary text-2xl">
+                <i class="fas fa-bars"></i>
+            </button>
+        </nav>
+        
+        <div id="mobileMenu" class="mobile-menu fixed top-0 right-0 h-full w-64 bg-white shadow-2xl transform translate-x-full md:hidden z-50">
+            <div class="p-6">
+                <button id="closeMobileMenu" class="text-primary text-2xl mb-8">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="flex flex-col space-y-6">
+                    <a href="index.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Home</a>
+                    <a href="about.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">About</a>
+                    <a href="services.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Services</a>
+                    <a href="gallery.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Gallery</a>
+                    <a href="quote.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Instant Quote</a>
+                    <a href="design.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">AI Design</a>
+                    <a href="contact.html" class="text-primary font-semibold transition text-lg mobile-menu-link">Contact</a>
+                </div>
             </div>
         </div>
     </header>

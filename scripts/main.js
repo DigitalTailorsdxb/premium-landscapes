@@ -5,13 +5,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const mobileMenu = document.getElementById('mobileMenu');
     const mobileMenuLinks = document.querySelectorAll('.mobile-menu-link');
     
-    mobileMenuBtn.addEventListener('click', function() {
-        mobileMenu.classList.add('active');
-    });
+    if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', function() {
+            mobileMenu.classList.add('active');
+        });
+    }
     
-    closeMobileMenu.addEventListener('click', function() {
-        mobileMenu.classList.remove('active');
-    });
+    if (closeMobileMenu && mobileMenu) {
+        closeMobileMenu.addEventListener('click', function() {
+            mobileMenu.classList.remove('active');
+        });
+    }
     
     mobileMenuLinks.forEach(link => {
         link.addEventListener('click', function() {

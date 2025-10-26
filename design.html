@@ -89,17 +89,20 @@
     <!-- Navigation Header -->
     <header class="bg-white shadow-md fixed w-full top-0 z-50">
         <nav class="container mx-auto px-4 py-0 flex items-center justify-between">
-            <a href="index.html" class="flex items-center">
-                <img src="images/logo.png" alt="Premium Landscapes" class="h-16 md:h-20">
-            </a>
+            <div class="flex items-center space-x-2">
+                <a href="index.html">
+                    <img src="images/logo.png" alt="Premium Landscapes" class="h-16 md:h-20">
+                </a>
+            </div>
             
             <div class="hidden md:flex items-center space-x-8">
+                <a href="index.html" class="text-gray-700 hover:text-primary transition">Home</a>
                 <a href="about.html" class="text-gray-700 hover:text-primary transition">About</a>
                 <a href="services.html" class="text-gray-700 hover:text-primary transition">Services</a>
                 <a href="gallery.html" class="text-gray-700 hover:text-primary transition">Gallery</a>
                 <a href="quote.html" class="text-gray-700 hover:text-primary transition">Instant Quote</a>
-                <a href="design.html" class="text-primary font-semibold transition">AI Design</a>
-                <a href="contact.html" class="bg-primary text-white px-6 py-2 rounded-full hover:bg-primary-dark transition">Contact</a>
+                <a href="design.html" class="text-gray-700 hover:text-primary transition">AI Design</a>
+                <a href="contact.html" class="text-white bg-primary px-6 py-2 rounded-full hover:bg-primary-dark transition">Contact</a>
             </div>
             
             <button id="mobileMenuBtn" class="md:hidden text-primary text-2xl">
@@ -112,13 +115,14 @@
                 <button id="closeMobileMenu" class="text-primary text-2xl mb-8">
                     <i class="fas fa-times"></i>
                 </button>
-                <div class="flex flex-col space-y-4">
-                    <a href="about.html" class="text-gray-700 hover:text-primary transition mobile-menu-link">About</a>
-                    <a href="services.html" class="text-gray-700 hover:text-primary transition mobile-menu-link">Services</a>
-                    <a href="gallery.html" class="text-gray-700 hover:text-primary transition mobile-menu-link">Gallery</a>
-                    <a href="quote.html" class="text-gray-700 hover:text-primary transition mobile-menu-link">Instant Quote</a>
-                    <a href="design.html" class="text-primary font-semibold transition mobile-menu-link">AI Design</a>
-                    <a href="contact.html" class="text-gray-700 hover:text-primary transition mobile-menu-link">Contact</a>
+                <div class="flex flex-col space-y-6">
+                    <a href="index.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Home</a>
+                    <a href="about.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">About</a>
+                    <a href="services.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Services</a>
+                    <a href="gallery.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Gallery</a>
+                    <a href="quote.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Instant Quote</a>
+                    <a href="design.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">AI Design</a>
+                    <a href="contact.html" class="text-primary font-semibold transition text-lg mobile-menu-link">Contact</a>
                 </div>
             </div>
         </div>
