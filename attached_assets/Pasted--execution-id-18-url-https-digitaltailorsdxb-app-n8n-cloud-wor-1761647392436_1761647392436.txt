@@ -1,0 +1,74 @@
+[
+  {
+    "execution": {
+      "id": "18",
+      "url": "https://digitaltailorsdxb.app.n8n.cloud/workflow/snCjf2HwLdipPb6v/executions/18",
+      "error": {
+        "level": "warning",
+        "tags": {},
+        "timestamp": 1761647384282,
+        "context": {
+          "itemIndex": 0
+        },
+        "functionality": "regular",
+        "name": "NodeOperationError",
+        "node": {
+          "parameters": {
+            "preBuiltAgentsCalloutHttpRequest": "",
+            "curlImport": "",
+            "method": "POST",
+            "url": "https://api.openai.com/v1/chat/completions",
+            "authentication": "predefinedCredentialType",
+            "nodeCredentialType": "openAiApi",
+            "provideSslCertificates": false,
+            "sendQuery": false,
+            "sendHeaders": false,
+            "sendBody": true,
+            "contentType": "=json",
+            "specifyBody": "json",
+            "bodyParameters": {
+              "parameters": [
+                {
+                  "name": "",
+                  "value": ""
+                }
+              ]
+            },
+            "jsonBody": "={\n  model: \"gpt-4-turbo\",\n  messages: [\n    {\n      role: \"system\",\n      content: \"You are a professional copywriter at Premium Landscapes. Your task is to write concise, friendly, and realistic project summaries for residential landscaping quotes in the UK. Use confident yet warm language. Avoid exaggeration or sales fluff. Mention key features from the project when possible.\"\n    },\n    {\n      role: \"user\",\n      content:\n        \"Write a short project summary (3–5 sentences) based on the following details:\\n\\n\"\n        + \"Customer name: \" + $json.customer.name + \"\\n\"\n        + \"Location (postcode): \" + $json.customer.postcode + \"\\n\"\n        + \"Requested features: \" + $json.project.products.join(', ') + \"\\n\"\n        + \"Area size: \" + $json.project.area + \"\\n\"\n        + \"Budget: \" + $json.project.budget + \"\\n\\n\"\n        + \"Tone: friendly, professional, reassuring, and specific to Premium Landscapes' brand.\"\n    }\n  ],\n  temperature: 0.7,\n  max_tokens: 200\n}\n",
+            "inputDataFieldName": "",
+            "rawContentType": "",
+            "body": "",
+            "options": {
+              "timeout": 120000
+            },
+            "infoMessage": ""
+          },
+          "id": "1428e7db-2962-452c-9505-369a4cf10263",
+          "name": "AI Quote Enhancer (GPT-4 Turbo)",
+          "type": "n8n-nodes-base.httpRequest",
+          "position": [
+            -1024,
+            624
+          ],
+          "typeVersion": 4.2,
+          "credentials": {
+            "openAiApi": {
+              "id": "eELTpqDo2P3x6OJF",
+              "name": "OpenAi account"
+            }
+          },
+          "notes": "Uses GPT-4 Turbo to write a professional summary paragraph for the quote"
+        },
+        "messages": [],
+        "message": "JSON parameter needs to be valid JSON",
+        "stack": "NodeOperationError: JSON parameter needs to be valid JSON\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_afd197edb2c1f848eae21a96a97fab23/node_modules/n8n-nodes-base/nodes/HttpRequest/V3/HttpRequestV3.node.ts:430:15)\n    at WorkflowExecute.executeNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1093:8)\n    at WorkflowExecute.runNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1274:11)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1699:27\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:2315:11"
+      },
+      "lastNodeExecuted": "AI Quote Enhancer (GPT-4 Turbo)",
+      "mode": "webhook"
+    },
+    "workflow": {
+      "id": "snCjf2HwLdipPb6v",
+      "name": "Premium Landscapes - Instant Quote (Final)"
+    }
+  }
+]
