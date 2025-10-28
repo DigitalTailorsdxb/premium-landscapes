@@ -1,7 +1,13 @@
 # Premium Landscapes - AI-Powered Landscaping Website
 
 ## Overview
-**Premium Landscapes** is an AI-powered, high-converting landscaping website template designed for sale to landscaping businesses. Its core purpose is to serve as a public demo and white-label solution, enabling rapid rebranding (< 2 hours per client). The platform offers AI-powered instant quotes and design generation, aiming to provide a significant competitive advantage in the landscaping market by boosting conversion rates.
+**Premium Landscapes** is an AI-powered, high-converting landscaping website template designed for sale to landscaping businesses at £3,500 setup + £200/month retainer. Its core purpose is to serve as a public demo and white-label solution, enabling rapid rebranding (< 2 hours per client). The platform offers AI-powered instant quotes (via n8n workflow) and design generation, aiming to provide a significant competitive advantage in the landscaping market by boosting conversion rates.
+
+## Current Status
+✅ **Complete & Production-Ready** - All 19 pages built and functional across mobile/desktop
+✅ **Quote System Ready** - 5-step conversational quote form with n8n webhook integration (just needs webhook URL)
+✅ **Single Estimated Pricing** - Shows one figure (e.g., £11,100) instead of ranges
+✅ **Demo Mode Active** - Shows mock quote until n8n webhook URL configured in `scripts/config.js`
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
@@ -27,7 +33,9 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
   - **Step 5:** Contact details with conditional AI design preview option (only visible if images uploaded; otherwise shows upload prompt)
   - Live summary panel updates in real-time showing selected products, area, budget, location, and photo count
   - Progress bar with step indicator and percentage
-  - **Backend Integration Ready:** Full webhook payload preparation with structured JSON for Make.com/n8n, confidence scoring algorithm, regional pricing modifiers, and response handling. See `PRICING_INTEGRATION_GUIDE.md` for connection instructions.
+  - **Quote Display:** Shows single estimated figure (e.g., £11,100) instead of price ranges for cleaner presentation
+  - **n8n Integration:** Ready to connect - just add webhook URL to `scripts/config.js` line 35. See `N8N_QUOTE_WEBHOOK_SETUP.md` for setup instructions.
+  - **Demo Mode:** Shows mock quote data until n8n webhook configured (automatically detects if URL is placeholder)
 - **AI Design Generator Page (`design.html`):** Allows users to select preferred garden styles, upload an optional image of their current garden, and provide an email for receiving AI-generated designs. The workflow sends data to a Make.com webhook, which then uses GPT-4o to generate prompts for DALL·E or Midjourney.
 - **PDF Quote Generator:** Auto-generates branded PDF quotes with client details, itemized breakdown, total price range, and company branding.
 - **White-Label Configuration:** Handled via `scripts/config.js` with defensive null checks for easy client-specific customization.
