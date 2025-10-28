@@ -1,0 +1,109 @@
+This tells us the issue is not with your validation code, but with what the website is sending into n8n.
+
+Let’s unpack what’s happening 👇
+
+🚨 The key part:
+
+"Missing 'customer' object in request [Line 6]"
+
+This means the data arriving into n8n doesn’t have:
+
+{
+  "customer": { ... }
+}
+
+
+at the top level of the JSON payload — even though your website is supposed to send that.
+
+✅ Here’s what should be arriving in n8n
+
+This is the correct payload (which your website’s quote form is designed to send):
+
+{
+  "customer": {
+    "name": "lewis reid",
+    "email": "lewisreidnoc@gmail.com",
+    "phone": "",
+    "postcode": "LE33JU"
+  },
+  "project": {
+    "products": ["patio", "decking", "turf"],
+    "productDetails": {
+      "patio": "indian sandstone 40sm",
+      "decking": "composite decking 20sm",
+      "turf": "artificial turf 30sm"
+    },
+    "additionalNotes": "",
+    "area": 80,
+    "budget": ""
+  },
+  "files": [],
+  "aiDesign": false,
+  "timestamp": "2025-10-28T08:28:09.826Z",
+  "source": "website",
+  "confidence": 95
+}
+
+🧩 Why you’re getting the error now
+
+There are two possible reasons:
+
+1️⃣ The webhook URL in your website is still the test URL, not the production URL.
+
+In your n8n Webhook Trigger, you’ll see two URLs:
+
+Test URL:
+
+https://digitaltailorsdxb.app.n8n.cloud/webhook-test/premium-landscapes-quote
+
+
+Production URL:
+
+https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-quote
+
+
+👉 You need to make sure your website (Replit form) is using the production URL.
+
+Check this in your website JavaScript:
+
+const webhookUrl = brandConfig?.webhooks?.quote;
+
+
+Make sure brandConfig.webhooks.quote is set to the production webhook (no -test in it).
+
+2️⃣ The website is sending an empty or malformed payload
+
+This can happen if:
+
+the Replit preview is running an old cached version, or
+
+the webhook code crashed on submission.
+
+✅ Fix:
+Open your Replit Developer Console, go to the Network tab, submit a new quote, and click the outgoing webhook request.
+Check that the payload body contains "customer": { ... }.
+
+If it doesn’t — your website isn’t running the latest JS.
+
+🔧 Quick verification steps:
+
+In n8n, open Webhook Trigger1 → Settings
+
+Copy the Production URL
+
+In Replit, open scripts/quote-engine.js
+
+Search for webhooks: { quote:
+
+Replace the old one with the production URL
+
+Save → Restart your Replit server (click Stop, then Run)
+
+Test again in a fresh incognito browser window
+
+Once the website starts sending this:
+
+"customer": { ... }
+
+
+The error in n8n will disappear instantly ✅
