@@ -525,12 +525,30 @@ async function submitQuote() {
             body: JSON.stringify(webhookPayload)
         });
         
+        console.log('n8n Response Status:', response.status);
+        
         if (!response.ok) {
-            throw new Error(`Webhook returned status ${response.status}`);
+            const errorText = await response.text();
+            console.error('n8n Error Response:', errorText);
+            throw new Error(`Webhook returned status ${response.status}: ${errorText}`);
         }
         
-        const result = await response.json();
-        console.log('n8n Response:', result);
+        // Get response text first to handle empty responses
+        const responseText = await response.text();
+        console.log('n8n Raw Response:', responseText);
+        
+        // Try to parse JSON, or use empty object if response is empty
+        let result = {};
+        if (responseText && responseText.trim()) {
+            try {
+                result = JSON.parse(responseText);
+                console.log('n8n Parsed Response:', result);
+            } catch (e) {
+                console.warn('n8n returned non-JSON response, using demo mode');
+            }
+        } else {
+            console.log('n8n returned empty response, using demo mode');
+        }
         
         // Show success message
         showQuoteResult(result);
