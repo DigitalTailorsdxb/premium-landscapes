@@ -112,6 +112,9 @@ function applyBranding() {
     setElement('whatsappLink', null, 'href', whatsappUrl);
 }
 
+// Export brandConfig to window so other scripts can access it
+window.brandConfig = brandConfig;
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', applyBranding);
 } else {
