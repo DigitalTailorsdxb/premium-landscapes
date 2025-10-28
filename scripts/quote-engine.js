@@ -600,7 +600,7 @@ function prepareWebhookPayload() {
             project: {
                 products: quoteData.features, // Simple array: ['patio', 'decking', 'turf']
                 productDetails: productDetails, // Detailed descriptions for each product
-                notes: quoteData.additionalNotes || '',
+                additionalNotes: quoteData.additionalNotes || '',
                 area: parseInt(quoteData.area) || 40,
                 budget: quoteData.budget || '',
             },
