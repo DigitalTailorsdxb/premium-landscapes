@@ -457,6 +457,9 @@ function updateSummary() {
 
 // Submit quote
 async function submitQuote() {
+    console.log('🚀 SUBMIT QUOTE FUNCTION CALLED - Version: 20251028-FINAL');
+    console.log('Current quoteData:', quoteData);
+    
     // Validation
     const nameInput = document.getElementById('name');
     if (!nameInput.value.trim()) {
@@ -517,6 +520,9 @@ async function submitQuote() {
         }
         
         // Send to n8n workflow
+        console.log('📤 SENDING TO N8N:', webhookUrl);
+        console.log('📦 PAYLOAD BEING SENT:', JSON.stringify(webhookPayload, null, 2));
+        
         const response = await fetch(webhookUrl, {
             method: 'POST',
             headers: {
@@ -525,7 +531,7 @@ async function submitQuote() {
             body: JSON.stringify(webhookPayload)
         });
         
-        console.log('n8n Response Status:', response.status);
+        console.log('✅ n8n Response Status:', response.status);
         
         if (!response.ok) {
             const errorText = await response.text();
