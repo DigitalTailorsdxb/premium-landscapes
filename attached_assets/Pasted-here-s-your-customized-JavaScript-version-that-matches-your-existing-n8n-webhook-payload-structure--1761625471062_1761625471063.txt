@@ -1,0 +1,137 @@
+here’s your customized JavaScript version that matches your existing n8n webhook payload structure (customer & project objects, identical to how the webhook sends data to your quote engine).
+
+💻 ✅ Final Frontend JavaScript (exact structure for your n8n webhook)
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("quoteForm"); // your form's ID
+  const messageBox = document.getElementById("formMessage"); // optional message area
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // Build payload based on your n8n webhook structure
+    const data = {
+      customer: {
+        name: form.querySelector("[name='name']").value,
+        email: form.querySelector("[name='email']").value,
+        phone: form.querySelector("[name='phone']").value,
+        postcode: form.querySelector("[name='postcode']").value,
+      },
+      project: {
+        area: form.querySelector("[name='area']").value,
+        budget: form.querySelector("[name='budget']").value,
+        products: Array.from(form.querySelectorAll("[name='products[]']:checked"))
+          .map((el) => el.value), // for checkboxes or multiple features
+      }
+    };
+
+    // Show loading message
+    if (messageBox) {
+      messageBox.textContent = "⏳ Generating your quote...";
+      messageBox.style.color = "#555";
+    }
+
+    try {
+      // Send to your n8n webhook
+      const response = await fetch("YOUR_N8N_WEBHOOK_URL", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      // Success
+      if (result.success) {
+        messageBox.textContent = "✅ " + result.message;
+        messageBox.style.color = "green";
+        form.reset();
+      } 
+      // Failed but valid response
+      else {
+        messageBox.textContent = "⚠️ There was an issue creating your quote. Please try again.";
+        messageBox.style.color = "red";
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      if (messageBox) {
+        messageBox.textContent = "❌ Network error — please check your connection and try again.";
+        messageBox.style.color = "red";
+      }
+    }
+  });
+});
+</script>
+
+🧱 Matching Example HTML
+
+This mirrors your quote form structure that your n8n webhook expects.
+
+<form id="quoteForm">
+  <h3>Get Your Instant Garden Quote</h3>
+
+  <label>Name</label>
+  <input type="text" name="name" required />
+
+  <label>Email</label>
+  <input type="email" name="email" required />
+
+  <label>Phone</label>
+  <input type="text" name="phone" />
+
+  <label>Postcode</label>
+  <input type="text" name="postcode" required />
+
+  <label>Garden Area (m²)</label>
+  <input type="number" name="area" min="5" required />
+
+  <label>Budget (£)</label>
+  <input type="number" name="budget" required />
+
+  <fieldset>
+    <legend>Select Features:</legend>
+    <label><input type="checkbox" name="products[]" value="patio" /> Patio</label>
+    <label><input type="checkbox" name="products[]" value="decking" /> Decking</label>
+    <label><input type="checkbox" name="products[]" value="artificial turf" /> Artificial Turf</label>
+    <label><input type="checkbox" name="products[]" value="fencing" /> Fencing</label>
+  </fieldset>
+
+  <button type="submit">Generate Quote</button>
+</form>
+
+<p id="formMessage" style="margin-top: 15px; font-weight: 500;"></p>
+
+⚙️ Setup Notes
+
+Replace:
+
+"YOUR_N8N_WEBHOOK_URL"
+
+
+with your actual n8n webhook URL (Node 1 in your workflow).
+
+The JSON payload matches exactly what your quote engine expects:
+
+{
+  "customer": {
+    "name": "Lewis",
+    "email": "lewis@example.com",
+    "phone": "07123456789",
+    "postcode": "BN1 2AA"
+  },
+  "project": {
+    "area": "40",
+    "budget": "8000",
+    "products": ["patio", "decking"]
+  }
+}
+
+
+Once your Respond to Webhook node returns:
+
+{ "success": true, "message": "Quote successfully generated and emailed to the customer." }
+
+
+— the form instantly displays a green success message under the submit button.

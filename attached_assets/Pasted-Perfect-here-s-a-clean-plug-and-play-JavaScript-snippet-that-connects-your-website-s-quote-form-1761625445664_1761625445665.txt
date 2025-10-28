@@ -1,0 +1,74 @@
+Perfect ✅ — here’s a clean, plug-and-play JavaScript snippet that connects your website’s quote form to your n8n webhook and displays a success message when the final node (Respond to Webhook) replies.
+
+💻 Frontend JavaScript (for your Replit site)
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("quoteForm"); // your form's ID
+  const messageBox = document.getElementById("formMessage"); // optional message div
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // Build JSON payload from form fields
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    // Show loading message
+    if (messageBox) {
+      messageBox.textContent = "Generating your quote...";
+      messageBox.style.color = "#555";
+    }
+
+    try {
+      // Send data to n8n webhook
+      const response = await fetch("YOUR_N8N_WEBHOOK_URL", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      // Handle success / error response from n8n
+      if (result.success) {
+        messageBox.textContent = "✅ " + result.message;
+        messageBox.style.color = "green";
+        form.reset();
+      } else {
+        messageBox.textContent = "⚠️ Something went wrong — please try again.";
+        messageBox.style.color = "red";
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      if (messageBox) {
+        messageBox.textContent = "❌ Network error — please try again.";
+        messageBox.style.color = "red";
+      }
+    }
+  });
+});
+</script>
+
+🧱 Example HTML Structure
+<form id="quoteForm">
+  <input type="text" name="name" placeholder="Your Name" required />
+  <input type="email" name="email" placeholder="Your Email" required />
+  <input type="text" name="postcode" placeholder="Postcode" required />
+  <button type="submit">Get My Quote</button>
+</form>
+
+<p id="formMessage"></p>
+
+⚙️ Setup Notes
+
+Replace YOUR_N8N_WEBHOOK_URL with your actual n8n webhook URL (from Node 1).
+
+Ensure your Webhook Trigger Node in n8n is set to:
+
+Response Mode: Using Respond to Webhook Node
+
+Response Data: JSON (as we configured)
+
+If your site uses a modern front end (React, etc.), this logic works the same inside a handler.
