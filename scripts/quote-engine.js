@@ -458,6 +458,13 @@ function updateSummary() {
 // Submit quote
 async function submitQuote() {
     // Validation
+    const nameInput = document.getElementById('name');
+    if (!nameInput.value.trim()) {
+        alert('Please enter your name');
+        nameInput.focus();
+        return;
+    }
+    
     const emailInput = document.getElementById('email');
     if (!emailInput.value.trim() || !emailInput.value.includes('@')) {
         alert('Please enter a valid email address');
@@ -465,6 +472,7 @@ async function submitQuote() {
         return;
     }
     
+    quoteData.name = nameInput.value.trim();
     quoteData.email = emailInput.value.trim();
     
     const phoneInput = document.getElementById('phone');
@@ -564,7 +572,7 @@ function prepareWebhookPayload() {
         return {
             // Customer Information (required by n8n workflow)
             customer: {
-                name: quoteData.email.split('@')[0], // Extract name from email
+                name: quoteData.name || 'Unknown',
                 email: quoteData.email,
                 phone: quoteData.phone || '',
                 postcode: quoteData.postcode,
