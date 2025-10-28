@@ -628,52 +628,55 @@ function showQuoteResult(data) {
     
     // If real data from webhook, use it
     if (data && data.breakdown && data.totalLow && data.totalHigh) {
-        // Real webhook response
+        // Real webhook response - calculate single estimated figure
+        const totalEstimate = Math.round((data.totalLow + data.totalHigh) / 2);
+        
         let breakdownHTML = '';
         data.breakdown.forEach(item => {
+            const itemEstimate = Math.round((item.low + item.high) / 2);
             breakdownHTML += `
                 <div class="flex justify-between items-center py-2 border-b">
                     <span class="text-gray-700">${item.description}</span>
-                    <span class="font-semibold">£${item.low.toLocaleString()} - £${item.high.toLocaleString()}</span>
+                    <span class="font-semibold">£${itemEstimate.toLocaleString()}</span>
                 </div>
             `;
         });
         
         breakdownHTML += `
             <div class="flex justify-between items-center py-3 font-bold text-lg">
-                <span class="text-primary">Total (inc. VAT)</span>
-                <span class="text-primary">£${data.totalLow.toLocaleString()} - £${data.totalHigh.toLocaleString()}</span>
+                <span class="text-primary">Total Estimate (inc. VAT)</span>
+                <span class="text-primary">£${totalEstimate.toLocaleString()}</span>
             </div>
         `;
         
         breakdown.innerHTML = breakdownHTML;
         
     } else {
-        // Demo mode - show example breakdown
+        // Demo mode - show example breakdown with single estimated figure
         breakdown.innerHTML = `
             <div class="flex justify-between items-center py-2 border-b">
                 <span class="text-gray-700">Materials & Installation</span>
-                <span class="font-semibold">£6,500 - £9,200</span>
+                <span class="font-semibold">£7,850</span>
             </div>
             <div class="flex justify-between items-center py-2 border-b">
                 <span class="text-gray-700">Base Preparation & Excavation</span>
-                <span class="font-semibold">£1,200 - £1,800</span>
+                <span class="font-semibold">£1,500</span>
             </div>
             <div class="flex justify-between items-center py-2 border-b">
                 <span class="text-gray-700">Waste Removal (3 skips)</span>
-                <span class="font-semibold">£600 - £900</span>
+                <span class="font-semibold">£750</span>
             </div>
             <div class="flex justify-between items-center py-2 border-b">
                 <span class="text-gray-700">Project Management & Overhead</span>
-                <span class="font-semibold">£800 - £1,200</span>
+                <span class="font-semibold">£1,000</span>
             </div>
             <div class="flex justify-between items-center py-3 font-bold text-lg">
-                <span class="text-primary">Total (inc. VAT)</span>
-                <span class="text-primary">£9,100 - £13,100</span>
+                <span class="text-primary">Total Estimate (inc. VAT)</span>
+                <span class="text-primary">£11,100</span>
             </div>
             <p class="text-xs text-gray-500 mt-2 text-center">
                 <i class="fas fa-info-circle mr-1"></i>
-                Demo pricing - Connect to Make.com for accurate regional quotes
+                Demo pricing - Connect n8n for accurate regional quotes
             </p>
         `;
     }
