@@ -115,6 +115,9 @@ function applyBranding() {
 // Export brandConfig to window so other scripts can access it
 window.brandConfig = brandConfig;
 
+// Debug logging to verify config is loaded
+console.log('✅ Config loaded! Webhook URL:', brandConfig?.webhooks?.quote);
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', applyBranding);
 } else {
