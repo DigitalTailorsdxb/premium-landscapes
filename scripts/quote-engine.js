@@ -485,75 +485,65 @@ async function submitQuote() {
     // WEBHOOK INTEGRATION POINT - Ready for Make.com/n8n Connection
     // ============================================================================
     
-    // Structure data for pricing workflow
-    const webhookPayload = prepareWebhookPayload();
-    console.log('Quote Data for Webhook:', webhookPayload);
+    // Structure data for n8n workflow
+    const webhookPayloadPromise = prepareWebhookPayload();
     
-    // Demo mode: Show quote after 2 seconds
-    setTimeout(() => {
-        showQuoteResult();
-    }, 2000);
-    
-    // ============================================================================
-    // PRODUCTION IMPLEMENTATION - Uncomment when ready to connect
-    // ============================================================================
-    // 
-    // Step 1: Set your Make.com webhook URL in scripts/config.js:
-    //   quoteWebhookUrl: 'https://hook.eu1.make.com/your-webhook-id'
-    //
-    // Step 2: Uncomment the code below to enable live pricing
-    //
-    // const webhookUrl = window.CONFIG?.quoteWebhookUrl || 'https://your-make-webhook-url.com';
-    // 
-    // try {
-    //     const response = await fetch(webhookUrl, {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //         },
-    //         body: JSON.stringify(webhookPayload)
-    //     });
-    //     
-    //     const result = await response.json();
-    //     
-    //     // Expected response format from Make.com:
-    //     // {
-    //     //   success: true,
-    //     //   quoteId: "Q-2025-001",
-    //     //   breakdown: [...],
-    //     //   totalLow: 8500,
-    //     //   totalHigh: 12500,
-    //     //   confidence: 92,
-    //     //   pdfUrl: "https://...",
-    //     //   estimatedDays: 5
-    //     // }
-    //     
-    //     showQuoteResult(result);
-    //     
-    // } catch (error) {
-    //     console.error('Error submitting quote:', error);
-    //     alert('There was an error processing your quote. Please try again or contact us at 07444887813');
-    //     document.getElementById('loadingState').classList.add('hidden');
-    //     document.getElementById('step5').classList.remove('hidden');
-    // }
+    try {
+        const webhookPayload = await webhookPayloadPromise;
+        console.log('Quote Data for n8n Webhook:', webhookPayload);
+        
+        // Get webhook URL from config
+        const webhookUrl = brandConfig?.webhooks?.quote;
+        
+        // Check if webhook URL is configured
+        if (!webhookUrl || webhookUrl.includes('your-quote-webhook-url')) {
+            console.warn('⚠️ Webhook URL not configured. Using demo mode.');
+            console.log('To enable live quotes, update the webhook URL in scripts/config.js');
+            console.log('Your n8n webhook path should be: /webhook/premium-landscapes-quote');
+            
+            // Demo mode: Show quote after 2 seconds
+            setTimeout(() => {
+                showQuoteResult();
+            }, 2000);
+            return;
+        }
+        
+        // Send to n8n workflow
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(webhookPayload)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Webhook returned status ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('n8n Response:', result);
+        
+        // Show success message
+        showQuoteResult(result);
+        
+    } catch (error) {
+        console.error('Error submitting quote:', error);
+        alert('There was an error processing your quote. Please try again or contact us at 07444 887813');
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('step5').classList.remove('hidden');
+    }
 }
 
 // ============================================================================
 // WEBHOOK PAYLOAD PREPARATION
-// Structures data for Make.com/n8n pricing workflow
+// Structures data for n8n pricing workflow
 // ============================================================================
 function prepareWebhookPayload() {
-    // Format products with structured data for pricing lookups
-    const products = quoteData.features.map(feature => {
-        const featureName = feature.charAt(0).toUpperCase() + feature.slice(1).replace('-', ' ');
-        const details = quoteData.productDetails[feature] || '';
-        
-        return {
-            type: feature,              // e.g., "patio", "decking", "turf"
-            name: featureName,          // e.g., "Patio", "Decking", "Lawn/Turf"
-            description: details,       // User's detailed description
-            area: quoteData.area || 0,  // Total area (can be parsed from description)
-        };
+    // Build product details with descriptions
+    const productDetails = {};
+    quoteData.features.forEach(feature => {
+        productDetails[feature] = quoteData.productDetails[feature] || '';
     });
     
     // Upload files as base64 for AI analysis (optional)
@@ -572,37 +562,33 @@ function prepareWebhookPayload() {
     
     return Promise.all(filePromises).then(filesData => {
         return {
-            // Customer Information
+            // Customer Information (required by n8n workflow)
             customer: {
+                name: quoteData.email.split('@')[0], // Extract name from email
                 email: quoteData.email,
                 phone: quoteData.phone || '',
                 postcode: quoteData.postcode,
             },
             
-            // Project Details (for Google Sheets lookup & GPT parsing)
+            // Project Details - products as simple array of strings (n8n expects this format)
             project: {
-                products: products,
+                products: quoteData.features, // Simple array: ['patio', 'decking', 'turf']
+                productDetails: productDetails, // Detailed descriptions for each product
                 additionalNotes: quoteData.additionalNotes || '',
-                totalArea: quoteData.area,
+                area: parseInt(quoteData.area) || 40,
                 budget: quoteData.budget || '',
             },
             
-            // Files for AI Vision Analysis (optional - GPT-4 Vision)
+            // Files for AI Vision Analysis (optional)
             files: filesData,
             
             // Options
-            options: {
-                aiDesign: quoteData.aiDesign,
-                requestedAIDesign: quoteData.aiDesign && filesData.length > 0,
-            },
+            aiDesign: quoteData.aiDesign || false,
             
             // Metadata
-            metadata: {
-                timestamp: new Date().toISOString(),
-                source: 'website',
-                formVersion: '2.0',
-                confidence: calculateConfidenceScore(),
-            }
+            timestamp: new Date().toISOString(),
+            source: 'website',
+            confidence: calculateConfidenceScore(),
         };
     });
 }
