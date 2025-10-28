@@ -32,7 +32,7 @@ const brandConfig = {
     //   - estimatedDays: 5 (optional)
     //
     webhooks: {
-        quote: "https://digitaltailorsdxb.app.n8n.cloud/webhook-test/premium-landscapes-quote",
+        quote: "https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-quote",
         email: "https://hook.eu2.make.com/your-email-webhook-url",
         design: "https://hook.eu2.make.com/your-design-webhook-url",
         contact: "https://hook.eu2.make.com/your-contact-webhook-url"
