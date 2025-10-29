@@ -1,0 +1,541 @@
+{
+  "name": "Premium Landscapes - Instant Quote (Final)",
+  "nodes": [
+    {
+      "parameters": {
+        "binaryData": true,
+        "name": "=\"Quote-\" + $json.customer.name + \"-\" + $moment().format(\"YYYY-MM-DD\") + \".pdf\"",
+        "parents": [
+          "=1RO45FjuBGbvFYRp8VXIxMWtuwrDHTDN7"
+        ],
+        "options": {}
+      },
+      "id": "2a377c3e-1506-4f8f-a903-199a404de48d",
+      "name": "Upload PDF to Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 2,
+      "position": [
+        624,
+        624
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "t1a2DIBxTnvPKUMq",
+          "name": "Google Drive account"
+        }
+      },
+      "notes": "Uploads the PDF to /Premium Landscapes/Quotes Archive folder (creates if missing)."
+    },
+    {
+      "parameters": {
+        "functionCode": "// Validate incoming quote request data\nconst d = $json;\n\n// Basic structure validation\nif (!d.customer) {\n  throw new Error(\"Missing 'customer' object in request\");\n}\nif (!d.project) {\n  throw new Error(\"Missing 'project' object in request\");\n}\n\n// Required customer fields\nconst requiredCustomer = [\"name\", \"email\", \"postcode\"];\nfor (const field of requiredCustomer) {\n  if (!d.customer[field] || d.customer[field].trim() === \"\") {\n    throw new Error(`Missing required field: customer.${field}`);\n  }\n}\n\n// Product validation\nif (!Array.isArray(d.project.products) || d.project.products.length === 0) {\n  throw new Error(\"Missing or invalid project.products array\");\n}\n\n// Optional but recommended fields\nif (!d.project.area) {\n  d.project.area = \"Not specified\";\n}\nif (!d.project.budget) {\n  d.project.budget = \"Not specified\";\n}\n\n// Normalize and clean data\nd.customer.name = d.customer.name.trim();\nd.customer.email = d.customer.email.toLowerCase();\nd.customer.postcode = d.customer.postcode.toUpperCase().replace(/\\s+/g, '');\n\n// ✅ Pass cleaned data forward\nreturn [{ json: d }];\n"
+      },
+      "id": "47edb2f0-0c90-4c8d-a138-28f574e8f871",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -1536,
+        624
+      ],
+      "typeVersion": 1,
+      "notes": "Ensures all required fields are provided before continuing"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "contentType": "=json",
+        "specifyBody": "json",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "jsonBody": "={\n  \"model\": \"gpt-4-turbo\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a professional copywriter at Premium Landscapes. Your task is to write concise, friendly, and realistic project summaries for residential landscaping quotes in the UK. Use confident yet warm language. Avoid exaggeration or sales fluff. Mention key features from the project when possible.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"={{$json.summaryPrompt}}\"\n    }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 200\n}\n",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "1428e7db-2962-452c-9505-369a4cf10263",
+      "name": "AI Quote Enhancer (GPT-4 Turbo)",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -816,
+        624
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "eELTpqDo2P3x6OJF",
+          "name": "OpenAi account"
+        }
+      },
+      "notes": "Uses GPT-4 Turbo to write a professional summary paragraph for the quote"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Get data from previous nodes\nconst webhookData = $items(\"Webhook Trigger1\")[0].json;  // Customer + project data\nconst pricingData = $items(\"Calculate Pricing1\")[0].json; // Pricing from Node 2\nconst aiResponse = $json; // AI response from Node 3 (this node’s input)\n\n// Extract AI text safely\nlet aiText = \"Quote summary unavailable\";\ntry {\n  aiText = aiResponse.choices[0].message.content.trim();\n} catch (err) {}\n\n// Build merged output\nreturn [\n  {\n    json: {\n      timestamp: new Date().toISOString(),\n      customer: webhookData.customer || {},\n      project: webhookData.project || {},\n      aiSummary: aiText,\n      pricing: {\n        breakdown: pricingData.breakdown || [],\n        subtotal: pricingData.subtotal || 0,\n        contingency: pricingData.contingency || 0,\n        vat: pricingData.vat || 0,\n        total: pricingData.total || 0\n      }\n    }\n  }\n];"
+      },
+      "id": "203df165-f1e2-4070-aa35-5b7d0620eccf",
+      "name": "Merge AI Summary",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -576,
+        624
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "functionCode": "const data = $json;\nconst logo = 'https://www.premium-landscapes.co.uk/logo.png';\n\n// Build table rows\nlet rows = data.pricing.breakdown\n  .map(i => `<tr><td>${i.feature}</td><td>${i.qty} ${i.unit}</td><td>£${i.rate}</td><td>£${i.subtotal.toLocaleString()}</td></tr>`)\n  .join('');\n\n// Return HTML\nreturn [{\n  json: {\n    html: `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body{font-family:Inter,Arial,sans-serif;color:#111827;padding:20px;background:#fff;}\n    header{text-align:center;border-bottom:3px solid #2563EB;padding-bottom:10px;margin-bottom:20px;}\n    header img{max-height:60px;}\n    h1{color:#2563EB;}\n    table{width:100%;border-collapse:collapse;margin-top:20px;}\n    th{background:linear-gradient(90deg,#2563EB,#A855F7);color:white;padding:8px;text-align:left;}\n    td{padding:8px;border-bottom:1px solid #E5E7EB;}\n    tfoot td{font-weight:bold;color:#2563EB;}\n    .summary{margin-top:25px;padding:15px;background:#F0F9FF;border-radius:8px;}\n  </style>\n</head>\n<body>\n  <header>\n    <img src='${logo}' alt='Premium Landscapes Logo'>\n    <h2>Premium Landscapes</h2>\n    <p>www.premium-landscapes.co.uk | info@premium-landscapes.co.uk | 07444 887813</p>\n  </header>\n\n  <h1>Garden Quote</h1>\n  <p><strong>Client:</strong> ${data.customer.name}</p>\n  <p><strong>Postcode:</strong> ${data.customer.postcode || ''}</p>\n\n  <div class='summary'>\n    <h3>AI Project Overview</h3>\n    <p>${data.aiSummary}</p>\n  </div>\n\n  <table>\n    <thead>\n      <tr><th>Feature</th><th>Qty</th><th>Rate</th><th>Subtotal</th></tr>\n    </thead>\n    <tbody>${rows}</tbody>\n    <tfoot>\n      <tr><td colspan='3'>Subtotal</td><td>£${data.pricing.subtotal.toLocaleString()}</td></tr>\n      <tr><td colspan='3'>Contingency (10%)</td><td>£${data.pricing.contingency.toLocaleString()}</td></tr>\n      <tr><td colspan='3'>VAT (20%)</td><td>£${data.pricing.vat.toLocaleString()}</td></tr>\n      <tr><td colspan='3'><strong>Total</strong></td><td><strong>£${data.pricing.total.toLocaleString()}</strong></td></tr>\n    </tfoot>\n  </table>\n\n  <footer style='margin-top:30px;text-align:center;font-size:12px;color:#555;'>\n    All works include materials, labour, and waste removal.<br>\n    Reply to this email to confirm or call 07444 887813.\n  </footer>\n</body>\n</html>`\n  }\n}];"
+      },
+      "id": "851a6093-6241-42d1-8180-5995099ec24f",
+      "name": "Build PDF HTML",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -320,
+        624
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fromEmail": "premiumlandscapesuk@gmail.com",
+        "toEmail": "={{$json.customer.email}}",
+        "subject": "Your Detailed Garden Quote from Premium Landscapes 🌿",
+        "html": "=<div style=\"font-family: Inter, Arial, sans-serif; color: #111827; line-height: 1.5;\">\n  <h2 style=\"color:#2563EB;\">Hi {{$json[\"customer\"][\"name\"]}},</h2>\n\n  <p>Thank you for your interest in improving your garden with <strong>Premium Landscapes</strong>.</p>\n  \n  <p>Attached below is your detailed quote, including a breakdown of materials, labour, and an AI-generated project overview created specifically for your property.</p>\n\n  <blockquote style=\"margin: 20px 0; padding: 15px; background: #F0F9FF; border-left: 4px solid #2563EB;\">\n    <strong>AI Project Summary:</strong><br>\n    {{$json[\"aiSummary\"]}}\n  </blockquote>\n\n  <p><strong>Total Estimate:</strong> £{{$json[\"pricing\"][\"total\"].toLocaleString()}}</p>\n  <p>All works include materials, labour, and waste removal.</p>\n\n  <p>If you’d like to go ahead, simply reply to this email or call us directly on <strong>07444 887813</strong>.</p>\n\n  <p>Warm regards,<br>\n  <strong>Premium Landscapes Team</strong><br>\n  <a href=\"https://www.premium-landscapes.co.uk\" style=\"color:#2563EB;\">www.premium-landscapes.co.uk</a></p>\n\n  <hr style=\"margin-top: 30px;\">\n  <p style=\"font-size: 12px; color: #555;\">This quote was automatically generated using Premium Landscapes' AI system.</p>\n</div>",
+        "options": {
+          "attachments": "={{$json[\"file\"][\"url\"]}}"
+        }
+      },
+      "id": "ea655529-7d00-475c-9713-b0d008e94158",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        176,
+        624
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "ab3e512a-7b66-44ee-9210-d627ca379a3d",
+      "credentials": {
+        "smtp": {
+          "id": "dLpXH6yljIeIoVw6",
+          "name": "SMTP account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1GIlzFrvqkdYGYQotkKaOox4m6x2qrqvLk0X6xMYJg7s",
+          "mode": "list",
+          "cachedResultName": "Premium Landscapes Quotes Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GIlzFrvqkdYGYQotkKaOox4m6x2qrqvLk0X6xMYJg7s/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Quotes Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GIlzFrvqkdYGYQotkKaOox4m6x2qrqvLk0X6xMYJg7s/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "{{$now}}",
+            "Customer Name": "{{$json[\"customer\"][\"name\"]}}",
+            "Email": "{{$json[\"customer\"][\"email\"]}}",
+            "Postcode": "{{$json[\"customer\"][\"postcode\"]}}",
+            "Products": "{{$json[\"project\"][\"products\"].join(\", \")}}",
+            "AI Summary": "{{$json[\"aiSummary\"]}}",
+            "Quote Total (£)": "{{$json[\"pricing\"][\"total\"]}}",
+            "Drive File URL": "{{$json[\"file\"][\"url\"]}}",
+            "Status": "\"Sent\"",
+            "Phone": "{{$json[\"customer\"][\"phone\"] || \"\"}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Postcode",
+              "displayName": "Postcode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Products",
+              "displayName": "Products",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Summary",
+              "displayName": "AI Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quote Total (£)",
+              "displayName": "Quote Total (£)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Drive File URL",
+              "displayName": "Drive File URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "957ccd3f-3048-45ba-80e5-b44fa4cac905",
+      "name": "Log Quote to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        432,
+        624
+      ],
+      "typeVersion": 4.7,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "hR4LdQOOAXNVJApD",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseKey": "{   \"success\": true,   \"message\": \"Quote successfully generated and emailed to the customer.\" }"
+        }
+      },
+      "id": "bea2a72b-a48b-4201-896e-5dd6457d871f",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        832,
+        624
+      ],
+      "typeVersion": 1.4
+    },
+    {
+      "parameters": {},
+      "id": "9e5deb04-1123-4765-85de-8f8d985d338f",
+      "name": "Error Catcher",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [
+        -1712,
+        928
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fromEmail": "premiumlandscapesuk@gmail.com",
+        "toEmail": "premiumlandscapesuk@gmail.com",
+        "subject": "⚠️ Workflow Error – {{$workflow.name}} ({{$json.error.lastNodeExecuted || \"Unknown Node\"}})",
+        "html": "<h2 style=\"color:#e63946;\">⚠️ Workflow Error Detected</h2>\n\n<p><strong>Workflow:</strong> {{$workflow.name}}</p>\n<p><strong>Execution ID:</strong> {{$json.execution.id}}</p>\n<p><strong>Node:</strong> {{$json.error.lastNodeExecuted || \"Unknown\"}}</p>\n<p><strong>Mode:</strong> {{$json.execution.mode}}</p>\n<p><strong>Timestamp:</strong> {{$now}}</p>\n\n<h3 style=\"color:#e76f51;\">Error Message</h3>\n<pre style=\"background:#fff0f0; padding:10px; border-radius:6px; border:1px solid #e63946; font-size:13px;\">\n{{$json.error.message}}\n</pre>\n\n<h3 style=\"color:#264653;\">Stack Trace</h3>\n<pre style=\"background:#f9f9f9; padding:10px; border-radius:6px; border:1px solid #ccc; font-size:12px; overflow-x:auto;\">\n{{$json.error.stack}}\n</pre>\n\n<p><strong>Execution URL:</strong><br>\n<a href=\"https://digitaltailorsdxb.app.n8n.cloud/workflow/{{$workflow.id}}/executions/{{$json.execution.id}}\">\nView this execution in n8n\n</a>\n</p>\n\n<h3 style=\"color:#2a9d8f;\">Webhook Payload</h3>\n<pre style=\"background:#eefaf8; padding:10px; border-radius:6px; border:1px solid #2a9d8f; font-size:12px; max-height:300px; overflow:auto;\">\n{{JSON.stringify($json, null, 2)}}\n</pre>\n\n<hr>\n<p style=\"font-style:italic; color:#555;\">\nThis email was sent automatically by your n8n monitoring system.\n</p>",
+        "options": {}
+      },
+      "id": "778defdf-3991-4f93-9e3f-00bbd2d79d93",
+      "name": "Send Error Alert",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        -1536,
+        928
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "c71811cb-85dc-480e-8c5b-66741bba20e6",
+      "credentials": {
+        "smtp": {
+          "id": "dLpXH6yljIeIoVw6",
+          "name": "SMTP account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "premium-landscapes-quote",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a2dc118b-88c6-4565-b391-a9db6f978d51",
+      "name": "Webhook Trigger1",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -1776,
+        624
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "18e472db-2bde-42ea-8f26-04d3f526e3f7"
+    },
+    {
+      "parameters": {
+        "functionCode": "const input = $json;\nconst priceTable = { excavation:60, subbase:25, porcelain:130, decking:120, turf:85, planters:300, firepit:1000, lighting:200 };\nlet breakdown = [];\nif (input.project.products.includes('patio')) breakdown.push({feature:'Porcelain Paving', qty:30, unit:'m²', rate:priceTable.porcelain, subtotal:30*priceTable.porcelain});\nif (input.project.products.includes('decking')) breakdown.push({feature:'Composite Decking', qty:20, unit:'m²', rate:priceTable.decking, subtotal:20*priceTable.decking});\nlet subtotal = breakdown.reduce((a,b)=>a+b.subtotal,0);\nlet contingency=subtotal*0.10; let vat=(subtotal+contingency)*0.20; let total=subtotal+contingency+vat;\nreturn [{json:{...input,breakdown,subtotal,contingency,vat,total}}];"
+      },
+      "id": "7a032c35-4595-470b-91b8-19e23c8feaa6",
+      "name": "Calculate Pricing1",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -1280,
+        624
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "conversion",
+        "htmlContent": "=={{$json[\"html\"]}}",
+        "filename": "==\"Quote-\" + $json.customer.name + \"-\" + $moment().format(\"YYYY-MM-DD\") + \".pdf\"",
+        "conversionOptions": {
+          "paper_size": "a4",
+          "orientation": "portrait",
+          "conversionOutput": "file"
+        }
+      },
+      "type": "@pdfgeneratorapi/n8n-nodes-pdf-generator-api.pdfGeneratorApi",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        624
+      ],
+      "id": "ec140800-f545-4ff9-84bb-11705f74fb7a",
+      "name": "Convert HTML to PDF",
+      "credentials": {
+        "pdfGeneratorApi": {
+          "id": "tEyclVvnGiP0hZsZ",
+          "name": "PDF Generator account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $json;\n\nconst summaryPrompt = `\nWrite a short project summary (3–5 sentences) based on the following details:\n\nCustomer name: ${d.customer.name}\nLocation (postcode): ${d.customer.postcode}\nRequested features: ${d.project.products.join(\", \")}\nArea size: ${d.project.area}\nBudget: ${d.project.budget}\n\nTone: friendly, professional, reassuring, and specific to Premium Landscapes' brand.\n`;\n\nreturn [{\n  json: {\n    ...d,\n    summaryPrompt\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        624
+      ],
+      "id": "7c79f219-9a7c-4bfb-ba0e-f52dd414118b",
+      "name": "Build AI Prompt"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Upload PDF to Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Calculate Pricing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Quote Enhancer (GPT-4 Turbo)": {
+      "main": [
+        [
+          {
+            "node": "Merge AI Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge AI Summary": {
+      "main": [
+        [
+          {
+            "node": "Build PDF HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "Log Quote to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Quote to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Upload PDF to Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Catcher": {
+      "main": [
+        [
+          {
+            "node": "Send Error Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Pricing1": {
+      "main": [
+        [
+          {
+            "node": "Build AI Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build PDF HTML": {
+      "main": [
+        [
+          {
+            "node": "Convert HTML to PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert HTML to PDF": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build AI Prompt": {
+      "main": [
+        [
+          {
+            "node": "AI Quote Enhancer (GPT-4 Turbo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "263487b6-7821-4e30-b9b1-4f4538fa5c36",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e1c866f51f89be40bb7a8fd6d598585ff0ef85e3ee97add539aaea059383a17d"
+  },
+  "id": "snCjf2HwLdipPb6v",
+  "tags": []
+}
