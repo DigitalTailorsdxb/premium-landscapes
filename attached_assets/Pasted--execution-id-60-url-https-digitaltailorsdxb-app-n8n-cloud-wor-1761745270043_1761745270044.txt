@@ -1,0 +1,62 @@
+[
+  {
+    "execution": {
+      "id": "60",
+      "url": "https://digitaltailorsdxb.app.n8n.cloud/workflow/snCjf2HwLdipPb6v/executions/60",
+      "error": {
+        "level": "warning",
+        "tags": {
+          "reWrapped": true
+        },
+        "description": "Check that the parameter where you specified the input binary field name is correct, and that it matches a field in the binary input",
+        "timestamp": 1761744866480,
+        "context": {
+          "itemIndex": 0
+        },
+        "functionality": "regular",
+        "name": "NodeApiError",
+        "node": {
+          "parameters": {
+            "resource": "email",
+            "operation": "send",
+            "fromEmail": "premiumlandscapesuk@gmail.com",
+            "toEmail": "={{$json.customer.email}}",
+            "subject": "Your Detailed Garden Quote from Premium Landscapes 🌿",
+            "emailFormat": "html",
+            "html": "=<div style=\"font-family: Inter, Arial, sans-serif; color: #111827; line-height: 1.5;\">\n  <h2 style=\"color:#2563EB;\">Hi {{$json[\"customer\"][\"name\"]}},</h2>\n\n  <p>Thank you for your interest in improving your garden with <strong>Premium Landscapes</strong>.</p>\n  \n  <p>Attached below is your detailed quote, including a breakdown of materials, labour, and an AI-generated project overview created specifically for your property.</p>\n\n  <blockquote style=\"margin: 20px 0; padding: 15px; background: #F0F9FF; border-left: 4px solid #2563EB;\">\n    <strong>AI Project Summary:</strong><br>\n    {{$json[\"aiSummary\"]}}\n  </blockquote>\n\n  <p><strong>Total Estimate:</strong> £{{$json[\"pricing\"][\"total\"].toLocaleString()}}</p>\n  <p>All works include materials, labour, and waste removal.</p>\n\n  <p>If you’d like to go ahead, simply reply to this email or call us directly on <strong>07444 887813</strong>.</p>\n\n  <p>Warm regards,<br>\n  <strong>Premium Landscapes Team</strong><br>\n  <a href=\"https://www.premium-landscapes.co.uk\" style=\"color:#2563EB;\">www.premium-landscapes.co.uk</a></p>\n\n  <hr style=\"margin-top: 30px;\">\n  <p style=\"font-size: 12px; color: #555;\">This quote was automatically generated using Premium Landscapes' AI system.</p>\n</div>",
+            "options": {
+              "attachments": "=data"
+            }
+          },
+          "id": "ea655529-7d00-475c-9713-b0d008e94158",
+          "name": "Send Email",
+          "type": "n8n-nodes-base.emailSend",
+          "position": [
+            592,
+            624
+          ],
+          "typeVersion": 2.1,
+          "webhookId": "ab3e512a-7b66-44ee-9210-d627ca379a3d",
+          "credentials": {
+            "smtp": {
+              "id": "dLpXH6yljIeIoVw6",
+              "name": "SMTP account 2"
+            }
+          }
+        },
+        "messages": [
+          "The item has no binary field 'data' [item 0]"
+        ],
+        "httpCode": null,
+        "message": "The item has no binary field 'data' [item 0]",
+        "stack": "NodeApiError: The item has no binary field 'data' [item 0]\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_afd197edb2c1f848eae21a96a97fab23/node_modules/n8n-nodes-base/nodes/EmailSend/v2/send.operation.ts:279:10)\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_afd197edb2c1f848eae21a96a97fab23/node_modules/n8n-nodes-base/nodes/EmailSend/v2/EmailSendV2.node.ts:105:17)\n    at WorkflowExecute.executeNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1093:8)\n    at WorkflowExecute.runNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1274:11)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1699:27\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:2315:11"
+      },
+      "lastNodeExecuted": "Send Email",
+      "mode": "webhook"
+    },
+    "workflow": {
+      "id": "snCjf2HwLdipPb6v",
+      "name": "Premium Landscapes - Instant Quote (Final)"
+    }
+  }
+]
