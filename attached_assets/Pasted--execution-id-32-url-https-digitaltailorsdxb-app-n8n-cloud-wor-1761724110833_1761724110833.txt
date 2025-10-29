@@ -1,0 +1,18 @@
+[
+  {
+    "execution": {
+      "id": "32",
+      "url": "https://digitaltailorsdxb.app.n8n.cloud/workflow/snCjf2HwLdipPb6v/executions/32",
+      "error": {
+        "message": "Missing 'customer' object in request [Line 6]",
+        "stack": "Error: Missing 'customer' object in request\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_afd197edb2c1f848eae21a96a97fab23/node_modules/n8n-nodes-base/dist/nodes/Function:6:9\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_afd197edb2c1f848eae21a96a97fab23/node_modules/n8n-nodes-base/dist/nodes/Function:41:2\n    at VM2 Wrapper.apply (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/@n8n+vm2@3.9.25/node_modules/@n8n/vm2/lib/bridge.js:490:11)\n    at NodeVM.run (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/@n8n+vm2@3.9.25/node_modules/@n8n/vm2/lib/nodevm.js:497:23)\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_afd197edb2c1f848eae21a96a97fab23/node_modules/n8n-nodes-base/nodes/Function/Function.node.ts:169:21)\n    at WorkflowExecute.executeNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1093:31)\n    at WorkflowExecute.runNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1274:22)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1699:38\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:2315:11"
+      },
+      "lastNodeExecuted": "Validate Input",
+      "mode": "webhook"
+    },
+    "workflow": {
+      "id": "snCjf2HwLdipPb6v",
+      "name": "Premium Landscapes - Instant Quote (Final)"
+    }
+  }
+]
