@@ -572,12 +572,6 @@ async function submitQuote() {
 // Structures data for n8n pricing workflow
 // ============================================================================
 function prepareWebhookPayload() {
-    // Build product details with descriptions
-    const productDetails = {};
-    quoteData.features.forEach(feature => {
-        productDetails[feature] = quoteData.productDetails[feature] || '';
-    });
-    
     // Upload files as base64 for AI analysis (optional)
     const filePromises = quoteData.files.map(file => {
         return new Promise((resolve) => {
@@ -593,34 +587,125 @@ function prepareWebhookPayload() {
     });
     
     return Promise.all(filePromises).then(filesData => {
+        // Parse budget from string like "£5k-£10k" to number
+        const parseBudget = (budgetStr) => {
+            if (!budgetStr) return null;
+            const match = budgetStr.match(/(\d+)k/i);
+            return match ? parseInt(match[1]) * 1000 : null;
+        };
+        
+        const totalBudget = parseBudget(quoteData.budget);
+        const totalArea = parseInt(quoteData.area) || 40;
+        
+        // Generate project title based on selected products
+        const generateProjectTitle = () => {
+            const productNames = {
+                'patio': 'Patio',
+                'decking': 'Decking',
+                'turf': 'Lawn',
+                'driveway': 'Driveway',
+                'fencing': 'Fencing',
+                'lighting': 'Lighting',
+                'full-redesign': 'Complete Garden Redesign',
+                'other': 'Custom Garden'
+            };
+            
+            const features = quoteData.features.map(f => productNames[f] || f).join(' & ');
+            return features ? `${features} Installation` : 'Garden Transformation';
+        };
+        
+        // Transform simple products array into detailed objects for n8n
+        const transformProducts = () => {
+            return quoteData.features.map(feature => {
+                const description = quoteData.productDetails[feature] || '';
+                
+                // Parse material and size from description
+                const extractInfo = (text) => {
+                    const lowerText = text.toLowerCase();
+                    let material = 'standard';
+                    let areaMatch = text.match(/(\d+)\s*(m2|sm|sqm|square|metres)/i);
+                    let area = areaMatch ? parseInt(areaMatch[1]) : Math.round(totalArea / quoteData.features.length);
+                    
+                    // Extract material keywords
+                    if (lowerText.includes('porcelain')) material = 'porcelain';
+                    else if (lowerText.includes('sandstone') || lowerText.includes('indian')) material = 'indian sandstone';
+                    else if (lowerText.includes('composite')) material = 'composite';
+                    else if (lowerText.includes('artificial')) material = 'artificial grass';
+                    else if (lowerText.includes('block')) material = 'block paving';
+                    else if (lowerText.includes('close board') || lowerText.includes('close-board')) material = 'close board';
+                    
+                    return { material, area };
+                };
+                
+                const info = extractInfo(description);
+                
+                // Base product structure
+                const product = {
+                    type: feature,
+                    description: description || `${feature} installation`,
+                    material: info.material,
+                    unitType: (feature === 'fencing' || feature === 'lighting') ? 'qty' : 'm2'
+                };
+                
+                // Add type-specific fields
+                if (feature === 'patio' || feature === 'driveway') {
+                    product.area_m2 = info.area;
+                    product.edging = description.toLowerCase().includes('edging') ? 'standard edging' : 'none';
+                    product.includeDrainage = true;
+                } else if (feature === 'decking') {
+                    product.area_m2 = info.area;
+                    product.raised = description.toLowerCase().includes('raised');
+                    product.steps = description.toLowerCase().includes('step') ? 3 : 0;
+                    product.balustrade = description.toLowerCase().includes('glass') ? 'glass panels' : 'none';
+                } else if (feature === 'turf') {
+                    product.area_m2 = info.area;
+                    product.includeEdging = true;
+                } else if (feature === 'fencing') {
+                    const lengthMatch = description.match(/(\d+)\s*(m|meter|metre)/i);
+                    product.length_m = lengthMatch ? parseInt(lengthMatch[1]) : 20;
+                    product.height_m = 1.8;
+                } else if (feature === 'lighting') {
+                    product.fittings = 8;
+                    product.wattagePerFitting = 6;
+                    product.control = 'standard switch';
+                } else {
+                    product.area_m2 = info.area;
+                }
+                
+                return product;
+            });
+        };
+        
+        // Build n8n-compatible payload
         return {
-            // Customer Information (required by n8n workflow)
             customer: {
                 name: quoteData.name || 'Unknown',
                 email: quoteData.email,
                 phone: quoteData.phone || '',
                 postcode: quoteData.postcode,
+                address: `${quoteData.postcode}, UK` // Generate basic address from postcode
             },
-            
-            // Project Details - products as simple array of strings (n8n expects this format)
             project: {
-                products: quoteData.features, // Simple array: ['patio', 'decking', 'turf']
-                productDetails: productDetails, // Detailed descriptions for each product
-                additionalNotes: quoteData.additionalNotes || '',
-                area: parseInt(quoteData.area) || 40,
-                budget: quoteData.budget || '',
-            },
-            
-            // Files for AI Vision Analysis (optional)
-            files: filesData,
-            
-            // Options
-            aiDesign: quoteData.aiDesign || false,
-            
-            // Metadata
-            timestamp: new Date().toISOString(),
-            source: 'website',
-            confidence: calculateConfidenceScore(),
+                title: generateProjectTitle(),
+                totalArea_m2: totalArea,
+                totalBudget_gbp: totalBudget,
+                layoutType: 'standard', // Default value
+                sunlight: 'partial sun', // Default value
+                stylePreference: 'contemporary', // Default value
+                maintenanceLevel: 'low maintenance', // Default value
+                siteConditions: {
+                    access: 'standard access',
+                    soilType: 'loam',
+                    drainage: 'good'
+                },
+                products: transformProducts(),
+                extras: {
+                    pergola: { include: false },
+                    firePit: { include: false },
+                    waterFeature: { include: false }
+                },
+                notes: quoteData.additionalNotes || 'Website quote request'
+            }
         };
     });
 }
