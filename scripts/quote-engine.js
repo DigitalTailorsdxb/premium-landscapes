@@ -6,12 +6,14 @@ const totalSteps = 5;
 let quoteData = {
     features: [],
     productDetails: {}, // Stores details for each product
+    productAreas: {}, // Stores area/size for each product
     additionalNotes: '',
     area: 40,
     budget: '',
     postcode: '',
     email: '',
     phone: '',
+    name: '',
     aiDesign: false,
     files: []
 };
@@ -69,6 +71,17 @@ function buildProductDetailFields() {
     
     quoteData.features.forEach((feature, index) => {
         const featureName = feature.charAt(0).toUpperCase() + feature.slice(1).replace('-', ' ');
+        
+        // Determine the area label and placeholder based on product type
+        const areaConfig = {
+            'fencing': { label: 'Length (meters)', placeholder: '25', unit: 'm' },
+            'lighting': { label: 'Number of Fittings', placeholder: '8', unit: 'fittings' },
+            'full-redesign': { label: 'Total Area (m²)', placeholder: '100', unit: 'm²' },
+            'default': { label: 'Area (m²)', placeholder: '40', unit: 'm²' }
+        };
+        
+        const config = areaConfig[feature] || areaConfig['default'];
+        
         const fieldHtml = `
             <div class="bg-stone p-5 rounded-xl border-2 border-gray-200 product-detail-field" data-feature="${feature}">
                 <div class="flex justify-between items-center mb-3">
@@ -80,28 +93,60 @@ function buildProductDetailFields() {
                         <i class="fas fa-times mr-1"></i> Remove
                     </button>
                 </div>
-                <textarea 
-                    id="detail-${feature}" 
-                    rows="2"
-                    class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
-                    placeholder="e.g., ${productExamples[feature] || 'Add details...'}"
-                ></textarea>
+                
+                <!-- Area/Size Input Field -->
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">${config.label}</label>
+                    <div class="flex gap-2">
+                        <input 
+                            type="number" 
+                            id="area-${feature}"
+                            min="1"
+                            class="flex-1 px-4 py-3 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                            placeholder="${config.placeholder}"
+                        />
+                        <span class="flex items-center px-3 text-gray-600 bg-gray-100 rounded-lg">${config.unit}</span>
+                    </div>
+                </div>
+                
+                <!-- Material/Description Field -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Material & Details (optional)</label>
+                    <textarea 
+                        id="detail-${feature}" 
+                        rows="2"
+                        class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                        placeholder="e.g., ${productExamples[feature] || 'Add details...'}"
+                    ></textarea>
+                </div>
             </div>
         `;
         container.innerHTML += fieldHtml;
     });
     
-    // Restore previously entered details
+    // Restore previously entered details and add event listeners
     quoteData.features.forEach(feature => {
         const textarea = document.getElementById(`detail-${feature}`);
+        const areaInput = document.getElementById(`area-${feature}`);
+        
+        // Restore values
         if (textarea && quoteData.productDetails[feature]) {
             textarea.value = quoteData.productDetails[feature];
         }
+        if (areaInput && quoteData.productAreas[feature]) {
+            areaInput.value = quoteData.productAreas[feature];
+        }
         
-        // Add event listener to save details
+        // Add event listeners
         if (textarea) {
             textarea.addEventListener('input', function() {
                 quoteData.productDetails[feature] = this.value;
+                updateSummary();
+            });
+        }
+        if (areaInput) {
+            areaInput.addEventListener('input', function() {
+                quoteData.productAreas[feature] = this.value;
                 updateSummary();
             });
         }
@@ -121,6 +166,7 @@ function buildProductDetailFields() {
 function removeProduct(feature) {
     quoteData.features = quoteData.features.filter(f => f !== feature);
     delete quoteData.productDetails[feature];
+    delete quoteData.productAreas[feature];
     
     // Update Step 1 visual
     const featureCard = document.querySelector(`.feature-card[data-feature="${feature}"]`);
@@ -619,57 +665,56 @@ function prepareWebhookPayload() {
             return quoteData.features.map(feature => {
                 const description = quoteData.productDetails[feature] || '';
                 
-                // Parse material and size from description
-                const extractInfo = (text) => {
+                // Use dedicated area field if provided, otherwise parse from description or use default
+                const dedicatedArea = quoteData.productAreas[feature];
+                const defaultArea = Math.round(totalArea / quoteData.features.length);
+                
+                // Parse material from description
+                const extractMaterial = (text) => {
                     const lowerText = text.toLowerCase();
-                    let material = 'standard';
-                    let areaMatch = text.match(/(\d+)\s*(m2|sm|sqm|square|metres)/i);
-                    let area = areaMatch ? parseInt(areaMatch[1]) : Math.round(totalArea / quoteData.features.length);
                     
-                    // Extract material keywords
-                    if (lowerText.includes('porcelain')) material = 'porcelain';
-                    else if (lowerText.includes('sandstone') || lowerText.includes('indian')) material = 'indian sandstone';
-                    else if (lowerText.includes('composite')) material = 'composite';
-                    else if (lowerText.includes('artificial')) material = 'artificial grass';
-                    else if (lowerText.includes('block')) material = 'block paving';
-                    else if (lowerText.includes('close board') || lowerText.includes('close-board')) material = 'close board';
+                    if (lowerText.includes('porcelain')) return 'porcelain';
+                    if (lowerText.includes('sandstone') || lowerText.includes('indian')) return 'indian sandstone';
+                    if (lowerText.includes('composite')) return 'composite';
+                    if (lowerText.includes('artificial')) return 'artificial grass';
+                    if (lowerText.includes('block')) return 'block paving';
+                    if (lowerText.includes('close board') || lowerText.includes('close-board')) return 'close board';
                     
-                    return { material, area };
+                    return 'standard';
                 };
                 
-                const info = extractInfo(description);
+                const material = extractMaterial(description);
                 
                 // Base product structure
                 const product = {
                     type: feature,
                     description: description || `${feature} installation`,
-                    material: info.material,
+                    material: material,
                     unitType: (feature === 'fencing' || feature === 'lighting') ? 'qty' : 'm2'
                 };
                 
-                // Add type-specific fields
+                // Add type-specific fields using dedicated area input
                 if (feature === 'patio' || feature === 'driveway') {
-                    product.area_m2 = info.area;
+                    product.area_m2 = dedicatedArea ? parseInt(dedicatedArea) : defaultArea;
                     product.edging = description.toLowerCase().includes('edging') ? 'standard edging' : 'none';
                     product.includeDrainage = true;
                 } else if (feature === 'decking') {
-                    product.area_m2 = info.area;
+                    product.area_m2 = dedicatedArea ? parseInt(dedicatedArea) : defaultArea;
                     product.raised = description.toLowerCase().includes('raised');
                     product.steps = description.toLowerCase().includes('step') ? 3 : 0;
                     product.balustrade = description.toLowerCase().includes('glass') ? 'glass panels' : 'none';
                 } else if (feature === 'turf') {
-                    product.area_m2 = info.area;
+                    product.area_m2 = dedicatedArea ? parseInt(dedicatedArea) : defaultArea;
                     product.includeEdging = true;
                 } else if (feature === 'fencing') {
-                    const lengthMatch = description.match(/(\d+)\s*(m|meter|metre)/i);
-                    product.length_m = lengthMatch ? parseInt(lengthMatch[1]) : 20;
+                    product.length_m = dedicatedArea ? parseInt(dedicatedArea) : 20;
                     product.height_m = 1.8;
                 } else if (feature === 'lighting') {
-                    product.fittings = 8;
+                    product.fittings = dedicatedArea ? parseInt(dedicatedArea) : 8;
                     product.wattagePerFitting = 6;
                     product.control = 'standard switch';
                 } else {
-                    product.area_m2 = info.area;
+                    product.area_m2 = dedicatedArea ? parseInt(dedicatedArea) : defaultArea;
                 }
                 
                 return product;
@@ -712,23 +757,51 @@ function prepareWebhookPayload() {
 
 // ============================================================================
 // CONFIDENCE SCORE CALCULATION
-// Based on data completeness for accurate pricing
+// Based on data completeness for accurate pricing - the more info, the higher the score
 // ============================================================================
 function calculateConfidenceScore() {
-    let score = 50; // Base score
+    let score = 30; // Base score (lower starting point)
     
-    // Add points for data completeness
-    if (quoteData.features.length > 0) score += 10;
-    if (quoteData.area && quoteData.area > 0) score += 15;
-    if (quoteData.postcode) score += 10;
-    if (quoteData.files.length > 0) score += 15; // Photos help AI estimate
+    // 1. Products selected (up to +15 points)
+    const productCount = quoteData.features.length;
+    if (productCount > 0) score += Math.min(productCount * 3, 15);
     
-    // Add points for detailed descriptions
-    const hasDetailedDescriptions = quoteData.features.some(feature => {
-        const details = quoteData.productDetails[feature];
-        return details && details.length > 20;
-    });
-    if (hasDetailedDescriptions) score += 10;
+    // 2. Area sizes provided for products (up to +20 points)
+    const areasProvided = Object.keys(quoteData.productAreas).filter(key => {
+        const value = quoteData.productAreas[key];
+        return value && value > 0;
+    }).length;
+    if (areasProvided > 0) {
+        score += Math.min(areasProvided * 5, 20);
+    }
+    
+    // 3. Product descriptions/materials (up to +15 points)
+    const detailedDescriptions = Object.values(quoteData.productDetails).filter(desc => {
+        return desc && desc.length > 10;
+    }).length;
+    if (detailedDescriptions > 0) {
+        score += Math.min(detailedDescriptions * 3, 15);
+    }
+    
+    // 4. Budget selected (+10 points)
+    if (quoteData.budget && quoteData.budget.length > 0) score += 10;
+    
+    // 5. Total area provided (+8 points)
+    if (quoteData.area && quoteData.area > 0) score += 8;
+    
+    // 6. Location/Postcode provided (+10 points)
+    if (quoteData.postcode && quoteData.postcode.length >= 5) score += 10;
+    
+    // 7. Photos uploaded (+12 points - visual data is valuable)
+    if (quoteData.files.length > 0) score += 12;
+    if (quoteData.files.length >= 3) score += 5; // Bonus for multiple photos
+    
+    // 8. Contact details complete (+5 points)
+    if (quoteData.name && quoteData.email) score += 5;
+    if (quoteData.phone && quoteData.phone.length >= 10) score += 3;
+    
+    // 9. Additional notes provided (+2 points)
+    if (quoteData.additionalNotes && quoteData.additionalNotes.length > 20) score += 2;
     
     return Math.min(score, 95); // Cap at 95% (never 100% without site visit)
 }
