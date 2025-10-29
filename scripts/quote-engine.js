@@ -94,8 +94,19 @@ function buildProductDetailFields() {
                     </button>
                 </div>
                 
-                <!-- Area/Size Input Field -->
+                <!-- Material/Description Field -->
                 <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Material & Details (optional)</label>
+                    <textarea 
+                        id="detail-${feature}" 
+                        rows="2"
+                        class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                        placeholder="e.g., ${productExamples[feature] || 'Add details...'}"
+                    ></textarea>
+                </div>
+                
+                <!-- Area/Size Input Field -->
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">${config.label}</label>
                     <div class="flex gap-2">
                         <input 
@@ -107,17 +118,6 @@ function buildProductDetailFields() {
                         />
                         <span class="flex items-center px-3 text-gray-600 bg-gray-100 rounded-lg">${config.unit}</span>
                     </div>
-                </div>
-                
-                <!-- Material/Description Field -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Material & Details (optional)</label>
-                    <textarea 
-                        id="detail-${feature}" 
-                        rows="2"
-                        class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
-                        placeholder="e.g., ${productExamples[feature] || 'Add details...'}"
-                    ></textarea>
                 </div>
             </div>
         `;
