@@ -8,8 +8,9 @@
 ✅ **Quote System Ready** - 5-step conversational quote form with n8n webhook integration configured
 ✅ **Dedicated Area Input Fields** - Each product now has a dedicated area/size input field for more accurate quotes
 ✅ **Enhanced Confidence Score** - Dynamic scoring (30-95%) based on completeness of information provided
-✅ **Single Estimated Pricing** - Shows one figure (e.g., £11,100) instead of ranges
+✅ **Clean Quote Submission** - No fake pricing shown on site; actual quote sent via email from n8n workflow
 ✅ **n8n Integration Active** - Webhook URL: https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-quote
+✅ **Logo URL for PDFs** - https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev/static/logo.png
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
@@ -35,9 +36,9 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
   - **Step 5:** Contact details with conditional AI design preview option (only visible if images uploaded; otherwise shows upload prompt)
   - Live summary panel updates in real-time showing selected products, area, budget, location, and photo count
   - Progress bar with step indicator and percentage
-  - **Quote Display:** Shows single estimated figure (e.g., £11,100) instead of price ranges for cleaner presentation
-  - **n8n Integration:** Ready to connect - just add webhook URL to `scripts/config.js` line 35. See `N8N_QUOTE_WEBHOOK_SETUP.md` for setup instructions.
-  - **Demo Mode:** Shows mock quote data until n8n webhook configured (automatically detects if URL is placeholder)
+  - **Quote Submission:** After submission, shows confirmation message explaining quote will be emailed. No fake pricing displayed on site.
+  - **n8n Integration:** Webhook sends all data to n8n workflow which handles pricing calculation, PDF generation, and email delivery
+  - **Material/Details First:** Product detail cards show material/description field first, followed by area/size input below
 - **AI Design Generator Page (`design.html`):** Allows users to select preferred garden styles, upload an optional image of their current garden, and provide an email for receiving AI-generated designs. The workflow sends data to a Make.com webhook, which then uses GPT-4o to generate prompts for DALL·E or Midjourney.
 - **PDF Quote Generator:** Auto-generates branded PDF quotes with client details, itemized breakdown, total price range, and company branding.
 - **White-Label Configuration:** Handled via `scripts/config.js` with defensive null checks for easy client-specific customization.

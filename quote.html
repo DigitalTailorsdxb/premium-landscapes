@@ -451,31 +451,41 @@
                         <!-- Quote Result -->
                         <div id="quoteResult" class="hidden">
                             <div class="text-center mb-6">
-                                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <i class="fas fa-check text-3xl text-green-600"></i>
+                                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-check text-4xl text-green-600"></i>
                                 </div>
-                                <h2 class="font-heading font-bold text-3xl text-primary mb-2">Your Instant Quote is Ready!</h2>
-                                <p class="text-gray-600">Based on 120+ similar projects in your area</p>
+                                <h2 class="font-heading font-bold text-3xl text-primary mb-3">Quote Request Submitted!</h2>
+                                <p class="text-gray-600 text-lg mb-6">We've received your project details and will email you a detailed quote shortly.</p>
                             </div>
                             
-                            <div class="bg-gradient-to-br from-primary to-accent text-white p-8 rounded-2xl mb-6">
-                                <p class="text-sm opacity-90 mb-2">Estimated Investment</p>
-                                <p class="text-5xl font-bold mb-2">£8,500 - £12,500</p>
-                                <p class="text-sm opacity-90">Including materials, labour & VAT</p>
+                            <div class="bg-gradient-to-br from-blue-50 to-purple-50 p-8 rounded-2xl mb-6 border-2 border-blue-100">
+                                <div class="flex items-start mb-4">
+                                    <i class="fas fa-info-circle text-2xl text-primary mr-3 mt-1"></i>
+                                    <div>
+                                        <h3 class="font-semibold text-lg text-gray-900 mb-2">What Happens Next?</h3>
+                                        <ul class="space-y-2 text-gray-700">
+                                            <li class="flex items-start">
+                                                <i class="fas fa-check-circle text-accent mr-2 mt-1"></i>
+                                                <span>Our AI analyzes your requirements and local pricing data</span>
+                                            </li>
+                                            <li class="flex items-start">
+                                                <i class="fas fa-check-circle text-accent mr-2 mt-1"></i>
+                                                <span>You'll receive a detailed PDF quote via email within minutes</span>
+                                            </li>
+                                            <li class="flex items-start">
+                                                <i class="fas fa-check-circle text-accent mr-2 mt-1"></i>
+                                                <span>Our team will follow up to discuss your project in detail</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                             
-                            <div class="bg-stone p-6 rounded-xl mb-6">
-                                <h3 class="font-semibold text-lg mb-4">Breakdown</h3>
-                                <div id="quoteBreakdown" class="space-y-3"></div>
-                            </div>
-                            
-                            <div class="flex gap-3">
-                                <button onclick="emailQuote()" class="flex-1 bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-primary-dark transition">
-                                    <i class="fas fa-envelope mr-2"></i> Email Me This Quote
-                                </button>
-                                <a href="design.html" class="flex-1 bg-accent text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition text-center">
-                                    <i class="fas fa-magic mr-2"></i> See AI Design
+                            <div class="text-center">
+                                <a href="design.html" class="inline-block bg-gradient-to-r from-primary to-accent text-white px-8 py-4 rounded-full font-semibold hover:shadow-xl transition">
+                                    <i class="fas fa-magic mr-2"></i> See AI Garden Designs
                                 </a>
+                                <p class="text-sm text-gray-500 mt-4">Or <a href="index.html" class="text-primary hover:underline">return to homepage</a></p>
                             </div>
                         </div>
                     </div>
@@ -547,8 +557,8 @@
         </div>
     </footer>
     
-    <script src="scripts/config.js?v=1761768510"></script>
-    <script src="scripts/quote-engine.js?v=1761768510"></script>
-    <script src="scripts/main.js?v=1761768510"></script>
+    <script src="scripts/config.js?v=1761768900"></script>
+    <script src="scripts/quote-engine.js?v=1761768900"></script>
+    <script src="scripts/main.js?v=1761768900"></script>
 </body>
 </html>

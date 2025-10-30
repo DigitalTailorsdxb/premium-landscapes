@@ -808,94 +808,15 @@ function calculateConfidenceScore() {
 
 // ============================================================================
 // DISPLAY QUOTE RESULT
-// Handles both demo data and real webhook responses
+// Shows confirmation message - actual quote sent via email from n8n
 // ============================================================================
 function showQuoteResult(data) {
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('quoteResult').classList.remove('hidden');
     
-    const breakdown = document.getElementById('quoteBreakdown');
-    
-    // If real data from webhook, use it
-    if (data && data.breakdown && data.totalLow && data.totalHigh) {
-        // Real webhook response - calculate single estimated figure
-        const totalEstimate = Math.round((data.totalLow + data.totalHigh) / 2);
-        
-        let breakdownHTML = '';
-        data.breakdown.forEach(item => {
-            const itemEstimate = Math.round((item.low + item.high) / 2);
-            breakdownHTML += `
-                <div class="flex justify-between items-center py-2 border-b">
-                    <span class="text-gray-700">${item.description}</span>
-                    <span class="font-semibold">£${itemEstimate.toLocaleString()}</span>
-                </div>
-            `;
-        });
-        
-        breakdownHTML += `
-            <div class="flex justify-between items-center py-3 font-bold text-lg">
-                <span class="text-primary">Total Estimate (inc. VAT)</span>
-                <span class="text-primary">£${totalEstimate.toLocaleString()}</span>
-            </div>
-        `;
-        
-        breakdown.innerHTML = breakdownHTML;
-        
-    } else {
-        // Demo mode - show example breakdown with single estimated figure
-        breakdown.innerHTML = `
-            <div class="flex justify-between items-center py-2 border-b">
-                <span class="text-gray-700">Materials & Installation</span>
-                <span class="font-semibold">£7,850</span>
-            </div>
-            <div class="flex justify-between items-center py-2 border-b">
-                <span class="text-gray-700">Base Preparation & Excavation</span>
-                <span class="font-semibold">£1,500</span>
-            </div>
-            <div class="flex justify-between items-center py-2 border-b">
-                <span class="text-gray-700">Waste Removal (3 skips)</span>
-                <span class="font-semibold">£750</span>
-            </div>
-            <div class="flex justify-between items-center py-2 border-b">
-                <span class="text-gray-700">Project Management & Overhead</span>
-                <span class="font-semibold">£1,000</span>
-            </div>
-            <div class="flex justify-between items-center py-3 font-bold text-lg">
-                <span class="text-primary">Total Estimate (inc. VAT)</span>
-                <span class="text-primary">£11,100</span>
-            </div>
-            <p class="text-xs text-gray-500 mt-2 text-center">
-                <i class="fas fa-info-circle mr-1"></i>
-                Demo pricing - Connect n8n for accurate regional quotes
-            </p>
-        `;
-    }
+    console.log('✅ Quote request submitted successfully!');
+    console.log('Customer will receive detailed PDF quote via email from n8n workflow');
     
     // Scroll to result
     window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// ============================================================================
-// EMAIL QUOTE FUNCTION
-// Triggers Make.com webhook to send PDF via email
-// ============================================================================
-function emailQuote() {
-    alert(`Quote will be emailed to: ${quoteData.email}\n\nIn production, this will trigger an automated email with PDF attachment.`);
-    console.log('Email quote to:', quoteData.email);
-    
-    // ============================================================================
-    // PRODUCTION IMPLEMENTATION - Email webhook
-    // ============================================================================
-    // const emailWebhookUrl = window.CONFIG?.emailWebhookUrl || 'https://hook.eu1.make.com/your-email-webhook';
-    // 
-    // fetch(emailWebhookUrl, {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({
-    //         email: quoteData.email,
-    //         quoteData: quoteData,
-    //         sendPDF: true,
-    //         timestamp: new Date().toISOString()
-    //     })
-    // });
 }
