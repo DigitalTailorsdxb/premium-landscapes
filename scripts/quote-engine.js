@@ -606,7 +606,10 @@ async function submitQuote() {
         showQuoteResult(result);
         
     } catch (error) {
-        console.error('Error submitting quote:', error);
+        console.error('❌ Error submitting quote:', error);
+        console.error('Error type:', error.constructor.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
         alert('There was an error processing your quote. Please try again or contact us at 07444 887813');
         document.getElementById('loadingState').classList.add('hidden');
         document.getElementById('step5').classList.remove('hidden');
