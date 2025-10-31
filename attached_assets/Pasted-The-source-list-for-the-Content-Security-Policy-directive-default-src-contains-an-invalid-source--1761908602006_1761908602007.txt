@@ -1,0 +1,300 @@
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.Understand this error
+12The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?Understand this error
+12The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.Understand this error
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.Understand this error
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?Understand this error
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.Understand this error
+Landscaping-Project:1 The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.Understand this error
+Landscaping-Project:1 The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?Understand this error
+Landscaping-Project:1 The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.Understand this error
+b62f936bb28418c2.js:2 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+b62f936bb28418c2.js:2 Download the Apollo DevTools for a better development experience: https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+b62f936bb28418c2.js:2 [LaunchDarkly] LaunchDarkly client initialized
+Landscaping-Project:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+b62f936bb28418c2.js:2 Cache data may be lost when replacing the gitHubInfoV2 field of a CurrentUser object.
+
+This could cause additional (usually avoidable) network requests to fetch data that were otherwise cached.
+
+To address this problem (which is not a bug in Apollo Client), either ensure all objects of type GitHubInfoV2 have an ID or a custom merge function, or define a custom merge function for the CurrentUser.gitHubInfoV2 field, so InMemoryCache can safely merge these objects:
+
+  existing: {"__typename":"GitHubInfoV2","accessToken":"ghu_tinzqSSre0bMqyldEkaM3NftdemXJP0FEhHC","userInfo":{"__typename":"GitHubUserInfo","name":null,"username":"DigitalTailorsdxb","email":"thedigitaltailorsdxb@gmail.com","avatarUrl":"https://avatars.githubusercontent.com/u/215810974?v=4"}}
+  incoming: {"__typename":"GitHubInfoV2","accessToken":"ghu_tinzqSSre0bMqyldEkaM3NftdemXJP0FEhHC"}
+
+For more information about these options, please refer to the documentation:
+
+  * Ensuring entity objects have IDs: https://go.apollo.dev/c/generating-unique-identifiers
+  * Defining custom merge functions: https://go.apollo.dev/c/merging-non-normalized-objects
+
+(anonymous) @ b62f936bb28418c2.js:2
+(anonymous) @ c02e6196e4bb6dda.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+e.writeToStore @ 2bd6639265a8ac79.js:2
+r.write @ 2bd6639265a8ac79.js:2
+e.writeQuery @ 2bd6639265a8ac79.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+c @ 2bd6639265a8ac79.js:2
+r.batch @ 2bd6639265a8ac79.js:2
+r.performTransaction @ 2bd6639265a8ac79.js:2
+e.markResult @ 2bd6639265a8ac79.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+t @ 2bd6639265a8ac79.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+then @ 2bd6639265a8ac79.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+m @ 1b224bbc8db79db2.js:2
+_ @ 1b224bbc8db79db2.js:2
+r.next @ 1b224bbc8db79db2.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+H @ 2bd6639265a8ac79.js:2
+next @ 2bd6639265a8ac79.js:2
+m @ 1b224bbc8db79db2.js:2
+_ @ 1b224bbc8db79db2.js:2
+r.next @ 1b224bbc8db79db2.js:2
+onNext @ 2bd6639265a8ac79.js:2
+m @ 1b224bbc8db79db2.js:2
+_ @ 1b224bbc8db79db2.js:2
+r.next @ 1b224bbc8db79db2.js:2
+next @ 2bd6639265a8ac79.js:2
+m @ 1b224bbc8db79db2.js:2
+_ @ 1b224bbc8db79db2.js:2
+r.next @ 1b224bbc8db79db2.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+next @ 2bd6639265a8ac79.js:2
+m @ 1b224bbc8db79db2.js:2
+_ @ 1b224bbc8db79db2.js:2
+r.next @ 1b224bbc8db79db2.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+Promise.then
+(anonymous) @ 2bd6639265a8ac79.js:2
+e @ 1b224bbc8db79db2.js:2
+o.subscribe @ 1b224bbc8db79db2.js:2
+e.consumeQueue @ 2bd6639265a8ac79.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+e @ 1b224bbc8db79db2.js:2
+o.subscribe @ 1b224bbc8db79db2.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+e @ 1b224bbc8db79db2.js:2
+o.subscribe @ 1b224bbc8db79db2.js:2
+e.try @ 2bd6639265a8ac79.js:2
+e.start @ 2bd6639265a8ac79.js:2
+r.request @ 2bd6639265a8ac79.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+(anonymous) @ 2bd6639265a8ac79.js:2
+e.execute @ 2bd6639265a8ac79.js:2
+e.getObservableFromLink @ 2bd6639265a8ac79.js:2
+e.getResultsFromLink @ 2bd6639265a8ac79.js:2
+g @ 2bd6639265a8ac79.js:2
+e.fetchQueryByPolicy @ 2bd6639265a8ac79.js:2
+g @ 2bd6639265a8ac79.js:2
+e.fetchConcastWithInfo @ 2bd6639265a8ac79.js:2
+e.fetchQueryObservable @ 2bd6639265a8ac79.js:2
+e.fetchQuery @ 2bd6639265a8ac79.js:2
+e.query @ 2bd6639265a8ac79.js:2
+e.query @ 2bd6639265a8ac79.js:2
+(anonymous) @ bfe8af3b87b4a08e.js:2
+(anonymous) @ 33ddb2aa5c45a58a.js:2
+e @ 33ddb2aa5c45a58a.js:2
+s @ 33ddb2aa5c45a58a.js:2
+(anonymous) @ 33ddb2aa5c45a58a.js:2
+(anonymous) @ 33ddb2aa5c45a58a.js:2
+C @ bfe8af3b87b4a08e.js:2
+(anonymous) @ 7f266e8141e34d80.js:2
+(anonymous) @ 33ddb2aa5c45a58a.js:2
+e @ 33ddb2aa5c45a58a.js:2
+s @ 33ddb2aa5c45a58a.js:2
+(anonymous) @ 33ddb2aa5c45a58a.js:2
+(anonymous) @ 33ddb2aa5c45a58a.js:2
+(anonymous) @ 7f266e8141e34d80.js:2
+(anonymous) @ 7f266e8141e34d80.js:2
+uV @ ed1e693c96a75807.js:2
+iH @ ed1e693c96a75807.js:2
+iT @ ed1e693c96a75807.js:2
+r6 @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iB @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this error
+ed1e693c96a75807.js:2 Unrecognized feature: 'ambient-light-sensor'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'battery'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'execution-while-not-rendered'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'execution-while-out-of-viewport'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'layout-animations'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'legacy-image-formats'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'navigation-override'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'oversized-images'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'publickey-credentials'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'speaker-selection'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'unoptimized-images'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'unsized-media'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'pointer-lock'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Allow attribute will take precedence over 'allowfullscreen'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Allow attribute will take precedence over 'allowpaymentrequest'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar1s%3A:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.Understand this error
+workspace_iframe.html?initialPath=%2F&id=%3Ar1s%3A:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar1s%3A:32 Unrecognized feature: 'battery'.Understand this warning
+dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar1s%3A:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warning
+dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar1s%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warning
+dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar1s%3A:32 Unrecognized feature: 'layout-animations'.Understand this warning
+dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar1s%3A:32 Unrecognized feature: 'legacy-image-formats'.Understand this warning
+dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar1s%3A:32 Unrecognized feature: 'navigation-override'.Understand this warning
+dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar1s%3A:32 Unrecognized feature: 'oversized-images'.Understand this warning
+dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar1s%3A:32 Unrecognized feature: 'publickey-credentials'.Understand this warning
+dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar1s%3A:32 Unrecognized feature: 'speaker-selection'.Understand this warning
+dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar1s%3A:32 Unrecognized feature: 'unoptimized-images'.Understand this warning
+dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar1s%3A:32 Unrecognized feature: 'unsized-media'.Understand this warning
+dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar1s%3A:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warning
+dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev:5000/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar1s%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warning
+injected.js:27 cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation
+(anonymous) @ injected.js:27
+(anonymous) @ (index):64
+(anonymous) @ (index):64Understand this warning
+injected.js:27 ✅ Config loaded! Webhook URL: https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-quote
