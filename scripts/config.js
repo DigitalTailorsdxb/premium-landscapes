@@ -39,6 +39,14 @@ const brandConfig = {
     },
     
     // ============================================================================
+    // ADDRESS LOOKUP API CONFIGURATION
+    // ============================================================================
+    // GetAddress.io API key for UK postcode to address lookup
+    // Sign up for free tier at: https://getaddress.io/
+    // Free tier includes limited daily lookups
+    getAddressApiKey: "",
+    
+    // ============================================================================
     // PRICING SYSTEM CONFIGURATION
     // ============================================================================
     pricing: {
@@ -114,9 +122,15 @@ function applyBranding() {
 
 // Export brandConfig to window so other scripts can access it
 window.brandConfig = brandConfig;
+window.GETADDRESS_API_KEY = brandConfig.getAddressApiKey;
 
 // Debug logging to verify config is loaded
 console.log('✅ Config loaded! Webhook URL:', brandConfig?.webhooks?.quote);
+if (brandConfig.getAddressApiKey) {
+    console.log('✅ Address lookup enabled');
+} else {
+    console.log('⚠️ Address lookup disabled (no API key configured)');
+}
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', applyBranding);

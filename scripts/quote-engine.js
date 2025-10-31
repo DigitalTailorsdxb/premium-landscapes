@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeFileUpload();
     initializeFileUploadStep5();
     initializeAddProductButtons();
+    initializePostcodeLookup();
     updateSummary();
 });
 
@@ -320,6 +321,82 @@ function initializeFileUploadStep5() {
         displayFilePreview(files, filePreview);
         updateSummary();
         updateAIDesignVisibility();
+    }
+}
+
+// Initialize postcode lookup with auto-address population
+function initializePostcodeLookup() {
+    const postcodeInput = document.getElementById('postcode');
+    const postcodeCheck = document.getElementById('postcodeCheck');
+    const postcodeLoader = document.getElementById('postcodeLoader');
+    const addressFields = document.getElementById('addressFields');
+    const cityInput = document.getElementById('city');
+    const streetInput = document.getElementById('street');
+    
+    if (!postcodeInput) return;
+    
+    let lookupTimeout;
+    
+    postcodeInput.addEventListener('input', function() {
+        clearTimeout(lookupTimeout);
+        const postcode = this.value.trim().toUpperCase();
+        
+        postcodeCheck.classList.add('hidden');
+        
+        if (postcode.length >= 5) {
+            lookupTimeout = setTimeout(() => lookupAddress(postcode), 500);
+        } else {
+            addressFields.classList.add('hidden');
+        }
+    });
+    
+    async function lookupAddress(postcode) {
+        const apiKey = window.GETADDRESS_API_KEY || '';
+        
+        if (!apiKey) {
+            console.log('⚠️ GetAddress.io API key not configured - address lookup disabled');
+            addressFields.classList.add('hidden');
+            return;
+        }
+        
+        postcodeLoader.classList.remove('hidden');
+        postcodeCheck.classList.add('hidden');
+        
+        const cleanPostcode = postcode.replace(/\s+/g, '');
+        
+        try {
+            const response = await fetch(`https://api.getAddress.io/find/${cleanPostcode}?api-key=${apiKey}&expand=true`);
+            
+            if (!response.ok) {
+                throw new Error('Postcode not found');
+            }
+            
+            const data = await response.json();
+            
+            if (data.addresses && data.addresses.length > 0) {
+                const firstAddress = data.addresses[0];
+                
+                cityInput.value = firstAddress.town_or_city || firstAddress.locality || '';
+                streetInput.value = firstAddress.thoroughfare || firstAddress.line_2 || '';
+                
+                postcodeCheck.classList.remove('hidden');
+                addressFields.classList.remove('hidden');
+                addressFields.style.animation = 'fadeIn 0.3s ease-out';
+                
+                console.log('✅ Address found:', {
+                    city: cityInput.value,
+                    street: streetInput.value
+                });
+            } else {
+                throw new Error('No addresses found');
+            }
+            
+        } catch (error) {
+            console.log('⚠️ Address lookup failed:', error.message);
+            addressFields.classList.add('hidden');
+        } finally {
+            postcodeLoader.classList.add('hidden');
+        }
     }
 }
 
