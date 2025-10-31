@@ -41,10 +41,9 @@ const brandConfig = {
     // ============================================================================
     // ADDRESS LOOKUP API CONFIGURATION
     // ============================================================================
-    // GetAddress.io API key for UK postcode to address lookup
-    // Sign up for free tier at: https://getaddress.io/
-    // Free tier includes limited daily lookups
-    getAddressApiKey: "",
+    // Google Maps API key for UK address autocomplete
+    // Free tier: $200/month credit = ~11,700 lookups/month
+    googleMapsApiKey: "",
     
     // ============================================================================
     // PRICING SYSTEM CONFIGURATION
@@ -122,15 +121,23 @@ function applyBranding() {
 
 // Export brandConfig to window so other scripts can access it
 window.brandConfig = brandConfig;
-window.GETADDRESS_API_KEY = brandConfig.getAddressApiKey;
+
+// Load Google Maps API key from environment variable (injected by server)
+// Note: ENV_GOOGLE_MAPS_API_KEY is loaded from /scripts/config-env.js
+window.GOOGLE_MAPS_API_KEY = brandConfig.googleMapsApiKey;
 
 // Debug logging to verify config is loaded
 console.log('✅ Config loaded! Webhook URL:', brandConfig?.webhooks?.quote);
-if (brandConfig.getAddressApiKey) {
-    console.log('✅ Address lookup enabled');
-} else {
-    console.log('⚠️ Address lookup disabled (no API key configured)');
-}
+
+// Check API key status after a small delay to allow env config to load
+setTimeout(() => {
+    const finalKey = window.ENV_GOOGLE_MAPS_API_KEY || window.GOOGLE_MAPS_API_KEY;
+    if (finalKey) {
+        console.log('✅ Google Maps address autocomplete enabled');
+    } else {
+        console.log('⚠️ Address autocomplete disabled (no Google Maps API key configured)');
+    }
+}, 100);
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', applyBranding);

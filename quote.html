@@ -10,6 +10,34 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Environment config (API keys from server) -->
+    <script src="/scripts/config-env.js"></script>
+    <script src="scripts/config.js"></script>
+    <script>
+        // Load Google Maps API with Places library after env config loads
+        window.addEventListener('load', function() {
+            const apiKey = window.ENV_GOOGLE_MAPS_API_KEY || window.GOOGLE_MAPS_API_KEY || '';
+            if (apiKey) {
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGoogleMaps`;
+                script.async = true;
+                script.defer = true;
+                document.head.appendChild(script);
+            } else {
+                console.warn('⚠️ No Google Maps API key found');
+            }
+        });
+        
+        // Callback when Google Maps loads
+        window.initGoogleMaps = function() {
+            console.log('✅ Google Maps Places API loaded successfully');
+            // Initialize autocomplete after API loads
+            if (typeof initializeAddressAutocomplete === 'function') {
+                initializeAddressAutocomplete();
+            }
+        };
+    </script>
+    
     <script>
         tailwind.config = {
             theme: {

@@ -324,81 +324,142 @@ function initializeFileUploadStep5() {
     }
 }
 
-// Initialize postcode lookup with auto-address population
+// Initialize Google Maps Places Autocomplete for address lookup
 function initializePostcodeLookup() {
-    const postcodeInput = document.getElementById('postcode');
-    const postcodeCheck = document.getElementById('postcodeCheck');
-    const postcodeLoader = document.getElementById('postcodeLoader');
-    const addressFields = document.getElementById('addressFields');
+    // This function is called on page load
+    // The actual autocomplete is initialized by initializeAddressAutocomplete() 
+    // after Google Maps API loads (see callback in quote.html)
+    console.log('⏳ Waiting for Google Maps API to load...');
+}
+
+// Initialize address autocomplete after Google Maps API loads
+window.initializeAddressAutocomplete = function() {
+    const postcodeInputWrapper = document.getElementById('postcode').parentElement;
     const cityInput = document.getElementById('city');
     const streetInput = document.getElementById('street');
+    const postcodeCheck = document.getElementById('postcodeCheck');
+    const addressFields = document.getElementById('addressFields');
     
-    if (!postcodeInput) return;
+    if (!postcodeInputWrapper || typeof google === 'undefined') {
+        console.warn('⚠️ Google Maps not available or postcode input not found');
+        return;
+    }
     
-    let lookupTimeout;
+    // Use the new PlaceAutocompleteElement (recommended by Google as of March 2025)
+    const autocompleteElement = document.createElement('gmp-place-autocomplete');
+    autocompleteElement.setAttribute('type', 'address');
+    autocompleteElement.setAttribute('country', 'uk');
     
-    postcodeInput.addEventListener('input', function() {
-        clearTimeout(lookupTimeout);
-        const postcode = this.value.trim().toUpperCase();
+    // Replace the existing postcode input with the new autocomplete element
+    const originalInput = document.getElementById('postcode');
+    const newInput = document.createElement('input');
+    newInput.type = 'text';
+    newInput.id = 'postcode';
+    newInput.className = originalInput.className;
+    newInput.placeholder = 'Type your postcode or address...';
+    newInput.setAttribute('aria-label', 'Postcode or address');
+    
+    originalInput.replaceWith(newInput);
+    
+    // Initialize autocomplete on the new input (fallback to legacy API if new one not available)
+    let autocomplete;
+    
+    if (google.maps.places.PlaceAutocompleteElement) {
+        // Use new API (March 2025+)
+        autocompleteElement = new google.maps.places.PlaceAutocompleteElement({
+            inputField: newInput,
+            componentRestrictions: { country: 'uk' },
+            types: ['address']
+        });
+    } else {
+        // Fallback to legacy API
+        autocomplete = new google.maps.places.Autocomplete(newInput, {
+            types: ['address'],
+            componentRestrictions: { country: 'uk' },
+            fields: ['address_components', 'formatted_address', 'name']
+        });
+    }
+    
+    // Handle place selection
+    const handlePlaceSelect = async () => {
+        let place;
         
-        postcodeCheck.classList.add('hidden');
-        
-        if (postcode.length >= 5) {
-            lookupTimeout = setTimeout(() => lookupAddress(postcode), 500);
-        } else {
-            addressFields.classList.add('hidden');
+        if (autocompleteElement && autocompleteElement.value) {
+            place = autocompleteElement.value;
+        } else if (autocomplete) {
+            place = autocomplete.getPlace();
         }
-    });
-    
-    async function lookupAddress(postcode) {
-        const apiKey = window.GETADDRESS_API_KEY || '';
         
-        if (!apiKey) {
-            console.log('⚠️ GetAddress.io API key not configured - address lookup disabled');
-            addressFields.classList.add('hidden');
+        if (!place || !place.address_components) {
+            console.warn('⚠️ No address components found');
             return;
         }
         
-        postcodeLoader.classList.remove('hidden');
-        postcodeCheck.classList.add('hidden');
+        // Extract address components
+        let street = '';
+        let city = '';
+        let postcode = '';
         
-        const cleanPostcode = postcode.replace(/\s+/g, '');
-        
-        try {
-            const response = await fetch(`https://api.getAddress.io/find/${cleanPostcode}?api-key=${apiKey}&expand=true`);
+        place.address_components.forEach(component => {
+            const types = component.types;
             
-            if (!response.ok) {
-                throw new Error('Postcode not found');
+            // Street number + street name
+            if (types.includes('street_number')) {
+                street = component.long_name + ' ';
+            }
+            if (types.includes('route')) {
+                street += component.long_name;
             }
             
-            const data = await response.json();
-            
-            if (data.addresses && data.addresses.length > 0) {
-                const firstAddress = data.addresses[0];
-                
-                cityInput.value = firstAddress.town_or_city || firstAddress.locality || '';
-                streetInput.value = firstAddress.thoroughfare || firstAddress.line_2 || '';
-                
-                postcodeCheck.classList.remove('hidden');
-                addressFields.classList.remove('hidden');
-                addressFields.style.animation = 'fadeIn 0.3s ease-out';
-                
-                console.log('✅ Address found:', {
-                    city: cityInput.value,
-                    street: streetInput.value
-                });
-            } else {
-                throw new Error('No addresses found');
+            // City/Town (use postal_town for UK)
+            if (types.includes('postal_town')) {
+                city = component.long_name;
+            } else if (types.includes('locality') && !city) {
+                city = component.long_name;
             }
             
-        } catch (error) {
-            console.log('⚠️ Address lookup failed:', error.message);
-            addressFields.classList.add('hidden');
-        } finally {
-            postcodeLoader.classList.add('hidden');
+            // Postcode
+            if (types.includes('postal_code')) {
+                postcode = component.long_name;
+            }
+        });
+        
+        // Populate fields
+        if (city) {
+            cityInput.value = city;
+            cityInput.classList.add('bg-green-50');
         }
+        if (street) {
+            streetInput.value = street;
+            streetInput.classList.add('bg-green-50');
+        }
+        if (postcode) {
+            newInput.value = postcode;
+        }
+        
+        // Show success indicators
+        if (city || street) {
+            postcodeCheck.classList.remove('hidden');
+            addressFields.classList.remove('hidden');
+            addressFields.style.animation = 'fadeIn 0.3s ease-out';
+            
+            console.log('✅ Address auto-populated:', {
+                street: street || '(not found)',
+                city: city || '(not found)',
+                postcode: postcode || '(not found)'
+            });
+        }
+    };
+    
+    // Listen for place selection
+    if (autocompleteElement && autocompleteElement.addEventListener) {
+        autocompleteElement.addEventListener('gmp-placeselect', handlePlaceSelect);
+    } else if (autocomplete) {
+        autocomplete.addListener('place_changed', handlePlaceSelect);
     }
-}
+    
+    console.log('✅ Google Maps autocomplete initialized');
+};
 
 function displayFilePreview(files, previewContainer) {
     previewContainer.innerHTML = '';

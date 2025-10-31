@@ -12,6 +12,7 @@
 ✅ **n8n Integration Active** - Webhook URL: https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-quote
 ✅ **Logo URL for PDFs** - https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev/static/logo.png
 ✅ **n8n Connection Ready** - Payload structure verified and documented in N8N_CONNECTION_CHECKLIST.md
+✅ **Google Maps Address Autocomplete** - Full UK address lookup using Google Maps Places API (free tier: $200/month = ~11,700 lookups)
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
@@ -33,7 +34,7 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
   - **Step 1:** Visual feature selection (Patio, Decking, Turf, Driveway, Fencing, Lighting, Full Redesign, Other)
   - **Step 2:** Dynamic product detail fields - each selected product from Step 1 automatically gets its own detail textarea. Users can add/remove products via modal popup. Additional notes field for general project information not related to specific products.
   - **Step 3:** Area slider (10-150 m²) and budget selection cards
-  - **Step 4:** Postcode input with drag-and-drop photo/video upload
+  - **Step 4:** Google Maps address autocomplete with postcode input - automatically populates City/Town and Street fields when user selects an address. Includes drag-and-drop photo/video upload.
   - **Step 5:** Contact details with conditional AI design preview option (only visible if images uploaded; otherwise shows upload prompt)
   - Live summary panel updates in real-time showing selected products, area, budget, location, and photo count
   - Progress bar with step indicator and percentage
@@ -55,8 +56,10 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
 - **Navigation:** Consistent header/footer navigation with mobile hamburger menu and active page highlighting.
 
 ## External Dependencies
-- **Make.com:** Used for webhooks to handle instant quote submissions, image design requests, CRM entry, and follow-up automation.
-- **Google Sheets / Airtable:** Storage for pricing logic, connected via Make.com for estimate calculations.
+- **n8n:** Primary automation platform for quote workflow - handles pricing calculations, PDF generation, and email delivery.
+- **Make.com:** Used for webhooks to handle image design requests, CRM entry, and follow-up automation.
+- **Google Maps Places API:** Address autocomplete for UK postcodes - auto-populates city/town and street fields. Free tier: $200/month credit (~11,700 lookups/month). API key stored in GOOGLE_MAPS_API_KEY environment variable.
+- **Google Sheets / Airtable:** Storage for pricing logic, connected via n8n for estimate calculations.
 - **DALL·E 3 / Midjourney:** AI image generation based on user inputs for garden designs.
 - **CRM (Airtable or Zoho):** For storing leads (name, email, postcode, features, quote, images) with optional push to Google Sheets or ReTool dashboard.
 - **WhatsApp (via 360dialog or Twilio):** For follow-up automation, integrated via Make.com.
