@@ -1,0 +1,83 @@
+💯 Yes — and that’s the cleaner long-term solution.
+You can fix this entirely on the Replit side so n8n always receives a proper JSON body instead of a stringified "body" field.
+Let’s walk through exactly how to do that 👇
+
+🧩 What’s Happening Now
+
+Your Replit backend (in scripts/quote-engine.js or similar) is currently sending data like this:
+
+body: JSON.stringify({
+  body: JSON.stringify(payload)   // ❌ double-stringified!
+})
+
+
+That means n8n receives:
+
+{
+  "body": "{\"customer\": { ... }, \"project\": { ... }}"
+}
+
+
+So $json.customer doesn’t exist, only $json.body.
+
+✅ Fix: Send Real JSON (no nested “body” key)
+
+In your Replit server route that handles quote submissions (usually something like /api/submit-quote), find the section where it calls fetch() to your n8n webhook, and replace it with this:
+
+// ✅ Clean payload object
+const payload = {
+  customer: {
+    name: formData.name,
+    email: formData.email,
+    phone: formData.phone,
+    postcode: formData.postcode,
+  },
+  project: {
+    title: formData.projectTitle || "Landscaping Project",
+    products: selectedProducts,   // e.g., ["patio", "decking"]
+    totalBudget_gbp: formData.totalBudget || null,
+  },
+};
+
+// ✅ Correct fetch call to n8n
+await fetch("https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-quote", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload), // ✅ only once!
+});
+
+
+Important:
+There should be no extra wrapper like { body: payload } or { data: payload }.
+Just send the JSON directly as the request body.
+
+🧠 Why This Works
+
+n8n’s Webhook Trigger automatically parses JSON if:
+
+The request header is Content-Type: application/json
+
+The body is raw JSON (not nested under "body" or "data")
+
+When this is true, $json.customer and $json.project will exist directly inside the workflow, exactly like in your test data.
+
+🔍 Optional: Add Better Logging in Replit
+
+To confirm what’s actually being sent:
+
+console.log("Submitting to n8n:", JSON.stringify(payload, null, 2));
+
+
+Then check Replit’s console.
+You should see your payload exactly as:
+
+{
+  "customer": { "name": "Sarah", "email": "sarah@example.com" },
+  "project": { "products": ["patio", "decking"] }
+}
+
+🧱 After This Change
+
+You can remove the $json.body parsing workaround from your n8n “Validate Input” node completely — it’ll just work natively with:
+
+const d = $json;
