@@ -529,6 +529,12 @@ function nextStep() {
             return;
         }
         quoteData.postcode = postcodeInput.value.trim();
+        
+        // Also capture city and street if Google Maps autocomplete populated them
+        const cityInput = document.getElementById('city');
+        const streetInput = document.getElementById('street');
+        if (cityInput) quoteData.city = cityInput.value.trim();
+        if (streetInput) quoteData.street = streetInput.value.trim();
     }
     
     // Hide current step
@@ -863,13 +869,24 @@ function prepareWebhookPayload() {
         };
         
         // Build n8n-compatible payload
+        const buildFullAddress = () => {
+            const parts = [];
+            if (quoteData.street) parts.push(quoteData.street);
+            if (quoteData.city) parts.push(quoteData.city);
+            if (quoteData.postcode) parts.push(quoteData.postcode);
+            parts.push('UK');
+            return parts.join(', ');
+        };
+        
         return {
             customer: {
                 name: quoteData.name || 'Unknown',
                 email: quoteData.email,
                 phone: quoteData.phone || '',
                 postcode: quoteData.postcode,
-                address: `${quoteData.postcode}, UK` // Generate basic address from postcode
+                city: quoteData.city || '',
+                street: quoteData.street || '',
+                address: buildFullAddress()
             },
             project: {
                 title: generateProjectTitle(),

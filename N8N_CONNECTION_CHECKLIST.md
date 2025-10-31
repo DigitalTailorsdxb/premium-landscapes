@@ -12,7 +12,9 @@ The website sends the following structure to n8n:
     email: string,          // ✅ REQUIRED  
     phone: string,          // ✅ Optional
     postcode: string,       // ✅ REQUIRED
-    address: string         // ✅ Generated from postcode
+    city: string,           // ✅ From Google Maps autocomplete
+    street: string,         // ✅ From Google Maps autocomplete
+    address: string         // ✅ Full address: "Street, City, Postcode, UK"
   },
   project: {
     title: string,                    // e.g. "Patio & Decking Installation"

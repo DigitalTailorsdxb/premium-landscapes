@@ -13,6 +13,7 @@
 ✅ **Logo URL for PDFs** - https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev/static/logo.png
 ✅ **n8n Connection Ready** - Payload structure verified and documented in N8N_CONNECTION_CHECKLIST.md
 ✅ **Google Maps Address Autocomplete** - Full UK address lookup using Google Maps Places API (free tier: $200/month = ~11,700 lookups)
+✅ **Address Data Capture Fixed** - City/Town and Street fields now properly saved to quoteData and sent to n8n webhook
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
