@@ -1,0 +1,841 @@
+{
+  "name": "Premium Landscapes - Instant Quote (Final)",
+  "nodes": [
+    {
+      "parameters": {
+        "binaryData": true,
+        "name": "=`${$binary.data.fileName || `Quote-${$json.customer?.name || 'Client'}-${$moment().format('YYYY-MM-DD')}.pdf`}`",
+        "parents": [
+          "=1RO45FjuBGbvFYRp8VXIxMWtuwrDHTDN7"
+        ],
+        "options": {}
+      },
+      "id": "2a377c3e-1506-4f8f-a903-199a404de48d",
+      "name": "Upload PDF to Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 2,
+      "position": [
+        -1584,
+        1392
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "t1a2DIBxTnvPKUMq",
+          "name": "Google Drive account"
+        }
+      },
+      "disabled": true,
+      "notes": "Uploads the PDF to /Premium Landscapes/Quotes Archive folder (creates if missing)."
+    },
+    {
+      "parameters": {
+        "functionCode": "// 🧾 Handle both stringified and parsed JSON inputs safely\nlet rawInput;\n\n// If $json.body exists, handle both cases (string or object)\nif ($json.body) {\n  if (typeof $json.body === \"string\") {\n    // Body is raw string → parse it\n    rawInput = JSON.parse($json.body);\n  } else if (typeof $json.body === \"object\") {\n    // Body already parsed → use as-is\n    rawInput = $json.body;\n  } else {\n    throw new Error(\"Unexpected format for $json.body\");\n  }\n} else {\n  // Normal parsed request\n  rawInput = $json;\n}\n\nconst d = rawInput || {};\n\n// 🩹 Safety fallback for testing\nif (!d.customer) {\n  console.warn(\"⚠️ Missing 'customer' object in request — using placeholder for test.\");\n  d.customer = {\n    name: \"Test User\",\n    email: \"test@premiumlandscapes.co.uk\",\n    postcode: \"TEST123\",\n  };\n}\n\nif (!d.project) {\n  console.warn(\"⚠️ Missing 'project' object in request — using placeholder for test.\");\n  d.project = {\n    products: [\"patio\"],\n    area: \"Not specified\",\n    budget: \"Not specified\",\n  };\n}\n\n// ✅ Required customer fields\nconst requiredCustomer = [\"name\", \"email\", \"postcode\"];\nfor (const field of requiredCustomer) {\n  if (!d.customer[field] || d.customer[field].trim() === \"\") {\n    throw new Error(`Missing required field: customer.${field}`);\n  }\n}\n\n// ✅ Product validation\nif (!Array.isArray(d.project.products) || d.project.products.length === 0) {\n  throw new Error(\"Missing or invalid project.products array\");\n}\n\n// ✅ Optional fields\nif (!d.project.area) d.project.area = \"Not specified\";\nif (!d.project.budget) d.project.budget = \"Not specified\";\n\n// ✅ Normalize & clean data\nd.customer.name = d.customer.name.trim();\nd.customer.email = d.customer.email.toLowerCase();\nd.customer.postcode = d.customer.postcode.toUpperCase().replace(/\\s+/g, \"\");\n\n// 🧠 Confirmation log\nconsole.log(\"✅ CLEANED DATA READY:\", JSON.stringify(d, null, 2));\n\n// ✅ Pass cleaned data forward\nreturn [{ json: d }];\n"
+      },
+      "id": "47edb2f0-0c90-4c8d-a138-28f574e8f871",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -1264,
+        624
+      ],
+      "typeVersion": 1,
+      "notes": "Ensures all required fields are provided before continuing"
+    },
+    {
+      "parameters": {
+        "functionCode": "// === Merge all useful outputs into one JSON ===\n\n// Pull from upstream nodes safely\nconst validated = $items(\"Validate Input\")?.[0]?.json ?? {};\nconst pricing   = $items(\"Calculate Pricing1\")?.[0]?.json?.pricing ?? {};\nconst aiRaw     = $items(\"Basic LLM Chain\")?.[0]?.json ?? {};\n\n// Normalise the AI text (handles different model field names)\nconst aiSummary =\n  aiRaw.text ??\n  aiRaw.output ??\n  aiRaw.result ??\n  aiRaw.message ??\n  \"\";\n\n// Build a clean, predictable shape for downstream nodes (PDF/Email)\nconst customer = validated.customer ?? {};\nconst project  = validated.project  ?? {};\nconst merged = {\n  customer,\n  project,\n  pricing,\n  aiSummary,\n\n  // handy fallbacks for templating\n  meta: {\n    customerName: customer.name || \"Client\",\n    projectTitle: project.title || \"Landscape Project\",\n  },\n\n  // 🔽 expose direct fields for convenience\n  customerName: customer.name || \"Client\",\n  email: customer.email || \"\",\n  phone: customer.phone || \"\",\n  postcode: customer.postcode || \"\",\n  projectTitle: project.title || \"Landscape Project\",\n};\n\n// Output\nreturn [{ json: merged }];\n"
+      },
+      "id": "203df165-f1e2-4070-aa35-5b7d0620eccf",
+      "name": "Merge AI Summary",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        224,
+        624
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "functionCode": "// === Build PDF HTML ===\nconst data = $json;\n\n// --- helpers ---\nconst fmtGBP = (n) =>\n  \"£\" + Number(n || 0).toLocaleString(\"en-GB\", { minimumFractionDigits: 2, maximumFractionDigits: 2 });\n\nconst safe = (s) => String(s ?? \"\").replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));\n\n// Quote meta\nconst dt = new Date();\nconst quoteDate = dt.toLocaleDateString(\"en-GB\");\nconst ref =\n  `PL-${String(dt.getFullYear()).slice(2)}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}-` +\n  (data.customer?.postcode ? String(data.customer.postcode).replace(/\\s+/g, '').slice(-3).toUpperCase() : \"XXX\");\n\n// Optional brand logo (omit block if not provided)\nconst logoUrl = data.meta?.logoUrl || \"\"; // set upstream if you have one\n\n// Build rows\nconst rows = (data.pricing?.breakdown ?? [])\n  .map(i => `\n    <tr>\n      <td>${safe(i.item)}</td>\n      <td>${safe(i.description)}</td>\n      <td class=\"num\">${Number(i.qty ?? 0)}</td>\n      <td>${safe(i.unit ?? \"\")}</td>\n      <td class=\"num\">${fmtGBP(i.unitCost)}</td>\n      <td class=\"num\">${fmtGBP(i.lineTotal)}</td>\n    </tr>\n  `)\n  .join(\"\");\n\nconst aiBlock = data.aiSummary\n  ? `<div class=\"section box\">\n      <strong>AI Project Summary</strong><br/>\n      ${safe(String(data.aiSummary)).replace(/\\n/g, \"<br/>\")}\n     </div>`\n  : \"\";\n\nconst notesBlock = data.project?.notes\n  ? `<div class=\"section\">\n       <h2>Notes</h2>\n       <div class=\"muted\">${safe(data.project.notes)}</div>\n     </div>`\n  : \"\";\n\nconst html = `<!doctype html>\n<html>\n<head>\n  <meta charset=\"utf-8\" />\n  <title>Instant Landscape Quote</title>\n  <style>\n    body { font-family: Inter, Arial, sans-serif; color:#111827; line-height:1.5; margin:24px; }\n    h1,h2 { margin:0 0 8px; }\n    h1 { font-size:22px; color:#111827; }\n    h2 { font-size:16px; color:#2563EB; }\n    .muted { color:#6B7280; }\n    .section { margin: 18px 0; }\n    .header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }\n    .brand { display:flex; align-items:center; gap:12px; }\n    .brand img { height:36px; }\n    .meta { text-align:right; font-size:12px; color:#6B7280; }\n    .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }\n    .chip { display:inline-block; background:#EEF2FF; color:#4338CA; padding:2px 8px; border-radius:999px; font-size:12px; }\n    table { width:100%; border-collapse: collapse; margin-top:10px; }\n    th, td { border:1px solid #E5E7EB; padding:8px; font-size:12px; vertical-align: top; }\n    th { background:#F3F4F6; text-align:left; }\n    tbody tr:nth-child(even) { background:#FAFAFA; }\n    .num { text-align:right; white-space:nowrap; }\n    .totals { width: 340px; margin-left:auto; border-collapse:separate; border-spacing:0; }\n    .totals td { padding:6px 0; }\n    .totals .label { color:#374151; }\n    .totals .line { border-top:1px solid #E5E7EB; }\n    .box { background:#F0F9FF; border-left:4px solid #2563EB; padding:12px; }\n    .foot { margin-top:24px; font-size:12px; color:#6B7280; }\n  </style>\n</head>\n<body>\n\n  <div class=\"header\">\n    <div class=\"brand\">\n      ${logoUrl ? `<img src=\"${logoUrl}\" alt=\"Logo\" />` : `<strong>Premium Landscapes</strong>`}\n      <div>\n        <h1>Instant Landscape Quote</h1>\n        <div class=\"muted\">Reference: ${ref}</div>\n      </div>\n    </div>\n    <div class=\"meta\">\n      <div>Date: ${quoteDate}</div>\n      <div>Validity: 14 days</div>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>Client Information</h2>\n    <div>${safe(data.customer?.name)}</div>\n    <div>${safe(data.customer?.address)}</div>\n    <div>${safe(data.customer?.postcode)}</div>\n    <div class=\"muted\">${safe(data.customer?.email)}</div>\n    <div class=\"muted\">${safe(data.customer?.phone)}</div>\n  </div>\n\n  <div class=\"section\">\n    <h2>Project Summary</h2>\n    <div><strong>Title:</strong> ${safe(data.project?.title)}</div>\n    <div class=\"chips\">\n      <span class=\"chip\">Style: ${safe(data.project?.stylePreference ?? \"—\")}</span>\n      <span class=\"chip\">Maintenance: ${safe(data.project?.maintenanceLevel ?? \"—\")}</span>\n      <span class=\"chip\">Area: ${Number(data.project?.totalArea_m2 ?? 0)} m²</span>\n      <span class=\"chip\">Budget: ${fmtGBP(data.project?.totalBudget_gbp ?? 0)}</span>\n      ${data.project?.sunlight ? `<span class=\"chip\">Sunlight: ${safe(data.project.sunlight)}</span>` : \"\"}\n      ${data.project?.layoutType ? `<span class=\"chip\">Layout: ${safe(data.project.layoutType)}</span>` : \"\"}\n    </div>\n  </div>\n\n  ${aiBlock}\n  ${notesBlock}\n\n  <div class=\"section\">\n    <h2>Pricing Breakdown</h2>\n    <table>\n      <thead>\n        <tr>\n          <th style=\"width:120px;\">Item</th>\n          <th>Description</th>\n          <th class=\"num\" style=\"width:60px;\">Qty</th>\n          <th style=\"width:60px;\">Unit</th>\n          <th class=\"num\" style=\"width:90px;\">Unit Cost</th>\n          <th class=\"num\" style=\"width:110px;\">Total</th>\n        </tr>\n      </thead>\n      <tbody>\n        ${rows || `<tr><td colspan=\"6\" class=\"muted\">No line items.</td></tr>`}\n      </tbody>\n    </table>\n  </div>\n\n  <div class=\"section\">\n    <table class=\"totals\">\n      <tr>\n        <td class=\"label\">Subtotal</td>\n        <td class=\"num\">${fmtGBP(data.pricing?.subtotal)}</td>\n      </tr>\n      <tr>\n        <td class=\"label\">Contingency</td>\n        <td class=\"num\">${fmtGBP(data.pricing?.contingency)}</td>\n      </tr>\n      <tr>\n        <td class=\"label\">VAT</td>\n        <td class=\"num\">${fmtGBP(data.pricing?.vat)}</td>\n      </tr>\n      <tr>\n        <td class=\"label line\"><strong>Grand Total</strong></td>\n        <td class=\"num line\"><strong>${fmtGBP(data.pricing?.total)}</strong></td>\n      </tr>\n    </table>\n  </div>\n\n  <div class=\"foot\">\n    <div><strong>Measurement legend:</strong> m² = square metres, lm = linear metres. “20” for paving = 20 m²; for fencing = 20 m.</div>\n    <div>All quotes are subject to final site survey and material availability.</div>\n  </div>\n\n</body>\n</html>`;\n\nreturn [{ json: { html } }];\n"
+      },
+      "id": "851a6093-6241-42d1-8180-5995099ec24f",
+      "name": "Build PDF HTML",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        272,
+        80
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fromEmail": "premiumlandscapesuk@gmail.com",
+        "toEmail": "=={{$node[\"Merge AI Summary\"].json.email}}",
+        "subject": "=Your Detailed Garden Quote for {{ $json.customerName }} – {{ $json.projectTitle }} 🌿\n",
+        "html": "==Your Detailed Garden Quote for {{$json.customerName || $json.customer?.name || \"Client\"}} 🌿",
+        "options": {
+          "attachments": "data"
+        }
+      },
+      "id": "ea655529-7d00-475c-9713-b0d008e94158",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        1664,
+        624
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "ab3e512a-7b66-44ee-9210-d627ca379a3d",
+      "credentials": {
+        "smtp": {
+          "id": "dLpXH6yljIeIoVw6",
+          "name": "SMTP account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1GIlzFrvqkdYGYQotkKaOox4m6x2qrqvLk0X6xMYJg7s",
+          "mode": "list",
+          "cachedResultName": "Premium Landscapes Quotes Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GIlzFrvqkdYGYQotkKaOox4m6x2qrqvLk0X6xMYJg7s/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Quotes Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GIlzFrvqkdYGYQotkKaOox4m6x2qrqvLk0X6xMYJg7s/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{$now}}",
+            "Customer Name": "={{$json.customerName}}",
+            "Email": "={{$json.email}}}",
+            "Postcode": "={{$json.postcode}}",
+            "Products": "={{$json.products}}",
+            "AI Summary": "={{$json.aiSummary}}",
+            "Quote Total (£)": "={{$json.total}}\n",
+            "Status": "\"Sent\"",
+            "Phone": "={{$json.phone}}",
+            "Drive File URL": "''"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Postcode",
+              "displayName": "Postcode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Products",
+              "displayName": "Products",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Summary",
+              "displayName": "AI Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quote Total (£)",
+              "displayName": "Quote Total (£)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Drive File URL",
+              "displayName": "Drive File URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "957ccd3f-3048-45ba-80e5-b44fa4cac905",
+      "name": "Log Quote to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        2160,
+        624
+      ],
+      "typeVersion": 4.7,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "hR4LdQOOAXNVJApD",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseKey": "={\n  \"success\": true,\n  \"message\": \"Quote logged and sent successfully\",\n  \"customer\": \"={{$json.customer?.name || 'Test Client'}}\",\n  \"email\": \"={{$json.customer?.email || 'test@example.com'}}\",\n  \"total\": \"={{$json.pricing?.total || '0'}}\"\n}\n"
+        }
+      },
+      "id": "bea2a72b-a48b-4201-896e-5dd6457d871f",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        2432,
+        624
+      ],
+      "typeVersion": 1.4
+    },
+    {
+      "parameters": {},
+      "id": "9e5deb04-1123-4765-85de-8f8d985d338f",
+      "name": "Error Catcher",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [
+        -1712,
+        928
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fromEmail": "premiumlandscapesuk@gmail.com",
+        "toEmail": "premiumlandscapesuk@gmail.com",
+        "subject": "⚠️ Workflow Error – {{$workflow.name}} ({{$json.error.lastNodeExecuted || \"Unknown Node\"}})",
+        "html": "<h2 style=\"color:#e63946;\">⚠️ Workflow Error Detected</h2>\n\n<p><strong>Workflow:</strong> {{$workflow.name}}</p>\n<p><strong>Execution ID:</strong> {{$json.execution.id}}</p>\n<p><strong>Node:</strong> {{$json.error.lastNodeExecuted || \"Unknown\"}}</p>\n<p><strong>Mode:</strong> {{$json.execution.mode}}</p>\n<p><strong>Timestamp:</strong> {{$now}}</p>\n\n<h3 style=\"color:#e76f51;\">Error Message</h3>\n<pre style=\"background:#fff0f0; padding:10px; border-radius:6px; border:1px solid #e63946; font-size:13px;\">\n{{$json.error.message}}\n</pre>\n\n<h3 style=\"color:#264653;\">Stack Trace</h3>\n<pre style=\"background:#f9f9f9; padding:10px; border-radius:6px; border:1px solid #ccc; font-size:12px; overflow-x:auto;\">\n{{$json.error.stack}}\n</pre>\n\n<p><strong>Execution URL:</strong><br>\n<a href=\"https://digitaltailorsdxb.app.n8n.cloud/workflow/{{$workflow.id}}/executions/{{$json.execution.id}}\">\nView this execution in n8n\n</a>\n</p>\n\n<h3 style=\"color:#2a9d8f;\">Webhook Payload</h3>\n<pre style=\"background:#eefaf8; padding:10px; border-radius:6px; border:1px solid #2a9d8f; font-size:12px; max-height:300px; overflow:auto;\">\n{{JSON.stringify($json, null, 2)}}\n</pre>\n\n<hr>\n<p style=\"font-style:italic; color:#555;\">\nThis email was sent automatically by your n8n monitoring system.\n</p>",
+        "options": {}
+      },
+      "id": "778defdf-3991-4f93-9e3f-00bbd2d79d93",
+      "name": "Send Error Alert",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        -1536,
+        928
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "c71811cb-85dc-480e-8c5b-66741bba20e6",
+      "credentials": {
+        "smtp": {
+          "id": "dLpXH6yljIeIoVw6",
+          "name": "SMTP account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "premium-landscapes-quote",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a2dc118b-88c6-4565-b391-a9db6f978d51",
+      "name": "Webhook Trigger1",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -1024,
+        1536
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "18e472db-2bde-42ea-8f26-04d3f526e3f7",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "functionCode": "// === Calculate Pricing from Fixed Schedule (Lighting = +50%) ===\n// Keeps your fixed schedule as-is; only lighting gets a 1.5x multiplier.\n\nconst CONTINGENCY_PCT = 0.05;\nconst VAT_PCT = 0.20;\n\n// ---------- NEW: lighting multiplier ----------\nconst LIGHTING_MULTIPLIER = 1.5;\n\n// -------- PRICE LIST (unchanged + lighting added) --------\nconst RATES = {\n  // Patios & Paving (per m² unless stated)\n  patios: {\n    indian_sandstone: 125,\n    porcelain_20mm: 150,\n    limestone: 135,\n    granite: 170,\n    slate: 150,\n    concrete_paving: 100,\n    block_paving: 130,              // +£20/m² if drivewaySpec === true\n    resin_bound_incl_base: 140,\n    stepping_stone: 45,             // /each (qty)\n    patterned_inlay_border: 35      // /lm\n  },\n\n  // Decking (per m² unless noted)\n  decking: {\n    composite: 170,\n    softwood_treated: 110,\n    hardwood: 195,\n    subframe_pedestals: 75\n  },\n\n  // Turf & Lawns\n  turf: {\n    natural_rolled: 34,\n    artificial_35_40mm: 85,\n    regrade_topsoil: 22,\n    lawn_edging: 15,                 // /lm\n    wildflower_turf: 36\n  },\n\n  // Fencing & Screening\n  fencing: {\n    closeboard_featheredge: 85,      // /lm\n    double_slatted_venetian: 132,    // /lm\n    decorative_trellis_panel: 96,    // /panel\n    concrete_posts_gravel_boards: 66,// /bay\n    timber_posts_gravel_boards: 54,  // /bay\n    timber_garden_gate: 336          // /each\n  },\n\n  // Walls, Edging & Raised Beds\n  walls: {\n    sleeper_retaining_wall: 192,     // /m² face\n    brick_garden_wall: 240,          // /m² face\n    rendered_block_planter: 216,     // /m² face\n    stone_walling_cladding: 264,     // /m² face\n    paving_edging_kerbs_setts: 36,   // /lm\n    copings_caps: 42                 // /lm\n  },\n\n  // Access, Steps & Paths\n  access: {\n    paved_steps: 192,                // /step\n    bullnose_step_tread: 114,        // /each\n    gravel_path_with_grids: 66,      // /m²\n    non_slip_ramp_threshold: 216     // /each\n  },\n\n  // Drainage & Groundwork\n  drainage: {\n    linear_aco_channel: 54,          // /lm\n    soakaway_crate_system: 780,      // /each\n    recessed_manhole_cover: 216      // /each\n  },\n\n  // Structures & Water / Shade\n  structures: {\n    timber_pergola_3x3: 1140,        // /each\n    pond_liner_natural_edge: 192,    // /m² water surface (minProject below)\n    timber_pergola_freestanding_hd: 1680, // /each\n    timber_pergola_attached: 1500    // /each\n  },\n\n  // Ponds, Streams & Aquatics\n  aquatics: {\n    wildlife_pond_flexible_liner: 168,   // /m² (minProject below)\n    reed_bed_filtration_zone: 102        // /m²\n  },\n\n  // Water-Feature Structures\n  water_features: {\n    corten_bowl_on_plinth: 780,      // /each\n    corten_water_table: 1680         // /each\n  },\n\n  // Decorative Stones\n  aggregates: {\n    decorative_stone_per_tonne: 200  // /tonne\n  },\n\n  // ---------- NEW: Lighting (base rates) ----------\n  // We apply +50% automatically in rateFor() for this category.\n  lighting: {\n    default: 75,          // /fitting (qty)\n    spike: 75,\n    deck_uplight: 75,\n    bollard: 95,\n    step_light: 85,\n    wall_light: 90,\n    transformer_each: 120, // /each\n    cable_per_m: 2.5       // /m (lm)\n  }\n};\n\n// Minimum project values for some m²-based water bodies\nconst MIN_PROJECTS = {\n  'structures.pond_liner_natural_edge': 2000,\n  'aquatics.wildlife_pond_flexible_liner': 1800\n};\n\n// -------- Helpers --------\nconst to2 = (n) => +((n ?? 0).toFixed(2));\nconst lc = (s) => (s || '').toLowerCase();\n\nfunction getQtyUnit(item) {\n  const ut = (item.unitType || '').toLowerCase();\n  if (ut === 'm2') return { qty: item.area_m2 || 0, unit: 'm²' };\n  if (ut === 'lm' || ut === 'm') return { qty: item.length_m || 0, unit: 'lm' };\n  if (ut === 'qty') return { qty: item.fittings || item.qty || 0, unit: 'qty' };\n  if (ut === 'bed') return { qty: item.beds || 0, unit: 'bed' };\n  if (ut === 'panel') return { qty: item.panels || item.qty || 0, unit: 'panel' };\n  if (ut === 'bay') return { qty: item.bays || item.qty || 0, unit: 'bay' };\n  if (ut === 'step') return { qty: item.steps || item.qty || 0, unit: 'step' };\n  if (ut === 'each') return { qty: item.qty || 1, unit: 'each' };\n  if (ut === 'tonne' || ut === 't') return { qty: item.tonnes || item.qty || 0, unit: 'tonne' };\n\n  const t = lc(item.type);\n  if (t.includes('patio') || t.includes('paving') || t.includes('decking') || t.includes('turf') || t.includes('path')) {\n    return { qty: item.area_m2 || 0, unit: 'm²' };\n  }\n  if (t.includes('fenc') || t.includes('edging') || t.includes('kerb') || t.includes('coping') || t.includes('aco')) {\n    return { qty: item.length_m || 0, unit: 'lm' };\n  }\n  if (t.includes('step')) return { qty: item.steps || item.qty || 0, unit: 'step' };\n  if (t.includes('panel')) return { qty: item.panels || item.qty || 0, unit: 'panel' };\n  if (t.includes('bay')) return { qty: item.bays || item.qty || 0, unit: 'bay' };\n  if (t.includes('stone') || t.includes('bowl') || t.includes('table') || t.includes('manhole') || t.includes('soakaway') || t.includes('ramp') || t.includes('gate') || t.includes('pergola')) {\n    return { qty: item.qty || 1, unit: 'each' };\n  }\n  // lighting default to qty\n  if (t.includes('lighting')) return { qty: item.fittings || item.qty || 0, unit: 'qty' };\n\n  return { qty: item.qty || 0, unit: item.unitType || '' };\n}\n\n// Map to category + variant\nfunction classify(item) {\n  const t = lc(item.type);\n  const m = lc(item.material || item.variant || '');\n\n  // --- LIGHTING (new) ---\n  if (t.includes('lighting')) {\n    if (m.includes('transformer')) return { cat: 'lighting', var: 'transformer_each', baseUnit: 'each' };\n    if (m.includes('cable')) return { cat: 'lighting', var: 'cable_per_m', baseUnit: 'lm' };\n    // default/fitting styles\n    if (m.includes('spike')) return { cat: 'lighting', var: 'spike', baseUnit: 'qty' };\n    if (m.includes('uplight') || m.includes('deck')) return { cat: 'lighting', var: 'deck_uplight', baseUnit: 'qty' };\n    if (m.includes('bollard')) return { cat: 'lighting', var: 'bollard', baseUnit: 'qty' };\n    if (m.includes('step')) return { cat: 'lighting', var: 'step_light', baseUnit: 'qty' };\n    if (m.includes('wall')) return { cat: 'lighting', var: 'wall_light', baseUnit: 'qty' };\n    return { cat: 'lighting', var: 'default', baseUnit: 'qty' };\n  }\n\n  // PATIOS / PAVING\n  if (t.includes('patio') || t.includes('paving') || t.includes('block paving') || t.includes('resin')) {\n    if (t.includes('block')) return { cat: 'patios', var: 'block_paving', baseUnit: 'm²' };\n    if (t.includes('resin')) return { cat: 'patios', var: 'resin_bound_incl_base', baseUnit: 'm²' };\n    if (t.includes('stepping') || m.includes('stepping')) return { cat: 'patios', var: 'stepping_stone', baseUnit: 'each' };\n    if (t.includes('border') || t.includes('inlay')) return { cat: 'patios', var: 'patterned_inlay_border', baseUnit: 'lm' };\n    if (m.includes('porcelain') || t.includes('porcelain')) return { cat: 'patios', var: 'porcelain_20mm', baseUnit: 'm²' };\n    if (m.includes('sandstone') || t.includes('sandstone')) return { cat: 'patios', var: 'indian_sandstone', baseUnit: 'm²' };\n    if (m.includes('limestone')) return { cat: 'patios', var: 'limestone', baseUnit: 'm²' };\n    if (m.includes('granite')) return { cat: 'patios', var: 'granite', baseUnit: 'm²' };\n    if (m.includes('slate')) return { cat: 'patios', var: 'slate', baseUnit: 'm²' };\n    return { cat: 'patios', var: 'concrete_paving', baseUnit: 'm²' };\n  }\n\n  // DECKING\n  if (t.includes('deck')) {\n    if (m.includes('composite')) return { cat: 'decking', var: 'composite', baseUnit: 'm²' };\n    if (m.includes('hardwood')) return { cat: 'decking', var: 'hardwood', baseUnit: 'm²' };\n    if (m.includes('softwood') || t.includes('softwood')) return { cat: 'decking', var: 'softwood_treated', baseUnit: 'm²' };\n    if (t.includes('subframe') || t.includes('pedestal')) return { cat: 'decking', var: 'subframe_pedestals', baseUnit: 'm²' };\n    return { cat: 'decking', var: 'composite', baseUnit: 'm²' };\n  }\n\n  // TURF & LAWNS\n  if (t.includes('turf') || t.includes('lawn') || t.includes('wildflower')) {\n    if (t.includes('wildflower')) return { cat: 'turf', var: 'wildflower_turf', baseUnit: 'm²' };\n    if (m.includes('artificial')) return { cat: 'turf', var: 'artificial_35_40mm', baseUnit: 'm²' };\n    if (t.includes('regrad') || t.includes('level')) return { cat: 'turf', var: 'regrade_topsoil', baseUnit: 'm²' };\n    if (t.includes('edging')) return { cat: 'turf', var: 'lawn_edging', baseUnit: 'lm' };\n    return { cat: 'turf', var: 'natural_rolled', baseUnit: 'm²' };\n  }\n\n  // FENCING & SCREENING\n  if (t.includes('fenc') || t.includes('screen') || t.includes('trellis') || t.includes('gate')) {\n    if (t.includes('trellis')) return { cat: 'fencing', var: 'decorative_trellis_panel', baseUnit: 'panel' };\n    if (t.includes('concrete') && (t.includes('post') || t.includes('gravel'))) return { cat: 'fencing', var: 'concrete_posts_gravel_boards', baseUnit: 'bay' };\n    if (t.includes('timber') && (t.includes('post') || t.includes('gravel'))) return { cat: 'fencing', var: 'timber_posts_gravel_boards', baseUnit: 'bay' };\n    if (t.includes('gate')) return { cat: 'fencing', var: 'timber_garden_gate', baseUnit: 'each' };\n    if (t.includes('double') || t.includes('venetian') || t.includes('slatted')) return { cat: 'fencing', var: 'double_slatted_venetian', baseUnit: 'lm' };\n    return { cat: 'fencing', var: 'closeboard_featheredge', baseUnit: 'lm' };\n  }\n\n  // WALLS / EDGING / RAISED BEDS\n  if (t.includes('wall') || t.includes('planter') || t.includes('cladding') || t.includes('coping') || t.includes('kerb') || t.includes('sett')) {\n    if (t.includes('sleeper')) return { cat: 'walls', var: 'sleeper_retaining_wall', baseUnit: 'm²' };\n    if (t.includes('brick')) return { cat: 'walls', var: 'brick_garden_wall', baseUnit: 'm²' };\n    if (t.includes('render') || t.includes('planter')) return { cat: 'walls', var: 'rendered_block_planter', baseUnit: 'm²' };\n    if (t.includes('stone') || t.includes('cladding')) return { cat: 'walls', var: 'stone_walling_cladding', baseUnit: 'm²' };\n    if (t.includes('coping') || t.includes('cap')) return { cat: 'walls', var: 'copings_caps', baseUnit: 'lm' };\n    if (t.includes('edging') || t.includes('kerb') || t.includes('sett')) return { cat: 'walls', var: 'paving_edging_kerbs_setts', baseUnit: 'lm' };\n  }\n\n  // ACCESS / STEPS / PATHS\n  if (t.includes('step') || t.includes('bullnose') || t.includes('ramp') || (t.includes('gravel') && t.includes('path'))) {\n    if (t.includes('bullnose')) return { cat: 'access', var: 'bullnose_step_tread', baseUnit: 'each' };\n    if (t.includes('ramp') || t.includes('threshold')) return { cat: 'access', var: 'non_slip_ramp_threshold', baseUnit: 'each' };\n    if (t.includes('gravel') && t.includes('path')) return { cat: 'access', var: 'gravel_path_with_grids', baseUnit: 'm²' };\n    return { cat: 'access', var: 'paved_steps', baseUnit: 'step' };\n  }\n\n  // DRAINAGE & GROUNDWORK\n  if (t.includes('aco') || t.includes('drain') || t.includes('soakaway') || t.includes('manhole')) {\n    if (t.includes('aco') || t.includes('channel')) return { cat: 'drainage', var: 'linear_aco_channel', baseUnit: 'lm' };\n    if (t.includes('soakaway')) return { cat: 'drainage', var: 'soakaway_crate_system', baseUnit: 'each' };\n    return { cat: 'drainage', var: 'recessed_manhole_cover', baseUnit: 'each' };\n  }\n\n  // STRUCTURES / SHADE / WATER FEATURES\n  if (t.includes('pergola') || t.includes('pond') || t.includes('liner')) {\n    if (t.includes('3x3')) return { cat: 'structures', var: 'timber_pergola_3x3', baseUnit: 'each' };\n    if (t.includes('freestanding') || t.includes('heavy')) return { cat: 'structures', var: 'timber_pergola_freestanding_hd', baseUnit: 'each' };\n    if (t.includes('attached') || t.includes('ledger')) return { cat: 'structures', var: 'timber_pergola_attached', baseUnit: 'each' };\n    if (t.includes('pond') || t.includes('liner')) return { cat: 'structures', var: 'pond_liner_natural_edge', baseUnit: 'm²' };\n  }\n\n  // AQUATICS\n  if (t.includes('wildlife pond') || (t.includes('pond') && t.includes('wildlife')) || t.includes('reed bed')) {\n    if (t.includes('reed')) return { cat: 'aquatics', var: 'reed_bed_filtration_zone', baseUnit: 'm²' };\n    return { cat: 'aquatics', var: 'wildlife_pond_flexible_liner', baseUnit: 'm²' };\n  }\n\n  // WATER-FEATURE STRUCTURES\n  if (t.includes('corten') || t.includes('water table') || t.includes('water bowl')) {\n    if (t.includes('table')) return { cat: 'water_features', var: 'corten_water_table', baseUnit: 'each' };\n    return { cat: 'water_features', var: 'corten_bowl_on_plinth', baseUnit: 'each' };\n  }\n\n  // AGGREGATES\n  if (t.includes('decorative') && t.includes('stone')) {\n    return { cat: 'aggregates', var: 'decorative_stone_per_tonne', baseUnit: 'tonne' };\n  }\n\n  return { cat: null, var: null, baseUnit: item.unitType || '' };\n}\n\n// Rate lookup (adds +50% for lighting)\nfunction rateFor(item) {\n  const { cat, var: variant } = classify(item);\n  if (!cat || !variant || !RATES[cat] || RATES[cat][variant] == null) return 0;\n\n  // Block paving driveway uplift (+£20/m²) if flagged\n  if (cat === 'patios' && variant === 'block_paving' && (item.drivewaySpec === true)) {\n    return RATES.patios.block_paving + 20;\n  }\n\n  const base = RATES[cat][variant];\n\n  // ---------- ONLY lighting gets 1.5x ----------\n  if (cat === 'lighting') return +(base * LIGHTING_MULTIPLIER).toFixed(2);\n\n  return base;\n}\n\n// Enforce minimums for some water bodies\nfunction applyMinimums(catVarKey, qty, unit, line) {\n  const min = MIN_PROJECTS[catVarKey];\n  if (!min) return line;\n  if (unit === 'm²' && line < min) return min;\n  return line;\n}\n\n// ------------ MAIN ------------\nconst d = $json;\nconst products = d.project?.products || [];\nconst extras = d.project?.extras || {};\n\nlet breakdown = [];\nlet subtotal = 0;\n\nfor (const item of products) {\n  const { qty, unit } = getQtyUnit(item);\n  const { cat, var: variant } = classify(item);\n  const desc = item.description || item.type;\n\n  let unitRate = rateFor(item);\n  let line = (qty || 0) * (unitRate || 0);\n\n  if (cat && variant) {\n    const key = `${cat}.${variant}`;\n    line = applyMinimums(key, qty, unit, line);\n  }\n\n  breakdown.push({\n    item: item.type,\n    category: cat || '',\n    variant: variant || '',\n    description: desc,\n    qty,\n    unit,\n    unitCost: to2(unitRate || 0),\n    lineTotal: to2(line || 0)\n  });\n\n  subtotal += (line || 0);\n}\n\n// Keep extras as fixed-price lines\nfor (const [key, extra] of Object.entries(extras)) {\n  if (extra?.include && extra?.costEstimate) {\n    breakdown.push({\n      item: key,\n      description: extra.type || key,\n      qty: 1,\n      unit: 'item',\n      unitCost: to2(extra.costEstimate),\n      lineTotal: to2(extra.costEstimate)\n    });\n    subtotal += extra.costEstimate;\n  }\n}\n\n// Totals\nconst contingency = to2(subtotal * CONTINGENCY_PCT);\nconst preVat = to2(subtotal + contingency);\nconst vat = to2(preVat * VAT_PCT);\nconst total = to2(preVat + vat);\n\nreturn [\n  {\n    json: {\n      pricing: {\n        breakdown,\n        subtotal: to2(subtotal),\n        contingency,\n        vat,\n        total\n      }\n    }\n  }\n];\n"
+      },
+      "id": "7a032c35-4595-470b-91b8-19e23c8feaa6",
+      "name": "Calculate Pricing1",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        -864,
+        624
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "conversion",
+        "htmlContent": "={{$json[\"html\"]}}\n\n",
+        "filename": "={{ \"Landscaping Quotation - Premium Landscapes\" }}\n",
+        "conversionOptions": {
+          "paper_size": "a4",
+          "orientation": "portrait",
+          "conversionOutput": "file"
+        }
+      },
+      "type": "@pdfgeneratorapi/n8n-nodes-pdf-generator-api.pdfGeneratorApi",
+      "typeVersion": 1,
+      "position": [
+        768,
+        624
+      ],
+      "id": "ec140800-f545-4ff9-84bb-11705f74fb7a",
+      "name": "Convert HTML to PDF",
+      "credentials": {
+        "pdfGeneratorApi": {
+          "id": "tEyclVvnGiP0hZsZ",
+          "name": "PDF Generator account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build AI Prompt — only depend on upstream nodes that already ran\nconst validated = $node[\"Validate Input\"]?.json ?? {};\nconst project   = validated.project ?? {};\nconst customer  = validated.customer ?? {};\nconst pricing   = $node[\"Calculate Pricing1\"]?.json?.pricing ?? {};\n\nconst productsList = (project.products ?? [])\n  .map(p => p.material ? `${p.type} (${p.material})` : p.type)\n  .join(', ');\n\nconst prompt = `\nYou are a professional landscape designer and estimator.\nWrite a concise, friendly quote summary tailored to the client.\n\nClient: ${customer.name || \"Client\"}\nStyle: ${project.stylePreference || \"—\"} | Maintenance: ${project.maintenanceLevel || \"—\"}\nProducts: ${productsList || \"—\"}\nEstimated total: £${(pricing.total ?? 0).toLocaleString(\"en-GB\")}\n\nHighlight premium materials and low maintenance. Reassure on durability & value.\nKeep to max 6 sentences in warm, professional UK English.`.trim();\n\nreturn [{ json: { prompt } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        624
+      ],
+      "id": "7c79f219-9a7c-4bfb-ba0e-f52dd414118b",
+      "name": "Build AI Prompt"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -496,
+        816
+      ],
+      "id": "3d8ee20b-35a6-4ec3-8f6d-d4d0bda7c3b0",
+      "name": "When chat message received",
+      "webhookId": "56df7ff1-b6d9-4583-a6fe-9b883186122b"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "return {   json: {     summaryPrompt: `Create a personalized landscaping quote summary for ${customer.name || \"the client\"}...`   } };"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -208,
+        624
+      ],
+      "id": "8c88eabd-e4bc-4c41-a844-61e50313976b",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "chatgpt-4o-latest"
+        },
+        "options": {
+          "maxTokens": 1800,
+          "responseFormat": "text",
+          "temperature": 0.6,
+          "maxRetries": 2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        864
+      ],
+      "id": "a148bc9d-ad11-42a9-a643-86a7bd2aca57",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "eELTpqDo2P3x6OJF",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize whatever binary field name comes from the PDF node → \"data\"\nreturn items.map(item => {\n  if (!item.binary || Object.keys(item.binary).length === 0) {\n    throw new Error('No binary found from PDF step');\n  }\n  const firstKey = Object.keys(item.binary)[0];\n  item.binary.data = item.binary[firstKey];\n  if (firstKey !== 'data') delete item.binary[firstKey];\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        624
+      ],
+      "id": "134b5d21-06be-440c-bf2f-01b1a3f485a5",
+      "name": "Rename PDF Binary"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1712,
+        624
+      ],
+      "id": "4d4ff2cd-3535-4f44-a070-acae2188615b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      customer: {\n        name: \"Sarah Thompson\",\n        email: \"sarah.thompson@example.com\",\n        phone: \"+447812345679\",\n        postcode: \"LE45QW\",\n        address: \"22 Willow Park Avenue, Leicester, UK\"\n      },\n      project: {\n        title: \"Luxury Contemporary Garden with Entertaining Area\",\n        totalArea_m2: 120,\n        totalBudget_gbp: 26000,\n        layoutType: \"L-shaped\",\n        sunlight: \"full sun\",\n        stylePreference: \"contemporary luxury\",\n        maintenanceLevel: \"low maintenance\",\n        siteConditions: {\n          access: \"rear alley access (1.2m gate, moderate ease)\",\n          soilType: \"loam\",\n          drainage: \"good\"\n        },\n        products: [\n          {\n            type: \"patio\",\n            description: \"expansive porcelain patio with integrated lighting\",\n            material: \"premium porcelain\",\n            area_m2: 50,\n            edging: \"granite trim\",\n            includeDrainage: true,\n            unitType: \"m2\"\n          },\n          {\n            type: \"decking\",\n            description: \"composite decking area with sunken seating and step lights\",\n            material: \"light grey composite\",\n            area_m2: 30,\n            raised: true,\n            steps: 3,\n            balustrade: \"frameless glass panels\",\n            unitType: \"m2\"\n          },\n          {\n            type: \"turf\",\n            description: \"artificial lawn with foam underlay for premium softness\",\n            material: \"artificial grass\",\n            area_m2: 25,\n            includeEdging: true,\n            unitType: \"m2\"\n          },\n          {\n            type: \"fencing\",\n            description: \"composite slatted fence panels with LED edge lighting\",\n            material: \"graphite composite\",\n            length_m: 25,\n            height_m: 1.8,\n            unitType: \"m\"\n          },\n          {\n            type: \"lighting\",\n            description: \"smart LED path lights and deck uplighting\",\n            fittings: 12,\n            wattagePerFitting: 6,\n            control: \"smart app + motion sensor\",\n            unitType: \"qty\"\n          }\n        ],\n        extras: {\n          pergola: {\n            include: true,\n            type: \"motorised aluminium pergola with retractable roof\",\n            size_m: { width: 6, depth: 4 },\n            costEstimate: 5800\n          },\n          firePit: {\n            include: true,\n            type: \"built-in gas firepit with marble surround\",\n            costEstimate: 1250\n          },\n          waterFeature: {\n            include: true,\n            type: \"modern slate wall cascade feature\",\n            size: \"1.5m width\",\n            costEstimate: 1150\n          }\n        },\n        notes:\n          \"Client wants an elegant, high-end garden designed for social gatherings. Include firepit, pergola, and integrated lighting.\",\n      }\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1472,
+        624
+      ],
+      "id": "ca3acda7-47cf-4327-b4ac-30db4f7a3ea8",
+      "name": "mock data"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      ...($json.json ?? $json),\n      customerName: $json.customer?.name || \"Client\",\n      projectTitle: $json.project?.title || \"\",\n      totalFormatted: ($json.pricing?.total || 0).toLocaleString(\"en-GB\", {\n        minimumFractionDigits: 2,\n      }),\n    },\n    binary: {\n      data: $binary?.data, // <-- keep consistent with Rename PDF Binary\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        624
+      ],
+      "id": "f96424b5-d636-41e8-b847-c13b5fbb5137",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Premium Landscapes | Proposal PDF (A4 Portrait) ===\n// Version: 1.5.3-img | 2025-10-30\n\nconst data    = $json ?? {};\nconst client  = data.customer ?? {};\nconst project = data.project  ?? {};\nconst pricing = data.pricing  ?? {};\nconst aiText  = (data.aiSummary || \"\").toString().trim();\n\n// === BRAND ASSETS ===\nconst LOGO_URL    = \"https://i.imgur.com/pTGHU6S.png\";\nconst BRAND_COLOR = \"#0b2e4c\";\n\n// === HELPERS ===\nconst fmtGBP = (n) =>\n  \"£\" + Number(n ?? 0).toLocaleString(\"en-GB\", {\n    minimumFractionDigits: 2,\n    maximumFractionDigits: 2\n  });\n\n// === PRICING TABLE ===\nconst rows = (pricing.breakdown ?? [])\n  .map(i => `\n    <tr>\n      <td>${i.item ?? \"\"}</td>\n      <td>${i.description ?? \"\"}</td>\n      <td style=\"text-align:center\">${i.qty ?? 0}</td>\n      <td style=\"text-align:center\">${i.unit ?? \"\"}</td>\n      <td style=\"text-align:right\">${fmtGBP(i.unitCost)}</td>\n      <td style=\"text-align:right;font-weight:600\">${fmtGBP(i.lineTotal)}</td>\n    </tr>\n  `).join(\"\");\n\n// === BUILD HTML ===\nconst html = `\n<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\"/>\n<title>Premium Landscapes Proposal</title>\n<style>\n  @page { size: A4; margin: 18mm; }\n  body {\n    font-family: 'Open Sans', Arial, sans-serif;\n    color: #111827;\n    background: #fff;\n    margin: 0;\n    padding: 0;\n  }\n\n  header {\n    display: flex;\n    align-items: center;\n    justify-content: space-between;\n    border-bottom: 3px solid ${BRAND_COLOR};\n    padding: 20px 36px 10px;\n  }\n  .logo-wrap img {\n    width: 160px;\n    height: auto;\n    display: block;\n    image-rendering: auto;\n    border: 0;\n  }\n  header .title-block {\n    text-align: right;\n  }\n  header h1 {\n    color: ${BRAND_COLOR};\n    font-size: 22px;\n    margin: 0;\n    letter-spacing: 0.3px;\n  }\n  header p {\n    color: #6B7280;\n    font-size: 12px;\n    margin: 4px 0 0;\n  }\n\n  main {\n    padding: 28px 36px 28px;\n  }\n\n  h2 {\n    color: ${BRAND_COLOR};\n    font-size: 15px;\n    background: #f5f7f9;\n    border-left: 4px solid ${BRAND_COLOR};\n    padding: 6px 8px;\n    margin: 26px 0 10px;\n    border-radius: 3px;\n  }\n\n  .section {\n    font-size: 13px;\n    line-height: 1.6;\n  }\n  .muted {\n    color: #6B7280;\n    font-size: 12px;\n  }\n\n  .chips span {\n    display: inline-block;\n    background: #EEF2FF;\n    color: ${BRAND_COLOR};\n    border-radius: 8px;\n    padding: 3px 8px;\n    font-size: 11px;\n    margin: 3px 4px 0 0;\n  }\n\n  .ai-summary {\n    background: #f9fafb;\n    border-left: 4px solid ${BRAND_COLOR};\n    padding: 14px 16px;\n    border-radius: 6px;\n    font-size: 12.5px;\n    color: #1f2937;\n    margin-top: 10px;\n    box-shadow: 0 0 6px rgba(0,0,0,0.03);\n  }\n\n  table {\n    width: 100%;\n    border-collapse: collapse;\n    font-size: 12.5px;\n    margin-top: 12px;\n    page-break-inside: auto;\n  }\n  thead { display: table-header-group; }\n  tr { page-break-inside: avoid; page-break-after: auto; }\n  th, td {\n    border: 1px solid #E5E7EB;\n    padding: 8px 6px;\n    vertical-align: top;\n  }\n  th {\n    background: #F3F4F6;\n    text-align: left;\n    color: ${BRAND_COLOR};\n    font-weight: 600;\n  }\n  tr:nth-child(even) td {\n    background: #FAFAFA;\n  }\n\n  .totals-box {\n    margin-top: 18px;\n    width: 300px;\n    margin-left: auto;\n    border: 1px solid #E5E7EB;\n    border-radius: 8px;\n    padding: 12px 16px;\n    font-size: 13px;\n    background: #fff;\n    box-shadow: 0 1px 4px rgba(0,0,0,0.04);\n  }\n  .totals-box table {\n    width: 100%;\n    border: none;\n    border-collapse: collapse;\n  }\n  .totals-box td {\n    border: none;\n    padding: 4px 0;\n  }\n  .totals-box tr:last-child td {\n    border-top: 1px solid #E5E7EB;\n    font-weight: 700;\n    padding-top: 8px;\n    font-size: 14px;\n    color: ${BRAND_COLOR};\n  }\n\n  footer {\n    font-size: 11px;\n    color: #6B7280;\n    border-top: 1px solid #E5E7EB;\n    text-align: center;\n    padding: 10px 0 8px;\n    margin-top: 30px;\n    letter-spacing: 0.1px;\n  }\n</style>\n</head>\n<body>\n  <header>\n    <div class=\"logo-wrap\">\n      <img src=\"${LOGO_URL}\" alt=\"Premium Landscapes Logo\">\n    </div>\n    <div class=\"title-block\">\n      <h1>Garden Design & Build Proposal</h1>\n      <p>Prepared for ${client.name ?? \"Client\"}</p>\n    </div>\n  </header>\n\n  <main>\n    <section class=\"section\">\n      <h2>Client Information</h2>\n      <div><strong>${client.name ?? \"Client\"}</strong></div>\n      <div>${client.address ?? \"\"}</div>\n      <div>${client.postcode ?? \"\"}</div>\n      <div class=\"muted\">${client.email ?? \"\"}</div>\n      <div class=\"muted\">${client.phone ?? \"\"}</div>\n    </section>\n\n    <section class=\"section\">\n      <h2>Project Summary</h2>\n      <div><strong>Title:</strong> ${project.title ?? \"\"}</div>\n      <div class=\"chips\">\n        ${project.stylePreference ? `<span>Style: ${project.stylePreference}</span>` : \"\"}\n        ${project.maintenanceLevel ? `<span>Maintenance: ${project.maintenanceLevel}</span>` : \"\"}\n        ${project.totalArea_m2 != null ? `<span>Area: ${project.totalArea_m2} m²</span>` : \"\"}\n        ${project.totalBudget_gbp != null ? `<span>Budget: ${fmtGBP(project.totalBudget_gbp)}</span>` : \"\"}\n      </div>\n    </section>\n\n    ${aiText ? `\n      <section class=\"ai-summary\">\n        <strong>AI Project Summary</strong><br><br>${aiText.replace(/\\n/g, \"<br>\")}\n      </section>` : \"\"}\n\n    <section class=\"section\">\n      <h2>Pricing Breakdown</h2>\n      <table>\n        <thead>\n          <tr>\n            <th>Item</th><th>Description</th><th>Qty</th><th>Unit</th><th>Unit Cost</th><th>Total</th>\n          </tr>\n        </thead>\n        <tbody>${rows || `<tr><td colspan=\"6\">No items found</td></tr>`}</tbody>\n      </table>\n\n      <div class=\"totals-box\">\n        <table>\n          <tr><td>Subtotal</td><td style=\"text-align:right\">${fmtGBP(pricing.subtotal)}</td></tr>\n          <tr><td>Contingency</td><td style=\"text-align:right\">${fmtGBP(pricing.contingency)}</td></tr>\n          <tr><td>VAT</td><td style=\"text-align:right\">${fmtGBP(pricing.vat)}</td></tr>\n          <tr><td>Grand Total</td><td style=\"text-align:right\">${fmtGBP(pricing.total)}</td></tr>\n        </table>\n      </div>\n    </section>\n\n    <footer>\n      hello@premium-landscapes.co.uk &nbsp;|&nbsp; 07444 887813 &nbsp;|&nbsp; www.premium-landscapes.co.uk<br>\n      <span>All quotes subject to final site survey and material availability.</span>\n    </footer>\n  </main>\n</body>\n</html>\n`;\nreturn [\n  {\n    json: {\n      html,\n      pricing, // Pass pricing downstream\n      fileName: `Landscaping Quotation - ${client.name || 'Client'}.pdf` // 👈 Added clean filename\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        624
+      ],
+      "id": "debeb81a-d5c2-4027-b16b-a70ed76bcd28",
+      "name": "Build PDF HTML1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1568,
+        1296
+      ],
+      "id": "6d9867cd-473f-424e-befd-a0051d92c2de",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pass webhook data forward for merging later\nreturn [{ json: $json }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        1152
+      ],
+      "id": "a6e607eb-3359-491a-81ca-711866a12846",
+      "name": "Attach Original Webhook Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json ?? {};\nconst customer = data.customer ?? {};\nconst project = data.project ?? {};\nconst products = project.products ?? '';\nconst fileUrl = data.fileUrl ?? '';\n\n// ✅ Improved AI Summary logic\nconst summary =\n  data.aiSummary ||\n  project.notes ||\n  $item(0).$node[\"Build PDF HTML1\"].json.aiSummary ||\n  '';\n\n// ✅ Try to pull pricing from current or from the PDF node\nconst pricing =\n  data.pricing ||\n  $item(0).$node[\"Build PDF HTML1\"].json.pricing ||\n  {};\n\nconst total =\n  pricing.total ??\n  project.totalBudget_gbp ??\n  0;\n\nreturn [\n  {\n    json: {\n      customerName: customer.name || '',\n      email: customer.email || '',\n      phone: customer.phone || '',\n      postcode: customer.postcode || '',\n      products,\n      aiSummary: summary,\n      total:\n        typeof total === 'number'\n          ? `£${total.toLocaleString('en-GB', { minimumFractionDigits: 2 })}`\n          : total || '',\n      fileUrl: fileUrl || '',\n      status: 'Sent'\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1888,
+        640
+      ],
+      "id": "dbcc30c0-9e0c-471e-bbcf-7af5166fa6fa",
+      "name": "Log Quote"
+    }
+  ],
+  "pinData": {
+    "Error Catcher": [
+      {
+        "json": {
+          "execution": {
+            "id": "60",
+            "url": "https://digitaltailorsdxb.app.n8n.cloud/workflow/snCjf2HwLdipPb6v/executions/60",
+            "error": {
+              "level": "warning",
+              "tags": {
+                "reWrapped": true
+              },
+              "description": "Check that the parameter where you specified the input binary field name is correct, and that it matches a field in the binary input",
+              "timestamp": 1761744866480,
+              "context": {
+                "itemIndex": 0
+              },
+              "functionality": "regular",
+              "name": "NodeApiError",
+              "node": {
+                "parameters": {
+                  "resource": "email",
+                  "operation": "send",
+                  "fromEmail": "premiumlandscapesuk@gmail.com",
+                  "toEmail": "={{$json.customer.email}}",
+                  "subject": "Your Detailed Garden Quote from Premium Landscapes 🌿",
+                  "emailFormat": "html",
+                  "html": "=<div style=\"font-family: Inter, Arial, sans-serif; color: #111827; line-height: 1.5;\">\n  <h2 style=\"color:#2563EB;\">Hi {{$json[\"customer\"][\"name\"]}},</h2>\n\n  <p>Thank you for your interest in improving your garden with <strong>Premium Landscapes</strong>.</p>\n  \n  <p>Attached below is your detailed quote, including a breakdown of materials, labour, and an AI-generated project overview created specifically for your property.</p>\n\n  <blockquote style=\"margin: 20px 0; padding: 15px; background: #F0F9FF; border-left: 4px solid #2563EB;\">\n    <strong>AI Project Summary:</strong><br>\n    {{$json[\"aiSummary\"]}}\n  </blockquote>\n\n  <p><strong>Total Estimate:</strong> £{{$json[\"pricing\"][\"total\"].toLocaleString()}}</p>\n  <p>All works include materials, labour, and waste removal.</p>\n\n  <p>If you’d like to go ahead, simply reply to this email or call us directly on <strong>07444 887813</strong>.</p>\n\n  <p>Warm regards,<br>\n  <strong>Premium Landscapes Team</strong><br>\n  <a href=\"https://www.premium-landscapes.co.uk\" style=\"color:#2563EB;\">www.premium-landscapes.co.uk</a></p>\n\n  <hr style=\"margin-top: 30px;\">\n  <p style=\"font-size: 12px; color: #555;\">This quote was automatically generated using Premium Landscapes' AI system.</p>\n</div>",
+                  "options": {
+                    "attachments": "=data"
+                  }
+                },
+                "id": "ea655529-7d00-475c-9713-b0d008e94158",
+                "name": "Send Email",
+                "type": "n8n-nodes-base.emailSend",
+                "position": [
+                  592,
+                  624
+                ],
+                "typeVersion": 2.1,
+                "webhookId": "ab3e512a-7b66-44ee-9210-d627ca379a3d",
+                "credentials": {
+                  "smtp": {
+                    "id": "dLpXH6yljIeIoVw6",
+                    "name": "SMTP account 2"
+                  }
+                }
+              },
+              "messages": [
+                "The item has no binary field 'data' [item 0]"
+              ],
+              "httpCode": null,
+              "message": "The item has no binary field 'data' [item 0]",
+              "stack": "NodeApiError: The item has no binary field 'data' [item 0]\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_afd197edb2c1f848eae21a96a97fab23/node_modules/n8n-nodes-base/nodes/EmailSend/v2/send.operation.ts:279:10)\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_afd197edb2c1f848eae21a96a97fab23/node_modules/n8n-nodes-base/nodes/EmailSend/v2/EmailSendV2.node.ts:105:17)\n    at WorkflowExecute.executeNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1093:8)\n    at WorkflowExecute.runNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1274:11)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1699:27\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_08b575bec2313d5d8a4cc75358971443/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:2315:11"
+            },
+            "lastNodeExecuted": "Send Email",
+            "mode": "webhook"
+          },
+          "workflow": {
+            "id": "snCjf2HwLdipPb6v",
+            "name": "Premium Landscapes - Instant Quote (Final)"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Upload PDF to Google Drive": {
+      "main": [
+        []
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Calculate Pricing1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Attach Original Webhook Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge AI Summary": {
+      "main": [
+        [
+          {
+            "node": "Build PDF HTML1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Quote to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Catcher": {
+      "main": [
+        [
+          {
+            "node": "Send Error Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger1": {
+      "main": [
+        []
+      ]
+    },
+    "Calculate Pricing1": {
+      "main": [
+        [
+          {
+            "node": "Build AI Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build PDF HTML": {
+      "main": [
+        []
+      ]
+    },
+    "Convert HTML to PDF": {
+      "main": [
+        [
+          {
+            "node": "Rename PDF Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build AI Prompt": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Merge AI Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename PDF Binary": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "mock data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mock data": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build PDF HTML1": {
+      "main": [
+        [
+          {
+            "node": "Convert HTML to PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Log Quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Original Webhook Data": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Log Quote": {
+      "main": [
+        [
+          {
+            "node": "Log Quote to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e193dec2-ca14-4504-85c8-b947afd466e4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e1c866f51f89be40bb7a8fd6d598585ff0ef85e3ee97add539aaea059383a17d"
+  },
+  "id": "snCjf2HwLdipPb6v",
+  "tags": []
+}

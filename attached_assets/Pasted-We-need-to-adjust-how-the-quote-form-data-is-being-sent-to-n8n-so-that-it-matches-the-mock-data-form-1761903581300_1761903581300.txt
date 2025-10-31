@@ -1,0 +1,122 @@
+We need to adjust how the quote form data is being sent to n8n so that it matches the mock data format below.
+
+Right now, the website successfully sends the data to the webhook, but n8n receives it as a stringified body instead of a structured JSON object. This causes $json.customer and $json.project to be undefined, even though the payload is correct.
+
+The workflow itself is working perfectly when mock data is used — so the issue can only be the way Replit is formatting or wrapping the data before sending it to n8n.
+
+✅ What We Need
+
+Please change the way the payload is sent from Replit so that n8n receives a direct JSON object, not { body: "..." } or { data: "..." }.
+
+n8n should receive data in this exact structure (the same as the mock data that works perfectly):
+
+[
+  {
+    json: {
+      customer: {
+        name: "Sarah Thompson",
+        email: "sarah.thompson@example.com",
+        phone: "+447812345679",
+        postcode: "LE45QW",
+        address: "22 Willow Park Avenue, Leicester, UK"
+      },
+      project: {
+        title: "Luxury Contemporary Garden with Entertaining Area",
+        totalArea_m2: 120,
+        totalBudget_gbp: 26000,
+        layoutType: "L-shaped",
+        sunlight: "full sun",
+        stylePreference: "contemporary luxury",
+        maintenanceLevel: "low maintenance",
+        siteConditions: {
+          access: "rear alley access (1.2m gate, moderate ease)",
+          soilType: "loam",
+          drainage: "good"
+        },
+        products: [
+          {
+            type: "patio",
+            description: "expansive porcelain patio with integrated lighting",
+            material: "premium porcelain",
+            area_m2: 50,
+            edging: "granite trim",
+            includeDrainage: true,
+            unitType: "m2"
+          },
+          {
+            type: "decking",
+            description: "composite decking area with sunken seating and step lights",
+            material: "light grey composite",
+            area_m2: 30,
+            raised: true,
+            steps: 3,
+            balustrade: "frameless glass panels",
+            unitType: "m2"
+          },
+          {
+            type: "turf",
+            description: "artificial lawn with foam underlay for premium softness",
+            material: "artificial grass",
+            area_m2: 25,
+            includeEdging: true,
+            unitType: "m2"
+          },
+          {
+            type: "fencing",
+            description: "composite slatted fence panels with LED edge lighting",
+            material: "graphite composite",
+            length_m: 25,
+            height_m: 1.8,
+            unitType: "m"
+          },
+          {
+            type: "lighting",
+            description: "smart LED path lights and deck uplighting",
+            fittings: 12,
+            wattagePerFitting: 6,
+            control: "smart app + motion sensor",
+            unitType: "qty"
+          }
+        ],
+        extras: {
+          pergola: {
+            include: true,
+            type: "motorised aluminium pergola with retractable roof",
+            size_m: { width: 6, depth: 4 },
+            costEstimate: 5800
+          },
+          firePit: {
+            include: true,
+            type: "built-in gas firepit with marble surround",
+            costEstimate: 1250
+          },
+          waterFeature: {
+            include: true,
+            type: "modern slate wall cascade feature",
+            size: "1.5m width",
+            costEstimate: 1150
+          }
+        },
+        notes:
+          "Client wants an elegant, high-end garden designed for social gatherings. Include firepit, pergola, and integrated lighting."
+      }
+    }
+  }
+];
+
+⚙️ Technical Implementation
+
+When sending the data to n8n, it should look like this:
+
+await fetch("https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-quote", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    customer: { name, email, phone, postcode, address },
+    project: { title, totalArea_m2, totalBudget_gbp, products, extras, notes }
+  }),
+});
+
+
+Do not nest it under body or data.
+Just send it directly as JSON — this will make $json.customer and $json.project available at the top level inside n8n, matching how mock data works.
