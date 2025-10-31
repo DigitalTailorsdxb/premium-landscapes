@@ -129,15 +129,8 @@ window.GOOGLE_MAPS_API_KEY = brandConfig.googleMapsApiKey;
 // Debug logging to verify config is loaded
 console.log('✅ Config loaded! Webhook URL:', brandConfig?.webhooks?.quote);
 
-// Check API key status after a small delay to allow env config to load
-setTimeout(() => {
-    const finalKey = window.ENV_GOOGLE_MAPS_API_KEY || window.GOOGLE_MAPS_API_KEY;
-    if (finalKey) {
-        console.log('✅ Google Maps address autocomplete enabled');
-    } else {
-        console.log('⚠️ Address autocomplete disabled (no Google Maps API key configured)');
-    }
-}, 100);
+// Note: Google Maps API key check is handled in quote.html after API loads
+// No need for early check here as it causes confusing warnings
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', applyBranding);
