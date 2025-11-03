@@ -684,7 +684,20 @@ async function submitQuote() {
         
         // Send to n8n workflow
         console.log('📤 SENDING TO N8N:', webhookUrl);
-        console.log('📦 PAYLOAD BEING SENT:', JSON.stringify(webhookPayload, null, 2));
+        console.log('📦 PAYLOAD STRUCTURE:');
+        console.log('  customer:', {
+            name: webhookPayload.customer.name,
+            email: webhookPayload.customer.email,
+            phone: webhookPayload.customer.phone,
+            postcode: webhookPayload.customer.postcode,
+            city: webhookPayload.customer.city,
+            street: webhookPayload.customer.street,
+            address: webhookPayload.customer.address
+        });
+        console.log('  project.products:', webhookPayload.project.products.length, 'items');
+        console.log('  project.totalArea_m2:', webhookPayload.project.totalArea_m2);
+        console.log('  project.totalBudget_gbp:', webhookPayload.project.totalBudget_gbp);
+        console.log('📦 FULL PAYLOAD:', JSON.stringify(webhookPayload, null, 2));
         
         const response = await fetch(webhookUrl, {
             method: 'POST',
@@ -695,6 +708,7 @@ async function submitQuote() {
         });
         
         console.log('✅ n8n Response Status:', response.status);
+        console.log('✅ n8n Response OK:', response.ok);
         
         if (!response.ok) {
             const errorText = await response.text();
@@ -854,9 +868,9 @@ function prepareWebhookPayload() {
         return {
             customer: {
                 name: quoteData.name || 'Unknown',
-                email: quoteData.email,
+                email: quoteData.email || '',
                 phone: quoteData.phone || '',
-                postcode: quoteData.postcode,
+                postcode: quoteData.postcode || '',
                 city: quoteData.city || '',
                 street: quoteData.street || '',
                 address: buildFullAddress()
