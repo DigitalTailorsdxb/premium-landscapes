@@ -334,34 +334,32 @@ function initializePostcodeLookup() {
 
 // Initialize address autocomplete after Google Maps API loads
 window.initializeAddressAutocomplete = function() {
-    const postcodeInputWrapper = document.getElementById('postcode').parentElement;
-    const cityInput = document.getElementById('city');
-    const streetInput = document.getElementById('street');
-    const postcodeCheck = document.getElementById('postcodeCheck');
-    const addressFields = document.getElementById('addressFields');
-    
-    if (!postcodeInputWrapper || typeof google === 'undefined') {
-        console.warn('⚠️ Google Maps not available or postcode input not found');
-        return;
-    }
-    
-    // Replace the existing postcode input with autocomplete-ready input
-    const originalInput = document.getElementById('postcode');
-    const newInput = document.createElement('input');
-    newInput.type = 'text';
-    newInput.id = 'postcode';
-    newInput.className = originalInput.className;
-    newInput.placeholder = 'Type your postcode or address...';
-    newInput.setAttribute('aria-label', 'Postcode or address');
-    
-    originalInput.replaceWith(newInput);
-    
-    // Initialize Google Maps Places Autocomplete
-    const autocomplete = new google.maps.places.Autocomplete(newInput, {
-        types: ['address'],
-        componentRestrictions: { country: 'uk' },
-        fields: ['address_components', 'formatted_address', 'name']
-    });
+    try {
+        const postcodeInput = document.getElementById('postcode');
+        const cityInput = document.getElementById('city');
+        const streetInput = document.getElementById('street');
+        const postcodeCheck = document.getElementById('postcodeCheck');
+        const addressFields = document.getElementById('addressFields');
+        
+        if (!postcodeInput) {
+            console.warn('⚠️ Postcode input not found');
+            return;
+        }
+        
+        if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
+            console.warn('⚠️ Google Maps Places API not loaded');
+            return;
+        }
+        
+        // Update placeholder
+        postcodeInput.placeholder = 'Type your postcode or address...';
+        
+        // Initialize Google Maps Places Autocomplete (without replacing the element)
+        const autocomplete = new google.maps.places.Autocomplete(postcodeInput, {
+            types: ['address'],
+            componentRestrictions: { country: 'uk' },
+            fields: ['address_components', 'formatted_address', 'name']
+        });
     
     // Handle place selection
     const handlePlaceSelect = () => {
@@ -402,20 +400,20 @@ window.initializeAddressAutocomplete = function() {
         });
         
         // Populate fields
-        if (city) {
+        if (city && cityInput) {
             cityInput.value = city;
             cityInput.classList.add('bg-green-50');
         }
-        if (street) {
+        if (street && streetInput) {
             streetInput.value = street;
             streetInput.classList.add('bg-green-50');
         }
-        if (postcode) {
-            newInput.value = postcode;
+        if (postcode && postcodeInput) {
+            postcodeInput.value = postcode;
         }
         
         // Show success indicators
-        if (city || street) {
+        if ((city || street) && postcodeCheck && addressFields) {
             postcodeCheck.classList.remove('hidden');
             addressFields.classList.remove('hidden');
             addressFields.style.animation = 'fadeIn 0.3s ease-out';
@@ -428,10 +426,15 @@ window.initializeAddressAutocomplete = function() {
         }
     };
     
-    // Listen for place selection
-    autocomplete.addListener('place_changed', handlePlaceSelect);
-    
-    console.log('✅ Google Maps autocomplete initialized successfully');
+        // Listen for place selection
+        autocomplete.addListener('place_changed', handlePlaceSelect);
+        
+        console.log('✅ Google Maps autocomplete initialized successfully');
+        
+    } catch (error) {
+        console.error('❌ Error initializing autocomplete:', error);
+        console.log('Address lookup will work without autocomplete');
+    }
 };
 
 function displayFilePreview(files, previewContainer) {
