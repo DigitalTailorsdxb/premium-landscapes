@@ -324,118 +324,10 @@ function initializeFileUploadStep5() {
     }
 }
 
-// Initialize Google Maps Places Autocomplete for address lookup
+// Address fields are now simple manual inputs - no autocomplete needed
 function initializePostcodeLookup() {
-    // This function is called on page load
-    // The actual autocomplete is initialized by initializeAddressAutocomplete() 
-    // after Google Maps API loads (see callback in quote.html)
-    console.log('⏳ Waiting for Google Maps API to load...');
+    console.log('✅ Address form ready - manual entry mode');
 }
-
-// Initialize address autocomplete after Google Maps API loads
-window.initializeAddressAutocomplete = function() {
-    try {
-        const postcodeInput = document.getElementById('postcode');
-        const cityInput = document.getElementById('city');
-        const streetInput = document.getElementById('street');
-        const postcodeCheck = document.getElementById('postcodeCheck');
-        const addressFields = document.getElementById('addressFields');
-        
-        if (!postcodeInput) {
-            console.warn('⚠️ Postcode input not found');
-            return;
-        }
-        
-        if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
-            console.warn('⚠️ Google Maps Places API not loaded');
-            return;
-        }
-        
-        // Update placeholder
-        postcodeInput.placeholder = 'Type your postcode or address...';
-        
-        // Initialize Google Maps Places Autocomplete (without replacing the element)
-        const autocomplete = new google.maps.places.Autocomplete(postcodeInput, {
-            types: ['address'],
-            componentRestrictions: { country: 'uk' },
-            fields: ['address_components', 'formatted_address', 'name']
-        });
-    
-    // Handle place selection
-    const handlePlaceSelect = () => {
-        const place = autocomplete.getPlace();
-        
-        if (!place || !place.address_components) {
-            console.warn('⚠️ No address components found');
-            return;
-        }
-        
-        // Extract address components
-        let street = '';
-        let city = '';
-        let postcode = '';
-        
-        place.address_components.forEach(component => {
-            const types = component.types;
-            
-            // Street number + street name
-            if (types.includes('street_number')) {
-                street = component.long_name + ' ';
-            }
-            if (types.includes('route')) {
-                street += component.long_name;
-            }
-            
-            // City/Town (use postal_town for UK)
-            if (types.includes('postal_town')) {
-                city = component.long_name;
-            } else if (types.includes('locality') && !city) {
-                city = component.long_name;
-            }
-            
-            // Postcode
-            if (types.includes('postal_code')) {
-                postcode = component.long_name;
-            }
-        });
-        
-        // Populate fields
-        if (city && cityInput) {
-            cityInput.value = city;
-            cityInput.classList.add('bg-green-50');
-        }
-        if (street && streetInput) {
-            streetInput.value = street;
-            streetInput.classList.add('bg-green-50');
-        }
-        if (postcode && postcodeInput) {
-            postcodeInput.value = postcode;
-        }
-        
-        // Show success indicators
-        if ((city || street) && postcodeCheck && addressFields) {
-            postcodeCheck.classList.remove('hidden');
-            addressFields.classList.remove('hidden');
-            addressFields.style.animation = 'fadeIn 0.3s ease-out';
-            
-            console.log('✅ Address auto-populated:', {
-                street: street || '(not found)',
-                city: city || '(not found)',
-                postcode: postcode || '(not found)'
-            });
-        }
-    };
-    
-        // Listen for place selection
-        autocomplete.addListener('place_changed', handlePlaceSelect);
-        
-        console.log('✅ Google Maps autocomplete initialized successfully');
-        
-    } catch (error) {
-        console.error('❌ Error initializing autocomplete:', error);
-        console.log('Address lookup will work without autocomplete');
-    }
-};
 
 function displayFilePreview(files, previewContainer) {
     previewContainer.innerHTML = '';
@@ -504,13 +396,16 @@ function nextStep() {
             postcodeInput.focus();
             return;
         }
-        quoteData.postcode = postcodeInput.value.trim();
+        quoteData.postcode = postcodeInput.value.trim().toUpperCase();
         
-        // Also capture city and street if Google Maps autocomplete populated them
+        // Capture all address fields from manual entry
         const cityInput = document.getElementById('city');
         const streetInput = document.getElementById('street');
+        const houseNumberInput = document.getElementById('houseNumber');
+        
         if (cityInput) quoteData.city = cityInput.value.trim();
         if (streetInput) quoteData.street = streetInput.value.trim();
+        if (houseNumberInput) quoteData.houseNumber = houseNumberInput.value.trim();
     }
     
     // Hide current step
@@ -861,6 +756,7 @@ function prepareWebhookPayload() {
         // Build n8n-compatible payload
         const buildFullAddress = () => {
             const parts = [];
+            if (quoteData.houseNumber) parts.push(quoteData.houseNumber);
             if (quoteData.street) parts.push(quoteData.street);
             if (quoteData.city) parts.push(quoteData.city);
             if (quoteData.postcode) parts.push(quoteData.postcode);
@@ -876,6 +772,7 @@ function prepareWebhookPayload() {
                 postcode: quoteData.postcode || '',
                 city: quoteData.city || '',
                 street: quoteData.street || '',
+                houseNumber: quoteData.houseNumber || '',
                 address: buildFullAddress()
             },
             project: {

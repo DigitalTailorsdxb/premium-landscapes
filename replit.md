@@ -12,9 +12,8 @@
 ✅ **n8n Integration Active** - Webhook URL: https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-quote (FIXED Nov 3)
 ✅ **Logo URL for PDFs** - https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev/static/logo.png
 ✅ **n8n Connection Fixed** - Webhook URL corrected, payload structure verified (see FIXES_APPLIED.md)
-✅ **Google Maps Address Autocomplete** - Full UK address lookup using Google Maps Places API (free tier: $200/month = ~11,700 lookups)
-✅ **Address Autocomplete Fixed** - Crash issue resolved, now initializes safely without replacing DOM elements (Nov 3)
-✅ **Address Data Capture Fixed** - City/Town and Street fields properly saved to quoteData and sent to n8n webhook
+✅ **Manual Address Entry** - Simple 4-field address form (house number, street, city, postcode) - no API dependencies, 100% reliable (Nov 4)
+✅ **Address Form Simplified** - Removed crashing Google Maps autocomplete, replaced with clean manual entry (see ADDRESS_FORM_UPDATE.md)
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
