@@ -721,31 +721,36 @@ function prepareWebhookPayload() {
                 const product = {
                     type: feature,
                     description: description || `${feature} installation`,
-                    material: material,
-                    unitType: (feature === 'fencing' || feature === 'lighting') ? 'qty' : 'm2'
+                    material: material
                 };
                 
                 // Add type-specific fields using dedicated area input
                 if (feature === 'patio' || feature === 'driveway') {
+                    product.unitType = 'm2';
                     product.area_m2 = dedicatedArea ? parseInt(dedicatedArea) : defaultArea;
                     product.edging = description.toLowerCase().includes('edging') ? 'standard edging' : 'none';
                     product.includeDrainage = true;
                 } else if (feature === 'decking') {
+                    product.unitType = 'm2';
                     product.area_m2 = dedicatedArea ? parseInt(dedicatedArea) : defaultArea;
                     product.raised = description.toLowerCase().includes('raised');
                     product.steps = description.toLowerCase().includes('step') ? 3 : 0;
                     product.balustrade = description.toLowerCase().includes('glass') ? 'glass panels' : 'none';
                 } else if (feature === 'turf') {
+                    product.unitType = 'm2';
                     product.area_m2 = dedicatedArea ? parseInt(dedicatedArea) : defaultArea;
                     product.includeEdging = true;
                 } else if (feature === 'fencing') {
-                    product.length_m = dedicatedArea ? parseInt(dedicatedArea) : 20;
+                    product.unitType = 'm';
+                    product.length = dedicatedArea ? parseInt(dedicatedArea) : 20;
                     product.height_m = 1.8;
                 } else if (feature === 'lighting') {
+                    product.unitType = 'qty';
                     product.fittings = dedicatedArea ? parseInt(dedicatedArea) : 8;
                     product.wattagePerFitting = 6;
                     product.control = 'standard switch';
                 } else {
+                    product.unitType = 'm2';
                     product.area_m2 = dedicatedArea ? parseInt(dedicatedArea) : defaultArea;
                 }
                 
