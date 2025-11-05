@@ -773,7 +773,39 @@ function prepareWebhookPayload() {
             return parts.join(', ');
         };
         
-        return {
+        // Check if Full Redesign mode with materials
+        const isFullRedesign = quoteData.features.includes('full-redesign');
+        const hasGardenDesignMaterials = isFullRedesign && Object.keys(gardenDesignMaterials).length > 0;
+        
+        // Format garden design materials for n8n
+        const formatGardenDesignMaterials = () => {
+            if (!hasGardenDesignMaterials) return null;
+            
+            // Group materials by category
+            const materialsByCategory = {};
+            Object.values(gardenDesignMaterials).forEach(mat => {
+                if (!materialsByCategory[mat.category]) {
+                    materialsByCategory[mat.category] = [];
+                }
+                materialsByCategory[mat.category].push({
+                    material: mat.material,
+                    displayName: mat.displayName,
+                    quality: mat.quality,
+                    area_m2: mat.area,
+                    style: mat.style || '',
+                    notes: mat.notes || ''
+                });
+            });
+            
+            return {
+                categories: materialsByCategory,
+                totalMaterialCount: Object.keys(gardenDesignMaterials).length,
+                designVisionNotes: document.getElementById('designVisionNotes')?.value || '',
+                materials: Object.values(gardenDesignMaterials) // Flat list for easy processing
+            };
+        };
+        
+        const payload = {
             customer: {
                 name: quoteData.name || 'Unknown',
                 email: quoteData.email || '',
@@ -786,12 +818,13 @@ function prepareWebhookPayload() {
             },
             project: {
                 title: generateProjectTitle(),
+                type: isFullRedesign ? 'full_garden_redesign' : 'individual_products',
                 totalArea_m2: totalArea,
                 totalBudget_gbp: totalBudget,
-                layoutType: 'standard', // Default value
-                sunlight: 'partial sun', // Default value
-                stylePreference: 'contemporary', // Default value
-                maintenanceLevel: 'low maintenance', // Default value
+                layoutType: 'standard',
+                sunlight: 'partial sun',
+                stylePreference: 'contemporary',
+                maintenanceLevel: 'low maintenance',
                 siteConditions: {
                     access: 'standard access',
                     soilType: 'loam',
@@ -806,6 +839,14 @@ function prepareWebhookPayload() {
                 notes: quoteData.additionalNotes || 'Website quote request'
             }
         };
+        
+        // Add full garden design data if applicable
+        if (hasGardenDesignMaterials) {
+            payload.project.gardenDesign = formatGardenDesignMaterials();
+            console.log('🎨 Full Garden Design data included:', payload.project.gardenDesign);
+        }
+        
+        return payload;
     });
 }
 
