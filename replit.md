@@ -9,7 +9,7 @@
 ✅ **Dedicated Area Input Fields** - Each product now has a dedicated area/size input field for more accurate quotes
 ✅ **Enhanced Confidence Score** - Dynamic scoring (30-95%) based on completeness of information provided
 ✅ **Clean Quote Submission** - No fake pricing shown on site; actual quote sent via email from n8n workflow
-✅ **n8n Integration Active** - Webhook URL: https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-quote (FIXED Nov 3)
+✅ **Dual Webhook Routing** - Automatic routing to separate workflows: Standard quotes → `/webhook/premium-landscapes-quote`, Full redesigns → `/webhook/premium-landscapes-full-redesign` (Nov 5)
 ✅ **Logo URL for PDFs** - https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev/static/logo.png
 ✅ **Fencing Data Structure Fixed** - Changed from `length_m` to `length` and `unitType: 'qty'` to `unitType: 'm'` (Nov 5)
 ✅ **Simple Manual Address Entry** - Clean 4-field form (house number, street, city, postcode) - 100% reliable, no API dependencies (Nov 5)
@@ -42,9 +42,11 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
   - Live summary panel updates in real-time showing selected products, area, budget, location, and photo count
   - Progress bar with step indicator and percentage
   - **Quote Submission:** After submission, shows confirmation message explaining quote will be emailed. No fake pricing displayed on site.
-  - **n8n Integration:** Webhook sends all data to n8n workflow which handles pricing calculation, PDF generation, and email delivery
-    - Standard quotes: `project.type: "individual_products"` with products array
-    - Full redesign quotes: `project.type: "full_garden_redesign"` with `project.gardenDesign` object containing materials grouped by category, quality levels, areas, and design vision notes (see FULL_GARDEN_REDESIGN_FEATURE.md for complete structure)
+  - **n8n Integration:** Dual webhook routing automatically directs quotes to separate workflows based on type
+    - **Standard Quote Webhook:** `webhooks.quote` - receives `project.type: "individual_products"` with products array for simple pricing
+    - **Full Redesign Webhook:** `webhooks.quoteFullRedesign` - receives `project.type: "full_garden_redesign"` with `project.gardenDesign` object containing materials grouped by category, quality levels, areas, and design vision notes
+    - Smart routing logic checks `project.type` and sends to appropriate URL automatically
+    - Clear console logging shows quote type and target workflow for debugging (see DUAL_WEBHOOK_ROUTING.md)
   - **Material/Details First:** Product detail cards show material/description field first, followed by area/size input below
 - **AI Design Generator Page (`design.html`):** Allows users to select preferred garden styles, upload an optional image of their current garden, and provide an email for receiving AI-generated designs. The workflow sends data to a Make.com webhook, which then uses GPT-4o to generate prompts for DALL·E or Midjourney.
 - **PDF Quote Generator:** Auto-generates branded PDF quotes with client details, itemized breakdown, total price range, and company branding.
