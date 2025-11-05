@@ -11,9 +11,9 @@
 ✅ **Clean Quote Submission** - No fake pricing shown on site; actual quote sent via email from n8n workflow
 ✅ **n8n Integration Active** - Webhook URL: https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-quote (FIXED Nov 3)
 ✅ **Logo URL for PDFs** - https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev/static/logo.png
-✅ **n8n Connection Fixed** - Webhook URL corrected, payload structure verified (see FIXES_APPLIED.md)
-✅ **Manual Address Entry** - Simple 4-field address form (house number, street, city, postcode) - no API dependencies, 100% reliable (Nov 4)
-✅ **Address Form Simplified** - Removed crashing Google Maps autocomplete, replaced with clean manual entry (see ADDRESS_FORM_UPDATE.md)
+✅ **Fencing Data Structure Fixed** - Changed from `length_m` to `length` and `unitType: 'qty'` to `unitType: 'm'` (Nov 5)
+✅ **Google Maps Autocomplete Re-implemented** - Smart optional helper above manual fields, crash-proof with lazy loading (Nov 5)
+✅ **Hybrid Address Entry** - Google autocomplete for convenience + reliable manual entry fallback (see GOOGLE_MAPS_AUTOCOMPLETE.md)
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
@@ -35,7 +35,7 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
   - **Step 1:** Visual feature selection (Patio, Decking, Turf, Driveway, Fencing, Lighting, Full Redesign, Other)
   - **Step 2:** Dynamic product detail fields - each selected product from Step 1 automatically gets its own detail textarea. Users can add/remove products via modal popup. Additional notes field for general project information not related to specific products.
   - **Step 3:** Area slider (10-150 m²) and budget selection cards
-  - **Step 4:** Google Maps address autocomplete with postcode input - automatically populates City/Town and Street fields when user selects an address. Includes drag-and-drop photo/video upload.
+  - **Step 4:** Hybrid address entry with optional Google Maps autocomplete search box above 4 manual input fields (house number, street, city, postcode). Autocomplete fills manual fields when selected, but users can type/edit manually. Lazy loading prevents crashes. Includes drag-and-drop photo/video upload.
   - **Step 5:** Contact details with conditional AI design preview option (only visible if images uploaded; otherwise shows upload prompt)
   - Live summary panel updates in real-time showing selected products, area, budget, location, and photo count
   - Progress bar with step indicator and percentage
@@ -59,7 +59,7 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
 ## External Dependencies
 - **n8n:** Primary automation platform for quote workflow - handles pricing calculations, PDF generation, and email delivery.
 - **Make.com:** Used for webhooks to handle image design requests, CRM entry, and follow-up automation.
-- **Google Maps Places API:** Address autocomplete for UK postcodes - auto-populates city/town and street fields. Free tier: $200/month credit (~11,700 lookups/month). API key stored in GOOGLE_MAPS_API_KEY environment variable.
+- **Google Maps Places API:** Optional address autocomplete helper for UK addresses - fills manual fields when user searches. Gracefully degrades if API unavailable (manual entry always works). Free tier: $200/month credit (~11,700 lookups/month). API key stored in GOOGLE_MAPS_API_KEY environment variable.
 - **Google Sheets / Airtable:** Storage for pricing logic, connected via n8n for estimate calculations.
 - **DALL·E 3 / Midjourney:** AI image generation based on user inputs for garden designs.
 - **CRM (Airtable or Zoho):** For storing leads (name, email, postcode, features, quote, images) with optional push to Google Sheets or ReTool dashboard.
