@@ -325,8 +325,127 @@ function initializeFileUploadStep5() {
 }
 
 // Address fields are now simple manual inputs - no autocomplete needed
+let autocompleteInitialized = false;
+let autocomplete = null;
+
 function initializePostcodeLookup() {
-    console.log('✅ Address form ready - manual entry mode');
+    console.log('✅ Address form ready - manual + autocomplete mode');
+    
+    const autocompleteInput = document.getElementById('addressAutocomplete');
+    if (!autocompleteInput) {
+        console.log('⚠️ Autocomplete input not found');
+        return;
+    }
+    
+    autocompleteInput.addEventListener('focus', function() {
+        if (!autocompleteInitialized) {
+            loadGoogleMapsAutocomplete();
+        }
+    });
+}
+
+async function loadGoogleMapsAutocomplete() {
+    if (autocompleteInitialized) {
+        console.log('⚠️ Autocomplete already initialized');
+        return;
+    }
+    
+    try {
+        console.log('🔄 Loading Google Maps Places API...');
+        
+        const { Autocomplete } = await google.maps.importLibrary('places');
+        
+        const autocompleteInput = document.getElementById('addressAutocomplete');
+        if (!autocompleteInput) {
+            console.error('❌ Autocomplete input not found');
+            return;
+        }
+        
+        autocomplete = new Autocomplete(autocompleteInput, {
+            componentRestrictions: { country: 'gb' },
+            fields: ['address_components', 'formatted_address'],
+            types: ['address']
+        });
+        
+        autocomplete.addListener('place_changed', handlePlaceSelection);
+        
+        autocompleteInitialized = true;
+        console.log('✅ Google Maps Autocomplete initialized');
+        
+    } catch (error) {
+        console.error('❌ Failed to load Google Maps:', error);
+        autocompleteInitialized = false;
+    }
+}
+
+function handlePlaceSelection() {
+    const place = autocomplete.getPlace();
+    
+    if (!place.address_components) {
+        console.log('⚠️ No address details found');
+        return;
+    }
+    
+    console.log('📍 Place selected:', place);
+    
+    let streetNumber = '';
+    let route = '';
+    let locality = '';
+    let postalTown = '';
+    let postalCode = '';
+    
+    place.address_components.forEach(component => {
+        const types = component.types;
+        
+        if (types.includes('street_number')) {
+            streetNumber = component.long_name;
+        }
+        if (types.includes('route')) {
+            route = component.long_name;
+        }
+        if (types.includes('postal_town')) {
+            postalTown = component.long_name;
+        }
+        if (types.includes('locality') && !postalTown) {
+            locality = component.long_name;
+        }
+        if (types.includes('postal_code')) {
+            postalCode = component.long_name;
+        }
+    });
+    
+    const houseNumberInput = document.getElementById('houseNumber');
+    const streetInput = document.getElementById('street');
+    const cityInput = document.getElementById('city');
+    const postcodeInput = document.getElementById('postcode');
+    
+    if (houseNumberInput && streetNumber) {
+        houseNumberInput.value = streetNumber;
+    }
+    
+    if (streetInput && route) {
+        streetInput.value = route;
+    }
+    
+    if (cityInput) {
+        cityInput.value = postalTown || locality || '';
+    }
+    
+    if (postcodeInput && postalCode) {
+        postcodeInput.value = postalCode;
+    }
+    
+    console.log('✅ Address fields populated:', {
+        houseNumber: streetNumber,
+        street: route,
+        city: postalTown || locality,
+        postcode: postalCode
+    });
+    
+    const autocompleteInput = document.getElementById('addressAutocomplete');
+    if (autocompleteInput) {
+        autocompleteInput.value = '';
+    }
 }
 
 function displayFilePreview(files, previewContainer) {
