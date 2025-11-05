@@ -10,47 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Load environment config first (injected by server) -->
-    <script src="/api/config.js"></script>
-    
-    <!-- Load brand config -->
-    <script src="scripts/config.js" defer></script>
-    
-    <script>
-        // Load Google Maps API dynamically with API key from config
-        // Wait for config.js to load first
-        const loadGoogleMaps = () => {
-            if (window.ENV_GOOGLE_MAPS_API_KEY) {
-                const script = document.createElement('script');
-                script.src = `https://maps.googleapis.com/maps/api/js?key=${window.ENV_GOOGLE_MAPS_API_KEY}&libraries=places&loading=async`;
-                script.async = true;
-                script.defer = true;
-                document.head.appendChild(script);
-                console.log('🗺️ Google Maps API script added with key');
-            } else {
-                console.warn('⚠️ Google Maps API key not configured - autocomplete disabled');
-            }
-        };
-        
-        // Retry mechanism to wait for config.js to load
-        let retryCount = 0;
-        const checkAndLoad = () => {
-            if (window.ENV_GOOGLE_MAPS_API_KEY) {
-                loadGoogleMaps();
-            } else if (retryCount < 20) {
-                retryCount++;
-                setTimeout(checkAndLoad, 100);
-            } else {
-                console.warn('⚠️ Google Maps API key not found after retries - autocomplete disabled');
-            }
-        };
-        
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', checkAndLoad);
-        } else {
-            checkAndLoad();
-        }
-    </script>
+    <script src="scripts/config.js"></script>
     
     <script>
         tailwind.config = {
@@ -372,23 +332,6 @@
                             <h2 class="font-heading font-bold text-2xl text-primary mb-3">Location & visuals</h2>
                             <p class="text-gray-600 mb-6">This helps us provide accurate regional pricing</p>
                             
-                            <!-- Google Maps Autocomplete Search (Optional Helper) -->
-                            <div class="mb-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-                                <label class="block text-gray-700 font-semibold mb-2">
-                                    <i class="fas fa-search-location text-blue-600 mr-2"></i>Quick Address Search (Optional)
-                                </label>
-                                <input 
-                                    type="text" 
-                                    id="addressAutocomplete" 
-                                    class="w-full px-5 py-4 rounded-xl border-2 border-blue-300 focus:outline-none focus:border-accent transition-colors text-base bg-white"
-                                    placeholder="Start typing your address... e.g., 42 University Road"
-                                >
-                                <p class="text-xs text-gray-600 mt-2">
-                                    <i class="fas fa-info-circle"></i> Start typing to search, or fill in the fields below manually
-                                </p>
-                            </div>
-                            
-                            <!-- Manual Address Entry (Always Visible & Editable) -->
                             <div class="mb-6">
                                 <label class="block text-gray-700 font-semibold mb-2">House Number / Name</label>
                                 <input 
