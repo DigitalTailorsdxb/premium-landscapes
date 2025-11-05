@@ -74,6 +74,7 @@ The system checks `project.type` in the webhook payload and routes accordingly:
     "totalBudget_gbp": 25000,
     
     "gardenDesign": {
+      "budgetBasedDesign": false,
       "categories": {
         "paving": [
           {
@@ -97,6 +98,23 @@ The system checks `project.type` in the webhook payload and routes accordingly:
   }
 }
 ```
+
+#### Budget-Based Design Mode
+When a customer checks **"Not sure what you want? Let us design within your budget!"**, the payload includes:
+```json
+{
+  "project": {
+    "gardenDesign": {
+      "budgetBasedDesign": true,  // Customer wants you to design based on budget
+      "categories": {},  // May be empty if no materials selected
+      "totalMaterialCount": 0,
+      "designVisionNotes": "Modern style, pet-friendly, low maintenance required..."
+    }
+  }
+}
+```
+
+**Key difference:** When `budgetBasedDesign: true`, customers may skip material selection entirely and rely on you to create a design proposal within their stated budget. The `designVisionNotes` field becomes critical for understanding their requirements.
 
 **Console output:**
 ```
@@ -133,18 +151,24 @@ The system checks `project.type` in the webhook payload and routes accordingly:
 **Steps:**
 1. **Webhook Trigger** → Receive payload
 2. **Filter Node** → Check `project.type === "full_garden_redesign"`
-3. **Extract Materials** → Access `project.gardenDesign.materials[]`
-4. **Loop Materials** → For each material:
-   - Lookup base price (e.g., porcelain_tiles = £65/m²)
-   - Apply quality multiplier:
-     - Standard: × 1.0
-     - Premium: × 1.3
-     - Luxury: × 1.6
-   - Calculate: `base_price × quality × area_m2`
-5. **Group by Category** → Use `project.gardenDesign.categories`
-6. **Add Design Consultation** → Fixed fee for full redesign
-7. **Generate PDF** → Grouped by category with design vision notes
-8. **Send Email** → Comprehensive design quote
+3. **Check Budget-Based Mode** → If `project.gardenDesign.budgetBasedDesign === true`:
+   - **Budget-Only Path:** Customer wants you to design within budget
+   - Focus on `project.totalBudget_gbp` and `designVisionNotes`
+   - Create custom design proposal
+   - Send consultation email offering design service
+4. **Materials-Specified Path** → If materials are selected:
+   - Extract Materials → Access `project.gardenDesign.materials[]`
+   - Loop Materials → For each material:
+     - Lookup base price (e.g., porcelain_tiles = £65/m²)
+     - Apply quality multiplier:
+       - Standard: × 1.0
+       - Premium: × 1.3
+       - Luxury: × 1.6
+     - Calculate: `base_price × quality × area_m2`
+   - Group by Category → Use `project.gardenDesign.categories`
+5. **Add Design Consultation** → Fixed fee for full redesign
+6. **Generate PDF** → Grouped by category with design vision notes
+7. **Send Email** → Comprehensive design quote or consultation proposal
 
 ---
 

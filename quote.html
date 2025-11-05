@@ -244,6 +244,37 @@
                                 <h2 class="font-heading font-bold text-2xl text-primary mb-3">Design Your Perfect Garden</h2>
                                 <p class="text-gray-600 mb-6">Select materials & features for your complete garden transformation</p>
                                 
+                                <!-- Budget-Based Design Option -->
+                                <div class="mb-6 p-5 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl">
+                                    <div class="flex items-start gap-3">
+                                        <input 
+                                            type="checkbox" 
+                                            id="budgetBasedDesign" 
+                                            class="mt-1 w-5 h-5 text-accent rounded focus:ring-2 focus:ring-accent cursor-pointer"
+                                            onchange="toggleBudgetBasedDesign()"
+                                        >
+                                        <div class="flex-1">
+                                            <label for="budgetBasedDesign" class="cursor-pointer">
+                                                <p class="font-bold text-primary flex items-center gap-2">
+                                                    <i class="fas fa-lightbulb text-accent"></i>
+                                                    Not sure what you want? Let us design within your budget!
+                                                </p>
+                                                <p class="text-sm text-gray-700 mt-2">
+                                                    If you know your budget but aren't certain about specific materials or features, check this box. 
+                                                    We'll create a custom design proposal tailored to your budget and vision. Just tell us your 
+                                                    style preferences and requirements below, and we'll handle the rest!
+                                                </p>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Material Selection (optional when budget-based is checked) -->
+                                <div id="materialSelectionSection">
+                                    <p class="text-sm text-gray-600 mb-4 font-medium">
+                                        <i class="fas fa-info-circle mr-2"></i>Select the materials you'd like (optional - or skip and let us design for you):
+                                    </p>
+                                
                                 <!-- Paving & Hard Landscaping -->
                                 <div class="mb-6 bg-gradient-to-r from-blue-50 to-white rounded-xl border-2 border-blue-100 overflow-hidden">
                                     <div class="bg-gradient-to-r from-primary to-secondary p-4 cursor-pointer" onclick="toggleCategory('paving')">
@@ -422,6 +453,9 @@
                                     </div>
                                 </div>
                                 
+                                </div>
+                                <!-- End Material Selection Section -->
+                                
                                 <!-- Selected Materials Summary -->
                                 <div id="selectedMaterialsSummary" class="hidden mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
                                     <h4 class="font-bold text-primary mb-2"><i class="fas fa-check-circle mr-2"></i>Selected Materials</h4>
@@ -430,8 +464,11 @@
                                 
                                 <!-- Design Vision Notes -->
                                 <div class="mb-6">
-                                    <label class="block text-gray-700 font-semibold mb-2">Design Vision & Special Requirements</label>
-                                    <p class="text-sm text-gray-600 mb-2">Tell us about your dream garden - style preferences, must-haves, any constraints</p>
+                                    <label class="block text-gray-700 font-semibold mb-2">
+                                        <span id="designVisionLabel">Design Vision & Special Requirements</span>
+                                        <span id="budgetBasedRequiredLabel" class="hidden text-red-600"> *</span>
+                                    </label>
+                                    <p id="designVisionDescription" class="text-sm text-gray-600 mb-2">Tell us about your dream garden - style preferences, must-haves, any constraints</p>
                                     <textarea 
                                         id="designVisionNotes" 
                                         rows="4"

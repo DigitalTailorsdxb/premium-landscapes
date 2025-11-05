@@ -13,7 +13,7 @@
 ✅ **Logo URL for PDFs** - https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev/static/logo.png
 ✅ **Fencing Data Structure Fixed** - Changed from `length_m` to `length` and `unitType: 'qty'` to `unitType: 'm'` (Nov 5)
 ✅ **Simple Manual Address Entry** - Clean 4-field form (house number, street, city, postcode) - 100% reliable, no API dependencies (Nov 5)
-✅ **Full Garden Redesign Feature** - Enhanced Step 2 with comprehensive material selector (30+ materials across 5 categories) for accurate full garden pricing (Nov 5)
+✅ **Full Garden Redesign Feature** - Enhanced Step 2 with comprehensive material selector (30+ materials across 5 categories) for accurate full garden pricing. Includes budget-based design mode for customers who want design proposals without specifying materials (Nov 5)
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
@@ -35,7 +35,7 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
   - **Step 1:** Visual feature selection (Patio, Decking, Turf, Driveway, Fencing, Lighting, Full Redesign, Other)
   - **Step 2 (Dual Mode):**
     - **Standard Mode:** Dynamic product detail fields for individual products (Patio, Decking, etc.) - each gets dedicated material/description textarea and area/size input
-    - **Full Redesign Mode:** Comprehensive material selector with 5 collapsible categories (Paving & Hard Landscaping, Lawn & Planting, Structures, Features, Boundaries) containing 30+ material options. Each material opens detail modal capturing quality level (standard/premium/luxury), area (m²), style/pattern, and notes. Selected materials appear in real-time summary panel with remove functionality. Design vision notes field for overall project requirements.
+    - **Full Redesign Mode:** Comprehensive material selector with 5 collapsible categories (Paving & Hard Landscaping, Lawn & Planting, Structures, Features, Boundaries) containing 30+ material options. Each material opens detail modal capturing quality level (standard/premium/luxury), area (m²), style/pattern, and notes. Selected materials appear in real-time summary panel with remove functionality. **Budget-Based Design Option:** Checkbox allowing customers to request design proposals based on budget without specifying materials - enables flexibility to design within price constraints. Design vision notes field for overall project requirements.
   - **Step 3:** Area slider (10-150 m²) and budget selection cards
   - **Step 4:** Simple 4-field manual address entry (house number, street, city, postcode) - fast, reliable, no API dependencies. Includes drag-and-drop photo/video upload.
   - **Step 5:** Contact details with conditional AI design preview option (only visible if images uploaded; otherwise shows upload prompt)

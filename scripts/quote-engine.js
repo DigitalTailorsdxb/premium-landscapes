@@ -792,7 +792,9 @@ function prepareWebhookPayload() {
         
         // Format garden design materials for n8n
         const formatGardenDesignMaterials = () => {
-            if (!hasGardenDesignMaterials) return null;
+            // Check if budget-based design mode is enabled
+            const budgetBasedCheckbox = document.getElementById('budgetBasedDesign');
+            const isBudgetBased = budgetBasedCheckbox ? budgetBasedCheckbox.checked : false;
             
             // Group materials by category
             const materialsByCategory = {};
@@ -810,7 +812,10 @@ function prepareWebhookPayload() {
                 });
             });
             
+            // Always return object for full redesign (even with no materials)
+            // This ensures budgetBasedDesign flag reaches n8n
             return {
+                budgetBasedDesign: isBudgetBased,
                 categories: materialsByCategory,
                 totalMaterialCount: Object.keys(gardenDesignMaterials).length,
                 designVisionNotes: document.getElementById('designVisionNotes')?.value || '',
@@ -853,8 +858,9 @@ function prepareWebhookPayload() {
             }
         };
         
-        // Add full garden design data if applicable
-        if (hasGardenDesignMaterials) {
+        // Add full garden design data if full redesign is selected
+        // Include even if no materials (for budget-based design mode)
+        if (isFullRedesign) {
             payload.project.gardenDesign = formatGardenDesignMaterials();
             console.log('🎨 Full Garden Design data included:', payload.project.gardenDesign);
         }
@@ -946,6 +952,57 @@ function toggleCategory(categoryName) {
     if (content && chevron) {
         content.classList.toggle('hidden');
         chevron.classList.toggle('rotate-180');
+    }
+}
+
+// Toggle budget-based design mode
+function toggleBudgetBasedDesign() {
+    const checkbox = document.getElementById('budgetBasedDesign');
+    const materialSection = document.getElementById('materialSelectionSection');
+    const visionLabel = document.getElementById('designVisionLabel');
+    const visionDescription = document.getElementById('designVisionDescription');
+    const requiredLabel = document.getElementById('budgetBasedRequiredLabel');
+    
+    if (!checkbox) return;
+    
+    const isBudgetBased = checkbox.checked;
+    
+    console.log('💡 Budget-based design mode:', isBudgetBased ? 'ON' : 'OFF');
+    
+    if (isBudgetBased) {
+        // Make material selection less prominent (optional mode)
+        if (materialSection) {
+            materialSection.style.opacity = '0.6';
+        }
+        
+        // Update design vision notes to be required and emphasize importance
+        // Find the label text span (not the required indicator span)
+        const labelTextSpan = document.getElementById('designVisionLabel');
+        if (labelTextSpan) {
+            labelTextSpan.textContent = 'Your Design Vision & Requirements';
+        }
+        if (visionDescription) {
+            visionDescription.innerHTML = '<strong class="text-primary">Required:</strong> Tell us your style preferences, must-haves, and any specific requirements. We\'ll create a custom design proposal tailored to your budget!';
+        }
+        if (requiredLabel) {
+            requiredLabel.classList.remove('hidden');
+        }
+    } else {
+        // Reset to normal mode
+        if (materialSection) {
+            materialSection.style.opacity = '1';
+        }
+        
+        const labelTextSpan = document.getElementById('designVisionLabel');
+        if (labelTextSpan) {
+            labelTextSpan.textContent = 'Design Vision & Special Requirements';
+        }
+        if (visionDescription) {
+            visionDescription.textContent = 'Tell us about your dream garden - style preferences, must-haves, any constraints';
+        }
+        if (requiredLabel) {
+            requiredLabel.classList.add('hidden');
+        }
     }
 }
 
