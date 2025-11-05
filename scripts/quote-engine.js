@@ -350,6 +350,26 @@ async function loadGoogleMapsAutocomplete() {
         return;
     }
     
+    // Check if Google Maps is loaded
+    if (typeof google === 'undefined' || !google.maps) {
+        console.error('❌ Google Maps API not loaded yet. Please try again in a moment.');
+        
+        // Show user-friendly message
+        const autocompleteInput = document.getElementById('addressAutocomplete');
+        if (autocompleteInput) {
+            autocompleteInput.placeholder = 'Loading maps... please wait';
+            
+            // Retry after 1 second
+            setTimeout(() => {
+                if (autocompleteInput) {
+                    autocompleteInput.placeholder = 'Start typing your address... e.g., 42 University Road';
+                }
+                loadGoogleMapsAutocomplete();
+            }, 1000);
+        }
+        return;
+    }
+    
     try {
         console.log('🔄 Loading Google Maps Places API...');
         
@@ -374,7 +394,14 @@ async function loadGoogleMapsAutocomplete() {
         
     } catch (error) {
         console.error('❌ Failed to load Google Maps:', error);
+        console.error('Error details:', error.message, error.stack);
         autocompleteInitialized = false;
+        
+        // Show user-friendly message
+        const autocompleteInput = document.getElementById('addressAutocomplete');
+        if (autocompleteInput) {
+            autocompleteInput.placeholder = 'Autocomplete unavailable - please use manual entry below';
+        }
     }
 }
 
