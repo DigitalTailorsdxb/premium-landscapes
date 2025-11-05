@@ -1106,30 +1106,61 @@ function removeMaterial(material) {
 
 // Detect if Full Redesign is selected and toggle Step 2 mode
 function updateStep2Mode() {
-    const isFullRedesign = quoteData.features.includes('full-redesign');
+    console.log('🔄 updateStep2Mode called');
+    
+    // Check if Full Redesign is selected (with null-safe checking)
+    const isFullRedesign = quoteData && quoteData.features && quoteData.features.includes('full-redesign');
+    console.log('Current quoteData.features:', quoteData ? quoteData.features : 'undefined');
+    console.log('isFullRedesign:', isFullRedesign);
+    
     const step2Standard = document.getElementById('step2Standard');
     const step2FullRedesign = document.getElementById('step2FullRedesign');
     
+    if (!step2Standard || !step2FullRedesign) {
+        console.error('❌ Step 2 containers not found!');
+        console.error('step2Standard:', step2Standard);
+        console.error('step2FullRedesign:', step2FullRedesign);
+        return;
+    }
+    
     if (isFullRedesign) {
         // Show full redesign mode
+        console.log('🎨 Showing Full Redesign mode...');
         step2Standard.classList.add('hidden');
         step2FullRedesign.classList.remove('hidden');
         
-        // Initialize material cards if not already done
-        if (!document.querySelector('.material-card').hasAttribute('data-initialized')) {
-            initializeMaterialCards();
-            document.querySelectorAll('.material-card').forEach(card => {
-                card.setAttribute('data-initialized', 'true');
-            });
-        }
+        // Initialize material cards (only once)
+        setTimeout(() => {
+            const materialCards = document.querySelectorAll('.material-card');
+            console.log('Found material cards:', materialCards.length);
+            
+            if (materialCards.length > 0) {
+                const firstCard = materialCards[0];
+                if (!firstCard.hasAttribute('data-initialized')) {
+                    console.log('🔧 Initializing material cards...');
+                    initializeMaterialCards();
+                    materialCards.forEach(card => {
+                        card.setAttribute('data-initialized', 'true');
+                    });
+                    console.log('✅ Material cards initialized');
+                } else {
+                    console.log('ℹ️ Material cards already initialized');
+                }
+            } else {
+                console.warn('⚠️ No material cards found in DOM');
+            }
+        }, 100);
         
         console.log('🎨 Full Redesign mode activated');
     } else {
         // Show standard mode
+        console.log('📝 Showing Standard mode...');
         step2Standard.classList.remove('hidden');
         step2FullRedesign.classList.add('hidden');
         
         // Build standard product detail fields
         buildProductDetailFields();
+        
+        console.log('📝 Standard mode activated');
     }
 }
