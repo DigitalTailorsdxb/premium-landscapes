@@ -869,56 +869,6 @@ function prepareWebhookPayload() {
     });
 }
 
-// ============================================================================
-// CONFIDENCE SCORE CALCULATION
-// Based on data completeness for accurate pricing - the more info, the higher the score
-// ============================================================================
-function calculateConfidenceScore() {
-    let score = 30; // Base score (lower starting point)
-    
-    // 1. Products selected (up to +15 points)
-    const productCount = quoteData.features.length;
-    if (productCount > 0) score += Math.min(productCount * 3, 15);
-    
-    // 2. Area sizes provided for products (up to +20 points)
-    const areasProvided = Object.keys(quoteData.productAreas).filter(key => {
-        const value = quoteData.productAreas[key];
-        return value && value > 0;
-    }).length;
-    if (areasProvided > 0) {
-        score += Math.min(areasProvided * 5, 20);
-    }
-    
-    // 3. Product descriptions/materials (up to +15 points)
-    const detailedDescriptions = Object.values(quoteData.productDetails).filter(desc => {
-        return desc && desc.length > 10;
-    }).length;
-    if (detailedDescriptions > 0) {
-        score += Math.min(detailedDescriptions * 3, 15);
-    }
-    
-    // 4. Budget selected (+10 points)
-    if (quoteData.budget && quoteData.budget.length > 0) score += 10;
-    
-    // 5. Total area provided (+8 points)
-    if (quoteData.area && quoteData.area > 0) score += 8;
-    
-    // 6. Location/Postcode provided (+10 points)
-    if (quoteData.postcode && quoteData.postcode.length >= 5) score += 10;
-    
-    // 7. Photos uploaded (+12 points - visual data is valuable)
-    if (quoteData.files.length > 0) score += 12;
-    if (quoteData.files.length >= 3) score += 5; // Bonus for multiple photos
-    
-    // 8. Contact details complete (+5 points)
-    if (quoteData.name && quoteData.email) score += 5;
-    if (quoteData.phone && quoteData.phone.length >= 10) score += 3;
-    
-    // 9. Additional notes provided (+2 points)
-    if (quoteData.additionalNotes && quoteData.additionalNotes.length > 20) score += 2;
-    
-    return Math.min(score, 95); // Cap at 95% (never 100% without site visit)
-}
 
 // ============================================================================
 // DISPLAY QUOTE RESULT

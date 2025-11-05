@@ -7,7 +7,6 @@
 ✅ **Complete & Production-Ready** - All 19 pages built and functional across mobile/desktop
 ✅ **Quote System Ready** - 5-step conversational quote form with n8n webhook integration configured
 ✅ **Dedicated Area Input Fields** - Each product now has a dedicated area/size input field for more accurate quotes
-✅ **Enhanced Confidence Score** - Dynamic scoring (30-95%) based on completeness of information provided
 ✅ **Clean Quote Submission** - No fake pricing shown on site; actual quote sent via email from n8n workflow
 ✅ **Dual Webhook Routing** - Automatic routing to separate workflows: Standard quotes → `/webhook/premium-landscapes-quote`, Full redesigns → `/webhook/premium-landscapes-full-redesign` (Nov 5)
 ✅ **Logo URL for PDFs** - https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev/static/logo.png
