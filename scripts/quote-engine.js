@@ -833,14 +833,10 @@ function prepareWebhookPayload() {
                 });
             });
             
-            // Always return object for full redesign (even with no materials)
-            // This ensures budgetBasedDesign flag reaches n8n
+            // Return clean structure for n8n
             return {
                 budgetBasedDesign: isBudgetBased,
-                categories: materialsByCategory,
-                totalMaterialCount: Object.keys(gardenDesignMaterials).length,
-                designVisionNotes: document.getElementById('designVisionNotes')?.value || '',
-                materials: Object.values(gardenDesignMaterials) // Flat list for easy processing
+                categories: materialsByCategory
             };
         };
         
