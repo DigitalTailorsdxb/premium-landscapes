@@ -568,14 +568,27 @@ async function submitQuote() {
         const webhookPayload = await webhookPayloadPromise;
         console.log('Quote Data for n8n Webhook:', webhookPayload);
         
-        // Get webhook URL from config
-        const webhookUrl = brandConfig?.webhooks?.quote;
+        // ========================================================================
+        // SMART ROUTING: Different webhooks for different quote types
+        // ========================================================================
+        // Check if this is a full garden redesign quote
+        const isFullRedesign = webhookPayload.project.type === 'full_garden_redesign';
+        
+        // Route to appropriate webhook
+        const webhookUrl = isFullRedesign 
+            ? brandConfig?.webhooks?.quoteFullRedesign 
+            : brandConfig?.webhooks?.quote;
+        
+        const quoteType = isFullRedesign ? 'FULL GARDEN REDESIGN' : 'INDIVIDUAL PRODUCTS';
+        console.log(`🎯 Quote Type: ${quoteType}`);
+        console.log(`🔗 Routing to: ${isFullRedesign ? 'Full Redesign Workflow' : 'Standard Quote Workflow'}`);
         
         // Check if webhook URL is configured
-        if (!webhookUrl || webhookUrl.includes('your-quote-webhook-url')) {
+        if (!webhookUrl || webhookUrl.includes('your-') || webhookUrl.includes('-webhook-url')) {
             console.warn('⚠️ Webhook URL not configured. Using demo mode.');
-            console.log('To enable live quotes, update the webhook URL in scripts/config.js');
-            console.log('Your n8n webhook path should be: /webhook/premium-landscapes-quote');
+            console.log('To enable live quotes, update the webhook URLs in scripts/config.js');
+            console.log('Standard quotes: /webhook/premium-landscapes-quote');
+            console.log('Full redesign: /webhook/premium-landscapes-full-redesign');
             
             // Demo mode: Show quote after 2 seconds
             setTimeout(() => {
