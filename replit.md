@@ -14,6 +14,8 @@
 ✅ **Simple Manual Address Entry** - Clean 4-field form (house number, street, city, postcode) - 100% reliable, no API dependencies (Nov 5)
 ✅ **Full Garden Redesign Feature** - Enhanced Step 2 with comprehensive material selector (30+ materials across 5 categories) for accurate full garden pricing. Includes budget-based design mode for customers who want design proposals without specifying materials (Nov 5)
 ✅ **Custom Budget Input** - Replaced budget range cards with direct numeric input field. Mandatory for Full Garden Redesign quotes to enable precise budget-based design proposals (Nov 5)
+✅ **Clean gardenDesign Output** - Simplified data structure to only `budgetBasedDesign` (boolean) and `categories` (object) for optimal n8n workflow processing (Nov 5)
+✅ **Mock Data Created** - Budget-based design example with £25,000 budget, 100m² area, "low maintenance & pet friendly" requirements (Nov 5)
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
@@ -44,9 +46,12 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
   - **Quote Submission:** After submission, shows confirmation message explaining quote will be emailed. No fake pricing displayed on site.
   - **n8n Integration:** Dual webhook routing automatically directs quotes to separate workflows based on type
     - **Standard Quote Webhook:** `webhooks.quote` - receives `project.type: "individual_products"` with products array for simple pricing
-    - **Full Redesign Webhook:** `webhooks.quoteFullRedesign` - receives `project.type: "full_garden_redesign"` with `project.gardenDesign` object containing materials grouped by category, quality levels, areas, and design vision notes
+    - **Full Redesign Webhook:** `webhooks.quoteFullRedesign` - receives `project.type: "full_garden_redesign"` with `project.gardenDesign` object containing:
+      - `budgetBasedDesign` (boolean) - true when customer wants design proposal within budget
+      - `categories` (object) - grouped materials when customer selects specific materials (empty {} when budget-based)
     - Smart routing logic checks `project.type` and sends to appropriate URL automatically
     - Clear console logging shows quote type and target workflow for debugging (see DUAL_WEBHOOK_ROUTING.md)
+    - **Mock data available:** See `MOCK_BUDGET_BASED_DESIGN.json` for complete budget-based design example (£25k, 100m², low maintenance & pet friendly)
   - **Material/Details First:** Product detail cards show material/description field first, followed by area/size input below
 - **AI Design Generator Page (`design.html`):** Allows users to select preferred garden styles, upload an optional image of their current garden, and provide an email for receiving AI-generated designs. The workflow sends data to a Make.com webhook, which then uses GPT-4o to generate prompts for DALL·E or Midjourney.
 - **PDF Quote Generator:** Auto-generates branded PDF quotes with client details, itemized breakdown, total price range, and company branding.
