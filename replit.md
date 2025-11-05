@@ -13,6 +13,7 @@
 ✅ **Logo URL for PDFs** - https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev/static/logo.png
 ✅ **Fencing Data Structure Fixed** - Changed from `length_m` to `length` and `unitType: 'qty'` to `unitType: 'm'` (Nov 5)
 ✅ **Simple Manual Address Entry** - Clean 4-field form (house number, street, city, postcode) - 100% reliable, no API dependencies (Nov 5)
+✅ **Full Garden Redesign Feature** - Enhanced Step 2 with comprehensive material selector (30+ materials across 5 categories) for accurate full garden pricing (Nov 5)
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
@@ -32,7 +33,9 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
 - **Frontend:** HTML, Tailwind CSS, JavaScript.
 - **Instant Quote Page (`quote.html`):** Revolutionary 5-step conversational quote system with progressive disclosure:
   - **Step 1:** Visual feature selection (Patio, Decking, Turf, Driveway, Fencing, Lighting, Full Redesign, Other)
-  - **Step 2:** Dynamic product detail fields - each selected product from Step 1 automatically gets its own detail textarea. Users can add/remove products via modal popup. Additional notes field for general project information not related to specific products.
+  - **Step 2 (Dual Mode):**
+    - **Standard Mode:** Dynamic product detail fields for individual products (Patio, Decking, etc.) - each gets dedicated material/description textarea and area/size input
+    - **Full Redesign Mode:** Comprehensive material selector with 5 collapsible categories (Paving & Hard Landscaping, Lawn & Planting, Structures, Features, Boundaries) containing 30+ material options. Each material opens detail modal capturing quality level (standard/premium/luxury), area (m²), style/pattern, and notes. Selected materials appear in real-time summary panel with remove functionality. Design vision notes field for overall project requirements.
   - **Step 3:** Area slider (10-150 m²) and budget selection cards
   - **Step 4:** Simple 4-field manual address entry (house number, street, city, postcode) - fast, reliable, no API dependencies. Includes drag-and-drop photo/video upload.
   - **Step 5:** Contact details with conditional AI design preview option (only visible if images uploaded; otherwise shows upload prompt)
@@ -40,6 +43,8 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
   - Progress bar with step indicator and percentage
   - **Quote Submission:** After submission, shows confirmation message explaining quote will be emailed. No fake pricing displayed on site.
   - **n8n Integration:** Webhook sends all data to n8n workflow which handles pricing calculation, PDF generation, and email delivery
+    - Standard quotes: `project.type: "individual_products"` with products array
+    - Full redesign quotes: `project.type: "full_garden_redesign"` with `project.gardenDesign` object containing materials grouped by category, quality levels, areas, and design vision notes (see FULL_GARDEN_REDESIGN_FEATURE.md for complete structure)
   - **Material/Details First:** Product detail cards show material/description field first, followed by area/size input below
 - **AI Design Generator Page (`design.html`):** Allows users to select preferred garden styles, upload an optional image of their current garden, and provide an email for receiving AI-generated designs. The workflow sends data to a Make.com webhook, which then uses GPT-4o to generate prompts for DALL·E or Midjourney.
 - **PDF Quote Generator:** Auto-generates branded PDF quotes with client details, itemized breakdown, total price range, and company branding.
