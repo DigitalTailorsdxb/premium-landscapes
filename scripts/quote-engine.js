@@ -412,6 +412,11 @@ function nextStep() {
     
     // Show next step
     currentStep++;
+    
+    // Special handling for Step 2: detect Full Redesign mode
+    if (currentStep === 2) {
+        updateStep2Mode();
+    }
     document.getElementById(`step${currentStep}`).classList.remove('hidden');
     
     // Build product detail fields when entering step 2
@@ -868,4 +873,222 @@ function showQuoteResult(data) {
     
     // Scroll to result
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================================
+// FULL GARDEN REDESIGN MODE
+// Enhanced Step 2 with comprehensive material selector
+// ============================================================================
+
+// Store selected materials for full redesign
+let gardenDesignMaterials = {};
+let currentMaterialSelection = null;
+
+// Toggle material category sections
+function toggleCategory(categoryName) {
+    const content = document.getElementById(`${categoryName}Content`);
+    const chevron = document.getElementById(`${categoryName}Chevron`);
+    
+    if (content && chevron) {
+        content.classList.toggle('hidden');
+        chevron.classList.toggle('rotate-180');
+    }
+}
+
+// Initialize material card click handlers
+function initializeMaterialCards() {
+    const materialCards = document.querySelectorAll('.material-card');
+    materialCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const category = this.dataset.category;
+            const material = this.dataset.material;
+            openMaterialDetailModal(category, material);
+        });
+    });
+}
+
+// Open material detail modal
+function openMaterialDetailModal(category, material) {
+    currentMaterialSelection = { category, material };
+    
+    // Format material name for display
+    const materialName = material.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    
+    // Update modal title
+    document.getElementById('materialModalTitle').textContent = materialName;
+    
+    // Check if this material was already selected and populate fields
+    const existingData = gardenDesignMaterials[material];
+    if (existingData) {
+        // Pre-fill form with existing data
+        document.getElementById('materialArea').value = existingData.area || '';
+        document.getElementById('materialStyle').value = existingData.style || '';
+        document.getElementById('materialNotes').value = existingData.notes || '';
+        
+        // Select quality option
+        document.querySelectorAll('.quality-option').forEach(btn => {
+            btn.classList.remove('selected');
+            if (btn.dataset.quality === existingData.quality) {
+                btn.classList.add('selected');
+            }
+        });
+    } else {
+        // Clear form
+        document.getElementById('materialArea').value = '';
+        document.getElementById('materialStyle').value = '';
+        document.getElementById('materialNotes').value = '';
+        document.querySelectorAll('.quality-option').forEach(btn => btn.classList.remove('selected'));
+    }
+    
+    // Set up quality button handlers
+    document.querySelectorAll('.quality-option').forEach(btn => {
+        btn.onclick = function() {
+            document.querySelectorAll('.quality-option').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+        };
+    });
+    
+    // Show modal
+    document.getElementById('materialDetailModal').classList.remove('hidden');
+}
+
+// Close material detail modal
+function closeMaterialDetailModal() {
+    document.getElementById('materialDetailModal').classList.add('hidden');
+    currentMaterialSelection = null;
+}
+
+// Save material details
+function saveMaterialDetails() {
+    if (!currentMaterialSelection) return;
+    
+    const { category, material } = currentMaterialSelection;
+    
+    // Get selected quality
+    const selectedQuality = document.querySelector('.quality-option.selected');
+    if (!selectedQuality) {
+        alert('Please select a quality level');
+        return;
+    }
+    
+    // Get area value
+    const area = parseFloat(document.getElementById('materialArea').value);
+    if (!area || area <= 0) {
+        alert('Please enter a valid area/quantity');
+        return;
+    }
+    
+    // Get optional fields
+    const style = document.getElementById('materialStyle').value;
+    const notes = document.getElementById('materialNotes').value;
+    const quality = selectedQuality.dataset.quality;
+    
+    // Save to data structure
+    gardenDesignMaterials[material] = {
+        category,
+        material,
+        quality,
+        area,
+        style,
+        notes,
+        displayName: material.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    };
+    
+    console.log('✅ Material saved:', gardenDesignMaterials[material]);
+    
+    // Update selected materials summary
+    updateSelectedMaterialsSummary();
+    
+    // Close modal
+    closeMaterialDetailModal();
+    
+    // Highlight the card that was just saved
+    highlightSelectedMaterialCard(material);
+}
+
+// Highlight material card when selected
+function highlightSelectedMaterialCard(material) {
+    document.querySelectorAll('.material-card').forEach(card => {
+        if (card.dataset.material === material) {
+            card.classList.add('border-accent', 'bg-blue-50');
+            card.classList.remove('border-gray-200');
+        }
+    });
+}
+
+// Update selected materials summary panel
+function updateSelectedMaterialsSummary() {
+    const summaryContainer = document.getElementById('selectedMaterialsSummary');
+    const listContainer = document.getElementById('selectedMaterialsList');
+    
+    const materialCount = Object.keys(gardenDesignMaterials).length;
+    
+    if (materialCount === 0) {
+        summaryContainer.classList.add('hidden');
+        return;
+    }
+    
+    summaryContainer.classList.remove('hidden');
+    listContainer.innerHTML = '';
+    
+    Object.values(gardenDesignMaterials).forEach(mat => {
+        const itemHtml = `
+            <div class="flex justify-between items-center p-2 bg-white rounded-lg">
+                <div>
+                    <p class="font-semibold text-sm">${mat.displayName}</p>
+                    <p class="text-xs text-gray-600">${mat.quality} quality • ${mat.area}m²</p>
+                </div>
+                <button onclick="removeMaterial('${mat.material}')" class="text-red-500 hover:text-red-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        listContainer.innerHTML += itemHtml;
+    });
+}
+
+// Remove a material from selection
+function removeMaterial(material) {
+    delete gardenDesignMaterials[material];
+    updateSelectedMaterialsSummary();
+    
+    // Remove highlight from card
+    document.querySelectorAll('.material-card').forEach(card => {
+        if (card.dataset.material === material) {
+            card.classList.remove('border-accent', 'bg-blue-50');
+            card.classList.add('border-gray-200');
+        }
+    });
+    
+    console.log('🗑️ Material removed:', material);
+}
+
+// Detect if Full Redesign is selected and toggle Step 2 mode
+function updateStep2Mode() {
+    const isFullRedesign = quoteData.features.includes('full-redesign');
+    const step2Standard = document.getElementById('step2Standard');
+    const step2FullRedesign = document.getElementById('step2FullRedesign');
+    
+    if (isFullRedesign) {
+        // Show full redesign mode
+        step2Standard.classList.add('hidden');
+        step2FullRedesign.classList.remove('hidden');
+        
+        // Initialize material cards if not already done
+        if (!document.querySelector('.material-card').hasAttribute('data-initialized')) {
+            initializeMaterialCards();
+            document.querySelectorAll('.material-card').forEach(card => {
+                card.setAttribute('data-initialized', 'true');
+            });
+        }
+        
+        console.log('🎨 Full Redesign mode activated');
+    } else {
+        // Show standard mode
+        step2Standard.classList.remove('hidden');
+        step2FullRedesign.classList.add('hidden');
+        
+        // Build standard product detail fields
+        buildProductDetailFields();
+    }
 }
