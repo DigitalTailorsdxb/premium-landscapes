@@ -13,6 +13,7 @@
 ✅ **Fencing Data Structure Fixed** - Changed from `length_m` to `length` and `unitType: 'qty'` to `unitType: 'm'` (Nov 5)
 ✅ **Simple Manual Address Entry** - Clean 4-field form (house number, street, city, postcode) - 100% reliable, no API dependencies (Nov 5)
 ✅ **Full Garden Redesign Feature** - Enhanced Step 2 with comprehensive material selector (30+ materials across 5 categories) for accurate full garden pricing. Includes budget-based design mode for customers who want design proposals without specifying materials (Nov 5)
+✅ **Custom Budget Input** - Replaced budget range cards with direct numeric input field. Mandatory for Full Garden Redesign quotes to enable precise budget-based design proposals (Nov 5)
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.

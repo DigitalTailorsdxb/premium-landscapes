@@ -229,21 +229,21 @@ function initializeAreaSlider() {
     }
 }
 
-// Budget options
+// Custom budget input (mandatory for full redesign)
 function initializeBudgetOptions() {
-    const budgetOptions = document.querySelectorAll('.budget-option');
+    const budgetInput = document.getElementById('customBudgetInput');
     
-    budgetOptions.forEach(option => {
-        option.addEventListener('click', function() {
-            // Remove selected from all
-            budgetOptions.forEach(opt => opt.classList.remove('selected', 'border-accent', 'bg-stone'));
-            
-            // Add selected to this one
-            this.classList.add('selected', 'border-accent', 'bg-stone');
-            quoteData.budget = this.dataset.budget;
-            updateSummary();
+    if (budgetInput) {
+        budgetInput.addEventListener('input', function() {
+            const value = parseFloat(this.value);
+            if (value && value > 0) {
+                quoteData.budget = value;
+                updateSummary();
+            } else {
+                quoteData.budget = null;
+            }
         });
-    });
+    }
 }
 
 // File upload with drag & drop (Step 4)
@@ -388,6 +388,19 @@ function nextStep() {
         return;
     }
     
+    // Step 3: Budget validation for Full Garden Redesign
+    if (currentStep === 3) {
+        const isFullRedesign = quoteData.features.includes('full-redesign');
+        const budgetInput = document.getElementById('customBudgetInput');
+        const budgetValue = parseFloat(budgetInput.value);
+        
+        if (isFullRedesign && (!budgetValue || budgetValue < 1000)) {
+            alert('Please enter your budget (minimum £1,000) for the Full Garden Redesign. This helps us create a design proposal tailored to your price range.');
+            budgetInput.focus();
+            return;
+        }
+    }
+    
     if (currentStep === 4) {
         const postcodeInput = document.getElementById('postcode');
         if (!postcodeInput.value.trim()) {
@@ -490,9 +503,12 @@ function updateSummary() {
     }
     
     if (quoteData.budget) {
+        const formattedBudget = typeof quoteData.budget === 'number' 
+            ? `£${quoteData.budget.toLocaleString('en-GB')}` 
+            : quoteData.budget;
         html += `
             <div class="summary-item bg-stone px-3 py-2 rounded-lg mt-2">
-                <p class="text-sm"><i class="fas fa-pound-sign text-accent mr-2"></i>Budget: <strong>${quoteData.budget}</strong></p>
+                <p class="text-sm"><i class="fas fa-pound-sign text-accent mr-2"></i>Budget: <strong>${formattedBudget}</strong></p>
             </div>
         `;
     }
@@ -682,10 +698,15 @@ function prepareWebhookPayload() {
     });
     
     return Promise.all(filePromises).then(filesData => {
-        // Parse budget from string like "£5k-£10k" to number
-        const parseBudget = (budgetStr) => {
-            if (!budgetStr) return null;
-            const match = budgetStr.match(/(\d+)k/i);
+        // Parse budget - handles both numeric input and legacy string format
+        const parseBudget = (budget) => {
+            if (!budget) return null;
+            
+            // If already a number, return it
+            if (typeof budget === 'number') return budget;
+            
+            // Legacy string format (e.g., "£5k-£10k" or "<5000")
+            const match = String(budget).match(/(\d+)k/i);
             return match ? parseInt(match[1]) * 1000 : null;
         };
         
