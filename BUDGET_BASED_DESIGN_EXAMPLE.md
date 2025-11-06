@@ -153,7 +153,8 @@ The n8n workflow should generate a PDF that includes:
 
 ## Files Reference
 
-- **Mock Data:** `MOCK_BUDGET_BASED_DESIGN.json`
+- **Mock Data (JSON):** `MOCK_BUDGET_BASED_DESIGN.json`
+- **Mock Data (n8n Code Node):** `N8N_MOCK_DATA_CODE.js` ← **Use this for n8n!**
 - **Quote Engine:** `scripts/quote-engine.js`
 - **Full Redesign Workflow Spec:** `N8N_FULL_REDESIGN_WORKFLOW_PROMPT.md`
 - **Webhook Routing:** `DUAL_WEBHOOK_ROUTING.md`

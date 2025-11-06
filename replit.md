@@ -51,7 +51,7 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
       - `categories` (object) - grouped materials when customer selects specific materials (empty {} when budget-based)
     - Smart routing logic checks `project.type` and sends to appropriate URL automatically
     - Clear console logging shows quote type and target workflow for debugging (see DUAL_WEBHOOK_ROUTING.md)
-    - **Mock data available:** See `MOCK_BUDGET_BASED_DESIGN.json` for complete budget-based design example (£25k, 100m², low maintenance & pet friendly)
+    - **Mock data available:** See `N8N_MOCK_DATA_CODE.js` for n8n Code node format or `MOCK_BUDGET_BASED_DESIGN.json` for JSON (£25k, 100m², low maintenance & pet friendly)
   - **Material/Details First:** Product detail cards show material/description field first, followed by area/size input below
 - **AI Design Generator Page (`design.html`):** Allows users to select preferred garden styles, upload an optional image of their current garden, and provide an email for receiving AI-generated designs. The workflow sends data to a Make.com webhook, which then uses GPT-4o to generate prompts for DALL·E or Midjourney.
 - **PDF Quote Generator:** Auto-generates branded PDF quotes with client details, itemized breakdown, total price range, and company branding.
