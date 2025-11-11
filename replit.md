@@ -16,6 +16,7 @@
 ✅ **Custom Budget Input** - Replaced budget range cards with direct numeric input field. Mandatory for Full Garden Redesign quotes to enable precise budget-based design proposals (Nov 5)
 ✅ **Clean gardenDesign Output** - Simplified data structure to only `budgetBasedDesign` (boolean) and `categories` (object) for optimal n8n workflow processing (Nov 5)
 ✅ **Mock Data Created** - Budget-based design example with £25,000 budget, 100m² area, "low maintenance & pet friendly" requirements (Nov 5)
+✅ **Clean Material Selector Design** - Uniform gray/white category headers instead of multicolored options for professional appearance (Nov 11)
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
