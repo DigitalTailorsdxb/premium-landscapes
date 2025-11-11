@@ -17,6 +17,9 @@
 ✅ **Clean gardenDesign Output** - Simplified data structure to only `budgetBasedDesign` (boolean) and `categories` (object) for optimal n8n workflow processing (Nov 5)
 ✅ **Mock Data Created** - Budget-based design example with £25,000 budget, 100m² area, "low maintenance & pet friendly" requirements (Nov 5)
 ✅ **Clean Material Selector Design** - Uniform gray/white category headers instead of multicolored options for professional appearance (Nov 11)
+✅ **Ultra-Simplified Material Modal** - Removed overwhelming fields (style/pattern, notes) - only Area and Quality remain for quick material additions (Nov 11)
+✅ **Dynamic Extras Detection** - Pergola, Fire Pit, and Water Feature automatically populate `extras` object when selected as materials (Nov 11)
+✅ **Complete n8n Payload Structure** - Added `metadata` object with source, timestamp, quoteType, and webhookDestination matching n8n workflow expectations (Nov 11)
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
@@ -38,7 +41,7 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
   - **Step 1:** Visual feature selection (Patio, Decking, Turf, Driveway, Fencing, Lighting, Full Redesign, Other)
   - **Step 2 (Dual Mode):**
     - **Standard Mode:** Dynamic product detail fields for individual products (Patio, Decking, etc.) - each gets dedicated material/description textarea and area/size input
-    - **Full Redesign Mode:** Comprehensive material selector with 5 collapsible categories (Paving & Hard Landscaping, Lawn & Planting, Structures, Features, Boundaries) containing 30+ material options. Each material opens detail modal capturing quality level (standard/premium/luxury), area (m²), style/pattern, and notes. Selected materials appear in real-time summary panel with remove functionality. **Budget-Based Design Option:** Checkbox allowing customers to request design proposals based on budget without specifying materials - enables flexibility to design within price constraints. Design vision notes field for overall project requirements.
+    - **Full Redesign Mode:** Comprehensive material selector with 5 collapsible categories (Paving & Hard Landscaping, Lawn & Planting, Structures, Features, Boundaries) containing 30+ material options. Each material opens simplified modal capturing only area (m²) and quality level (standard/premium/luxury) for quick, non-overwhelming additions. Selected materials appear in real-time summary panel with remove functionality. **Budget-Based Design Option:** Checkbox allowing customers to request design proposals based on budget without specifying materials - enables flexibility to design within price constraints. Design vision notes field for overall project requirements.
   - **Step 3:** Area slider (10-150 m²) and budget selection cards
   - **Step 4:** Simple 4-field manual address entry (house number, street, city, postcode) - fast, reliable, no API dependencies. Includes drag-and-drop photo/video upload.
   - **Step 5:** Contact details with conditional AI design preview option (only visible if images uploaded; otherwise shows upload prompt)
@@ -46,6 +49,11 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
   - Progress bar with step indicator and percentage
   - **Quote Submission:** After submission, shows confirmation message explaining quote will be emailed. No fake pricing displayed on site.
   - **n8n Integration:** Dual webhook routing automatically directs quotes to separate workflows based on type
+    - **Complete Payload Structure:** All quotes include `customer`, `project`, and `metadata` objects
+      - `customer`: name, email, phone, postcode, city, street, houseNumber, address
+      - `project`: title, type, totalArea_m2, totalBudget_gbp, layoutType, sunlight, stylePreference, maintenanceLevel, siteConditions, products, extras, notes
+      - `extras`: Dynamic detection - pergola, firePit, waterFeature automatically set to `{ include: true }` when selected as materials
+      - `metadata`: source, timestamp (ISO), quoteType, webhookDestination for workflow tracking
     - **Standard Quote Webhook:** `webhooks.quote` - receives `project.type: "individual_products"` with products array for simple pricing
     - **Full Redesign Webhook:** `webhooks.quoteFullRedesign` - receives `project.type: "full_garden_redesign"` with `project.gardenDesign` object containing:
       - `budgetBasedDesign` (boolean) - true when customer wants design proposal within budget

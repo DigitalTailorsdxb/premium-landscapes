@@ -840,6 +840,19 @@ function prepareWebhookPayload() {
             };
         };
         
+        // Detect extras from selected materials
+        const detectExtras = () => {
+            const hasPergola = !!gardenDesignMaterials['pergola'];
+            const hasFirePit = !!gardenDesignMaterials['fire_pit'];
+            const hasWaterFeature = !!gardenDesignMaterials['water_feature'];
+            
+            return {
+                pergola: { include: hasPergola },
+                firePit: { include: hasFirePit },
+                waterFeature: { include: hasWaterFeature }
+            };
+        };
+        
         const payload = {
             customer: {
                 name: quoteData.name || 'Unknown',
@@ -866,11 +879,7 @@ function prepareWebhookPayload() {
                     drainage: 'good'
                 },
                 products: transformProducts(),
-                extras: {
-                    pergola: { include: false },
-                    firePit: { include: false },
-                    waterFeature: { include: false }
-                },
+                extras: detectExtras(),
                 notes: quoteData.additionalNotes || 'Website quote request'
             }
         };
@@ -881,6 +890,16 @@ function prepareWebhookPayload() {
             payload.project.gardenDesign = formatGardenDesignMaterials();
             console.log('🎨 Full Garden Design data included:', payload.project.gardenDesign);
         }
+        
+        // Add metadata for n8n workflow tracking
+        payload.metadata = {
+            source: 'website_quote_form',
+            timestamp: new Date().toISOString(),
+            quoteType: isFullRedesign ? 'full_garden_redesign' : 'individual_products',
+            webhookDestination: isFullRedesign 
+                ? brandConfig?.webhooks?.quoteFullRedesign || 'https://n8n.example.com/webhook/premium-landscapes-full-redesign'
+                : brandConfig?.webhooks?.quote || 'https://n8n.example.com/webhook/premium-landscapes-quote'
+        };
         
         return payload;
     });
