@@ -549,73 +549,54 @@
                         
                         <!-- Material Detail Modal (for Full Redesign) -->
                         <div id="materialDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-                            <div class="bg-white rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
-                                <h3 id="materialModalTitle" class="font-heading font-bold text-xl text-primary mb-4">Material Details</h3>
+                            <div class="bg-white rounded-2xl p-6 max-w-md w-full">
+                                <h3 id="materialModalTitle" class="font-heading font-bold text-2xl text-primary mb-6">Add Material</h3>
+                                
+                                <!-- Area/Quantity -->
+                                <div class="mb-6">
+                                    <label class="block text-gray-800 font-semibold mb-3 text-lg">
+                                        <span id="areaLabel">Area</span>
+                                    </label>
+                                    <div class="relative">
+                                        <input 
+                                            type="number" 
+                                            id="materialArea" 
+                                            min="1"
+                                            step="1"
+                                            class="w-full px-5 py-4 pr-16 rounded-xl border-2 border-gray-300 focus:outline-none focus:border-primary transition-colors text-xl font-semibold"
+                                            placeholder="25"
+                                        >
+                                        <span class="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-500 font-semibold">m²</span>
+                                    </div>
+                                </div>
                                 
                                 <!-- Quality Level -->
-                                <div class="mb-5">
-                                    <label class="block text-gray-700 font-semibold mb-3">Quality Level *</label>
+                                <div class="mb-6">
+                                    <label class="block text-gray-800 font-semibold mb-3 text-lg">Quality</label>
                                     <div class="grid grid-cols-3 gap-3">
-                                        <button type="button" class="quality-option p-3 border-2 border-gray-200 rounded-xl hover:border-accent transition" data-quality="standard">
-                                            <p class="font-semibold">Standard</p>
-                                            <p class="text-xs text-gray-600">Budget-friendly</p>
+                                        <button type="button" class="quality-option p-4 border-2 border-gray-300 rounded-xl hover:border-primary transition-all text-center" data-quality="standard">
+                                            <p class="font-bold text-base">Standard</p>
                                         </button>
-                                        <button type="button" class="quality-option p-3 border-2 border-gray-200 rounded-xl hover:border-accent transition" data-quality="premium">
-                                            <p class="font-semibold">Premium</p>
-                                            <p class="text-xs text-gray-600">High quality</p>
+                                        <button type="button" class="quality-option p-4 border-2 border-gray-300 rounded-xl hover:border-primary transition-all text-center" data-quality="premium">
+                                            <p class="font-bold text-base">Premium</p>
                                         </button>
-                                        <button type="button" class="quality-option p-3 border-2 border-gray-200 rounded-xl hover:border-accent transition" data-quality="luxury">
-                                            <p class="font-semibold">Luxury</p>
-                                            <p class="text-xs text-gray-600">Top-tier</p>
+                                        <button type="button" class="quality-option p-4 border-2 border-gray-300 rounded-xl hover:border-primary transition-all text-center" data-quality="luxury">
+                                            <p class="font-bold text-base">Luxury</p>
                                         </button>
                                     </div>
                                 </div>
                                 
-                                <!-- Area/Quantity -->
-                                <div class="mb-5">
-                                    <label class="block text-gray-700 font-semibold mb-2">
-                                        <span id="areaLabel">Area (m²)</span> *
-                                    </label>
-                                    <input 
-                                        type="number" 
-                                        id="materialArea" 
-                                        min="1"
-                                        step="0.5"
-                                        class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
-                                        placeholder="e.g., 25"
-                                    >
-                                    <p class="text-xs text-gray-600 mt-1">Enter the approximate area or quantity</p>
-                                </div>
-                                
-                                <!-- Style/Pattern (optional) -->
-                                <div class="mb-5">
-                                    <label class="block text-gray-700 font-semibold mb-2">Style / Pattern (Optional)</label>
-                                    <input 
-                                        type="text" 
-                                        id="materialStyle" 
-                                        class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
-                                        placeholder="e.g., Wood-effect, Contemporary grey"
-                                    >
-                                </div>
-                                
-                                <!-- Additional Notes -->
-                                <div class="mb-5">
-                                    <label class="block text-gray-700 font-semibold mb-2">Additional Notes (Optional)</label>
-                                    <textarea 
-                                        id="materialNotes" 
-                                        rows="3"
-                                        class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
-                                        placeholder="Any specific requirements, colors, or preferences..."
-                                    ></textarea>
-                                </div>
+                                <!-- Hidden fields for compatibility -->
+                                <input type="hidden" id="materialStyle" value="">
+                                <textarea id="materialNotes" class="hidden"></textarea>
                                 
                                 <!-- Action Buttons -->
-                                <div class="flex gap-3">
-                                    <button type="button" onclick="closeMaterialDetailModal()" class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-full hover:border-primary transition">
+                                <div class="flex gap-3 mt-8">
+                                    <button type="button" onclick="closeMaterialDetailModal()" class="flex-1 px-6 py-4 border-2 border-gray-300 rounded-full hover:bg-gray-50 transition font-semibold text-base">
                                         Cancel
                                     </button>
-                                    <button type="button" onclick="saveMaterialDetails()" class="flex-1 px-4 py-3 bg-primary text-white rounded-full hover:bg-primary-dark transition shadow-lg font-semibold">
-                                        <i class="fas fa-check mr-2"></i>Save
+                                    <button type="button" onclick="saveMaterialDetails()" class="flex-1 px-6 py-4 bg-primary text-white rounded-full hover:bg-blue-700 transition shadow-lg font-bold text-base">
+                                        <i class="fas fa-check mr-2"></i>Add
                                     </button>
                                 </div>
                             </div>
