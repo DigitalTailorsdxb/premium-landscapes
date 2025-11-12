@@ -1017,11 +1017,6 @@ function openMaterialDetailModal(category, material) {
     // Check if this material was already selected and populate fields
     const existingData = gardenDesignMaterials[material];
     if (existingData) {
-        // Pre-fill form with existing data
-        document.getElementById('materialArea').value = existingData.area || '';
-        document.getElementById('materialStyle').value = existingData.style || '';
-        document.getElementById('materialNotes').value = existingData.notes || '';
-        
         // Select quality option
         document.querySelectorAll('.quality-option').forEach(btn => {
             btn.classList.remove('selected');
@@ -1031,9 +1026,6 @@ function openMaterialDetailModal(category, material) {
         });
     } else {
         // Clear form
-        document.getElementById('materialArea').value = '';
-        document.getElementById('materialStyle').value = '';
-        document.getElementById('materialNotes').value = '';
         document.querySelectorAll('.quality-option').forEach(btn => btn.classList.remove('selected'));
     }
     
@@ -1068,26 +1060,16 @@ function saveMaterialDetails() {
         return;
     }
     
-    // Get area value
-    const area = parseFloat(document.getElementById('materialArea').value);
-    if (!area || area <= 0) {
-        alert('Please enter a valid area/quantity');
-        return;
-    }
-    
-    // Get optional fields
-    const style = document.getElementById('materialStyle').value;
-    const notes = document.getElementById('materialNotes').value;
     const quality = selectedQuality.dataset.quality;
     
-    // Save to data structure
+    // Save to data structure (area determined by workflow logic)
     gardenDesignMaterials[material] = {
         category,
         material,
         quality,
-        area,
-        style,
-        notes,
+        area: 0,
+        style: '',
+        notes: '',
         displayName: material.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
     };
     
@@ -1144,7 +1126,7 @@ function updateSelectedMaterialsSummary() {
             <div class="flex justify-between items-center p-2 bg-white rounded-lg">
                 <div>
                     <p class="font-semibold text-sm">${mat.displayName}</p>
-                    <p class="text-xs text-gray-600">${mat.quality} quality • ${mat.area}m²</p>
+                    <p class="text-xs text-gray-600">${mat.quality} quality</p>
                 </div>
                 <button onclick="removeMaterial('${mat.material}')" class="text-red-500 hover:text-red-700">
                     <i class="fas fa-times"></i>

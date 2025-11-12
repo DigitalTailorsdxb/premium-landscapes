@@ -563,27 +563,9 @@
                             <div class="bg-white rounded-2xl p-6 max-w-md w-full">
                                 <h3 id="materialModalTitle" class="font-heading font-bold text-2xl text-primary mb-6">Add Material</h3>
                                 
-                                <!-- Area/Quantity -->
-                                <div class="mb-6">
-                                    <label class="block text-gray-800 font-semibold mb-3 text-lg">
-                                        <span id="areaLabel">Area</span>
-                                    </label>
-                                    <div class="relative">
-                                        <input 
-                                            type="number" 
-                                            id="materialArea" 
-                                            min="1"
-                                            step="1"
-                                            class="w-full px-5 py-4 pr-16 rounded-xl border-2 border-gray-300 focus:outline-none focus:border-primary transition-colors text-xl font-semibold"
-                                            placeholder="25"
-                                        >
-                                        <span class="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-500 font-semibold">m²</span>
-                                    </div>
-                                </div>
-                                
                                 <!-- Quality Level -->
                                 <div class="mb-6">
-                                    <label class="block text-gray-800 font-semibold mb-3 text-lg">Quality</label>
+                                    <label class="block text-gray-800 font-semibold mb-3 text-lg">Quality Level</label>
                                     <div class="grid grid-cols-3 gap-3">
                                         <button type="button" class="quality-option p-4 border-2 border-gray-300 rounded-xl hover:border-primary transition-all text-center" data-quality="standard">
                                             <p class="font-bold text-base">Standard</p>
@@ -595,9 +577,14 @@
                                             <p class="font-bold text-base">Luxury</p>
                                         </button>
                                     </div>
+                                    <p class="text-sm text-gray-500 mt-3">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Sizing will be determined automatically based on your project scope
+                                    </p>
                                 </div>
                                 
                                 <!-- Hidden fields for compatibility -->
+                                <input type="hidden" id="materialArea" value="0">
                                 <input type="hidden" id="materialStyle" value="">
                                 <textarea id="materialNotes" class="hidden"></textarea>
                                 
