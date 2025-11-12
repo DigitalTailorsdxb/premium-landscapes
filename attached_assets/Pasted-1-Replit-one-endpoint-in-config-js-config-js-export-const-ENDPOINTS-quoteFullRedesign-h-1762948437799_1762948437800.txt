@@ -1,0 +1,154 @@
+1) Replit: one endpoint in config.js
+// config.js
+export const ENDPOINTS = {
+  quoteFullRedesign: "https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-full-redesign",
+};
+
+2) Replit: build the exact canonical payload and POST it
+
+Drop this in your site JS (e.g., scripts/quote.js). It:
+
+extracts form values,
+
+builds the canonical JSON your workflow expects,
+
+sends it with proper headers,
+
+handles UX (disable button, spinner, errors).
+
+<!-- In quote.html -->
+<form id="quote-form">
+  <!-- your inputs ... -->
+  <input id="name" required />
+  <input id="email" type="email" required />
+  <input id="phone" />
+  <input id="postcode" required />
+  <input id="city" />
+  <input id="street" />
+  <input id="houseNumber" />
+  <!-- project -->
+  <input id="title" value="Full Garden Redesign" />
+  <input id="totalArea_m2" type="number" min="0" step="1" />
+  <input id="totalBudget_gbp" type="number" min="0" step="100" />
+  <!-- extras checkboxes -->
+  <input id="extra-pergola" type="checkbox" />
+  <input id="extra-firepit" type="checkbox" />
+  <input id="extra-water" type="checkbox" />
+  <!-- NEW: kitchen -->
+  <input id="extra-kitchen" type="checkbox" />
+  <select id="extra-kitchen-tier">
+    <option value="">Tier…</option>
+    <option>Starter</option>
+    <option>Standard</option>
+    <option>Premium</option>
+    <option>Luxury</option>
+  </select>
+
+  <button id="quote-submit" type="submit">Get Quote</button>
+  <div id="quote-status" aria-live="polite"></div>
+</form>
+
+<script type="module">
+import { ENDPOINTS } from './config.js';
+
+const el = (id) => document.getElementById(id);
+const $status = el('quote-status');
+const $btn = el('quote-submit');
+
+function canonicalAddress({ houseNumber, street, city, postcode }) {
+  const parts = [houseNumber, street, city, postcode, 'UK'].filter(Boolean);
+  return parts.join(', ');
+}
+
+function buildPayload() {
+  const customer = {
+    name:       el('name').value.trim(),
+    email:      el('email').value.trim(),
+    phone:      el('phone').value.trim(),
+    postcode:   el('postcode').value.trim(),
+    city:       el('city').value.trim(),
+    street:     el('street').value.trim(),
+    houseNumber:el('houseNumber').value.trim(),
+  };
+  customer.address = canonicalAddress(customer);
+
+  const extras = {
+    pergola:      { include: el('extra-pergola').checked },
+    firePit:      { include: el('extra-firepit').checked },
+    waterFeature: { include: el('extra-water').checked },
+    // NEW: outdoor kitchen (optional)
+    outdoorKitchen: {
+      include: el('extra-kitchen').checked,
+      tier: el('extra-kitchen-tier').value || null
+    }
+  };
+
+  const nowIso = new Date().toISOString();
+
+  return {
+    customer,
+    project: {
+      title: el('title').value.trim() || `Full Garden Redesign at ${customer.postcode || ''}`,
+      type: "full_garden_redesign",
+      totalArea_m2: Number(el('totalArea_m2').value || 0),
+      totalBudget_gbp: Number(el('totalBudget_gbp').value || 0),
+      layoutType: "standard",
+      sunlight: "partial sun",
+      stylePreference: "contemporary",
+      maintenanceLevel: "low maintenance",
+      siteConditions: { access: "standard access", soilType: "loam", drainage: "good" },
+      products: [],                          // Step 2 selections can push into here later
+      extras,
+      notes: "",                             // add your textarea if you have one
+      gardenDesign: { budgetBasedDesign: true, categories: {} }
+    },
+    metadata: {
+      source: "website_quote_form",
+      timestamp: nowIso,
+      quoteType: "full_garden_redesign",
+      webhookDestination: ENDPOINTS.quoteFullRedesign
+    }
+  };
+}
+
+async function postQuote(payload) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 15000); // 15s safety
+
+  const res = await fetch(ENDPOINTS.quoteFullRedesign, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    signal: ctrl.signal,
+  }).catch(e => ({ ok:false, statusText: e.message }));
+
+  clearTimeout(t);
+  return res;
+}
+
+document.getElementById('quote-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $status.textContent = '';
+  $btn.disabled = true;
+  $btn.textContent = 'Sending…';
+
+  try {
+    const payload = buildPayload();
+    const res = await postQuote(payload);
+
+    if (!res || !res.ok) {
+      const msg = res?.statusText || `HTTP ${res?.status || 'error'}`;
+      throw new Error(`Request failed: ${msg}`);
+    }
+    // If your Respond to Webhook node returns JSON, you can parse it:
+    // const data = await res.json().catch(()=>({}));
+    $status.textContent = 'Thanks! Your quote is being prepared and will arrive by email shortly.';
+  } catch (err) {
+    console.error(err);
+    $status.textContent = 'Sorry, something went wrong sending your quote. Please try again.';
+  } finally {
+    $btn.disabled = false;
+    $btn.textContent = 'Get Quote';
+  }
+});
+</script>
