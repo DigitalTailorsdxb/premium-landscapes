@@ -999,7 +999,15 @@ function initializeMaterialCards() {
         card.addEventListener('click', function() {
             const category = this.dataset.category;
             const material = this.dataset.material;
-            openMaterialDetailModal(category, material);
+            
+            // Check if already selected
+            if (gardenDesignMaterials[material]) {
+                // Remove material
+                removeMaterial(material);
+            } else {
+                // Add material directly (no modal needed)
+                addMaterialDirectly(category, material);
+            }
         });
     });
 }
@@ -1085,6 +1093,30 @@ function saveMaterialDetails() {
     highlightSelectedMaterialCard(material);
 }
 
+// Add material directly without modal
+function addMaterialDirectly(category, material) {
+    const displayName = material.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    
+    // Save to data structure (area and quality determined by workflow)
+    gardenDesignMaterials[material] = {
+        category,
+        material,
+        quality: 'standard',
+        area: 0,
+        style: '',
+        notes: '',
+        displayName
+    };
+    
+    console.log('✅ Material added:', displayName);
+    
+    // Update selected materials summary
+    updateSelectedMaterialsSummary();
+    
+    // Highlight the card
+    highlightSelectedMaterialCard(material);
+}
+
 // Highlight material card when selected
 function highlightSelectedMaterialCard(material) {
     document.querySelectorAll('.material-card').forEach(card => {
@@ -1126,7 +1158,6 @@ function updateSelectedMaterialsSummary() {
             <div class="flex justify-between items-center p-2 bg-white rounded-lg">
                 <div>
                     <p class="font-semibold text-sm">${mat.displayName}</p>
-                    <p class="text-xs text-gray-600">${mat.quality} quality</p>
                 </div>
                 <button onclick="removeMaterial('${mat.material}')" class="text-red-500 hover:text-red-700">
                     <i class="fas fa-times"></i>
