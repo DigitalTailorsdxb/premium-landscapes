@@ -1107,8 +1107,19 @@ function saveMaterialDetails() {
 function highlightSelectedMaterialCard(material) {
     document.querySelectorAll('.material-card').forEach(card => {
         if (card.dataset.material === material) {
-            card.classList.add('border-accent', 'bg-blue-50');
-            card.classList.remove('border-gray-200');
+            card.classList.add('!bg-primary', '!border-primary', 'shadow-lg');
+            card.classList.remove('border-gray-200', 'bg-white');
+            
+            // Make text and icon white when selected
+            const icon = card.querySelector('i');
+            const text = card.querySelector('p');
+            if (icon) {
+                icon.classList.remove('text-primary');
+                icon.classList.add('!text-white');
+            }
+            if (text) {
+                text.classList.add('!text-white');
+            }
         }
     });
 }
@@ -1152,8 +1163,19 @@ function removeMaterial(material) {
     // Remove highlight from card
     document.querySelectorAll('.material-card').forEach(card => {
         if (card.dataset.material === material) {
-            card.classList.remove('border-accent', 'bg-blue-50');
-            card.classList.add('border-gray-200');
+            card.classList.remove('!bg-primary', '!border-primary', 'shadow-lg');
+            card.classList.add('border-gray-200', 'bg-white');
+            
+            // Restore original colors
+            const icon = card.querySelector('i');
+            const text = card.querySelector('p');
+            if (icon) {
+                icon.classList.add('text-primary');
+                icon.classList.remove('!text-white');
+            }
+            if (text) {
+                text.classList.remove('!text-white');
+            }
         }
     });
     
