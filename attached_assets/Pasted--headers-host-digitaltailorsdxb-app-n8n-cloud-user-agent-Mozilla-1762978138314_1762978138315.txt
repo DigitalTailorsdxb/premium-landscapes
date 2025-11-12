@@ -1,0 +1,325 @@
+[
+  {
+    "headers": {
+      "host": "digitaltailorsdxb.app.n8n.cloud",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+      "content-length": "4103",
+      "accept": "*/*",
+      "accept-encoding": "gzip, br",
+      "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+      "cdn-loop": "cloudflare; loops=1; subreqs=1",
+      "cf-connecting-ip": "102.115.49.42",
+      "cf-ew-via": "15",
+      "cf-ipcountry": "MU",
+      "cf-ray": "99d8a42034ab3872-MRU",
+      "cf-visitor": "{\"scheme\":\"https\"}",
+      "cf-worker": "n8n.cloud",
+      "content-type": "application/json",
+      "origin": "https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev",
+      "priority": "u=1, i",
+      "referer": "https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev/",
+      "sec-ch-ua": "\"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"macOS\"",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-site": "cross-site",
+      "x-forwarded-for": "102.115.49.42, 172.69.92.133",
+      "x-forwarded-host": "digitaltailorsdxb.app.n8n.cloud",
+      "x-forwarded-port": "443",
+      "x-forwarded-proto": "https",
+      "x-forwarded-server": "traefik-prod-users-gwc-98-5f74ff6676-78p7s",
+      "x-is-trusted": "yes",
+      "x-real-ip": "102.115.49.42"
+    },
+    "params": {},
+    "query": {},
+    "body": {
+      "customer": {
+        "name": "lewis reid",
+        "email": "thedigitaltailorsdxb@gmail.com",
+        "phone": "",
+        "postcode": "LE3 3JU",
+        "city": "Leicester",
+        "street": "Kingcup Close",
+        "houseNumber": "5",
+        "address": "5, Kingcup Close, Leicester, LE3 3JU, UK"
+      },
+      "project": {
+        "title": "Complete Garden Redesign Installation",
+        "type": "full_garden_redesign",
+        "totalArea_m2": 150,
+        "totalBudget_gbp": 100000,
+        "layoutType": "standard",
+        "sunlight": "partial sun",
+        "stylePreference": "contemporary",
+        "maintenanceLevel": "low maintenance",
+        "siteConditions": {
+          "access": "standard access",
+          "soilType": "loam",
+          "drainage": "good"
+        },
+        "products": [
+          {
+            "type": "full-redesign",
+            "description": "full-redesign installation",
+            "material": "standard",
+            "unitType": "m2",
+            "area_m2": 150
+          }
+        ],
+        "extras": {
+          "pergola": {
+            "include": true
+          },
+          "firePit": {
+            "include": true
+          },
+          "waterFeature": {
+            "include": true
+          }
+        },
+        "notes": "Website quote request",
+        "gardenDesign": {
+          "budgetBasedDesign": false,
+          "categories": {
+            "paving": [
+              {
+                "material": "porcelain_tiles",
+                "displayName": "Porcelain Tiles",
+                "quality": "standard",
+                "area_m2": 23,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "natural_stone",
+                "displayName": "Natural Stone",
+                "quality": "standard",
+                "area_m2": 23,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "resin_bound",
+                "displayName": "Resin Bound",
+                "quality": "standard",
+                "area_m2": 23,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "gravel",
+                "displayName": "Gravel",
+                "quality": "standard",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "block_paving",
+                "displayName": "Block Paving",
+                "quality": "standard",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "concrete",
+                "displayName": "Concrete",
+                "quality": "standard",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              }
+            ],
+            "lawn": [
+              {
+                "material": "artificial_turf",
+                "displayName": "Artificial Turf",
+                "quality": "premium",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "natural_lawn",
+                "displayName": "Natural Lawn",
+                "quality": "premium",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "raised_beds",
+                "displayName": "Raised Beds",
+                "quality": "premium",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "feature_trees",
+                "displayName": "Feature Trees",
+                "quality": "standard",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "flower_beds",
+                "displayName": "Flower Beds",
+                "quality": "standard",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              }
+            ],
+            "structures": [
+              {
+                "material": "decking",
+                "displayName": "Decking",
+                "quality": "premium",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "pergola",
+                "displayName": "Pergola",
+                "quality": "premium",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "gazebo",
+                "displayName": "Gazebo",
+                "quality": "premium",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "garden_room",
+                "displayName": "Garden Room",
+                "quality": "premium",
+                "area_m2": 20,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "storage_shed",
+                "displayName": "Storage Shed",
+                "quality": "premium",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "summer_house",
+                "displayName": "Summer House",
+                "quality": "premium",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              }
+            ],
+            "features": [
+              {
+                "material": "outdoor_lighting",
+                "displayName": "Outdoor Lighting",
+                "quality": "premium",
+                "area_m2": 12,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "water_feature",
+                "displayName": "Water Feature",
+                "quality": "premium",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "fire_pit",
+                "displayName": "Fire Pit",
+                "quality": "premium",
+                "area_m2": 5,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "outdoor_kitchen",
+                "displayName": "Outdoor Kitchen",
+                "quality": "premium",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "seating_area",
+                "displayName": "Seating Area",
+                "quality": "premium",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "bbq_area",
+                "displayName": "Bbq Area",
+                "quality": "premium",
+                "area_m2": 10,
+                "style": "",
+                "notes": ""
+              }
+            ],
+            "boundaries": [
+              {
+                "material": "fencing",
+                "displayName": "Fencing",
+                "quality": "premium",
+                "area_m2": 40,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "walls",
+                "displayName": "Walls",
+                "quality": "premium",
+                "area_m2": 5,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "hedging",
+                "displayName": "Hedging",
+                "quality": "premium",
+                "area_m2": 5,
+                "style": "",
+                "notes": ""
+              },
+              {
+                "material": "gates",
+                "displayName": "Gates",
+                "quality": "standard",
+                "area_m2": 1,
+                "style": "",
+                "notes": ""
+              }
+            ]
+          }
+        }
+      },
+      "metadata": {
+        "source": "website_quote_form",
+        "timestamp": "2025-11-12T20:06:16.174Z",
+        "quoteType": "full_garden_redesign",
+        "webhookDestination": "https://digitaltailorsdxb.app.n8n.cloud/webhook-test/premium-landscapes-full-redesign"
+      }
+    },
+    "webhookUrl": "https://digitaltailorsdxb.app.n8n.cloud/webhook-test/premium-landscapes-full-redesign",
+    "executionMode": "test"
+  }
+]
