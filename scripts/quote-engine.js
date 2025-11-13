@@ -1240,11 +1240,11 @@ function removeMaterial(material) {
 // Detect if Full Redesign is selected and toggle Step 2 mode
 function updateStep2Mode() {
     console.log('🔄 updateStep2Mode called');
+    console.log('Current quoteMode:', quoteData.quoteMode);
+    console.log('Current features:', quoteData.features);
     
-    // Check if Full Redesign is selected (with null-safe checking)
-    const isFullRedesign = quoteData && quoteData.features && quoteData.features.includes('full-redesign');
-    console.log('Current quoteData.features:', quoteData ? quoteData.features : 'undefined');
-    console.log('isFullRedesign:', isFullRedesign);
+    // Check if Full Redesign mode is selected
+    const isFullRedesign = quoteData.quoteMode === 'full-redesign';
     
     const step2Standard = document.getElementById('step2Standard');
     const step2FullRedesign = document.getElementById('step2FullRedesign');
