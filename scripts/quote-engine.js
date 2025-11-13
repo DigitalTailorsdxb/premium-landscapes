@@ -4,6 +4,7 @@
 let currentStep = 1;
 const totalSteps = 5;
 let quoteData = {
+    quoteMode: '', // 'full-redesign' or 'individual-products'
     features: [],
     productDetails: {}, // Stores details for each product
     productAreas: {}, // Stores area/size for each product
@@ -32,6 +33,7 @@ const productExamples = {
 
 // Initialize quote engine
 document.addEventListener('DOMContentLoaded', function() {
+    initializeQuoteModeCards();
     initializeFeatureCards();
     initializeAreaSlider();
     initializeBudgetOptions();
@@ -42,7 +44,41 @@ document.addEventListener('DOMContentLoaded', function() {
     updateSummary();
 });
 
-// Feature card selection
+// Quote mode card selection (Step 1 - mutually exclusive)
+function initializeQuoteModeCards() {
+    const modeCards = document.querySelectorAll('.quote-mode-card');
+    modeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const mode = this.dataset.mode;
+            
+            // Remove selected class from all mode cards
+            modeCards.forEach(c => c.classList.remove('selected'));
+            
+            // Add selected to clicked card
+            this.classList.add('selected');
+            
+            // Set quote mode
+            quoteData.quoteMode = mode;
+            
+            // Clear features and set mode
+            quoteData.features = [];
+            quoteData.productDetails = {};
+            quoteData.productAreas = {};
+            
+            if (mode === 'full-redesign') {
+                quoteData.features.push('full-redesign');
+            } else if (mode === 'individual-products') {
+                // Individual products mode - user will select products in Step 2
+                quoteData.features = [];
+            }
+            
+            console.log('✅ Quote mode selected:', mode);
+            updateSummary();
+        });
+    });
+}
+
+// Feature card selection (for individual products in Step 2)
 function initializeFeatureCards() {
     const featureCards = document.querySelectorAll('.feature-card');
     featureCards.forEach(card => {
@@ -382,9 +418,15 @@ function updateAIDesignVisibility() {
 
 // Navigation functions
 function nextStep() {
-    // Validation
-    if (currentStep === 1 && quoteData.features.length === 0) {
-        alert('Please select at least one feature');
+    // Step 1: Validate quote mode selection
+    if (currentStep === 1 && !quoteData.quoteMode) {
+        alert('Please select a quote option: Complete Garden Redesign or Select Individual Products');
+        return;
+    }
+    
+    // Step 2: Validate products selected for individual-products mode
+    if (currentStep === 2 && quoteData.quoteMode === 'individual-products' && quoteData.features.length === 0) {
+        alert('Please select at least one product');
         return;
     }
     

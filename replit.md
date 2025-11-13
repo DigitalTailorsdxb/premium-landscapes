@@ -6,6 +6,9 @@
 ## Current Status
 ✅ **Complete & Production-Ready** - All 19 pages built and functional across mobile/desktop
 ✅ **Quote System Ready** - 5-step conversational quote form with n8n webhook integration configured
+✅ **Mutually Exclusive Quote Modes** - Step 1 presents two clear options: "Complete Garden Redesign" OR "Select Individual Products" - selecting one automatically deselects the other (Nov 13)
+✅ **Clear Mode Differentiation** - Both quote modes include "How it works" explanations so users understand: Full Redesign = entire plan based on budget/requirements, Individual Products = strict quote based only on selected products/sizes (Nov 13)
+✅ **One-Click Material Selection** - Full Redesign materials add instantly with single click, no modal/quality/area inputs needed - workflow determines sizing and quality based on budget (Nov 13)
 ✅ **Dedicated Area Input Fields** - Each product now has a dedicated area/size input field for more accurate quotes
 ✅ **Clean Quote Submission** - No fake pricing shown on site; actual quote sent via email from n8n workflow
 ✅ **Dual Webhook Routing** - Automatic routing to separate workflows: Standard quotes → `/webhook/premium-landscapes-quote`, Full redesigns → `/webhook/premium-landscapes-full-redesign` (Nov 5)
@@ -17,7 +20,6 @@
 ✅ **Clean gardenDesign Output** - Simplified data structure to only `budgetBasedDesign` (boolean) and `categories` (object) for optimal n8n workflow processing (Nov 5)
 ✅ **Mock Data Created** - Budget-based design example with £25,000 budget, 100m² area, "low maintenance & pet friendly" requirements (Nov 5)
 ✅ **Clean Material Selector Design** - Uniform gray/white category headers instead of multicolored options for professional appearance (Nov 11)
-✅ **Ultra-Simplified Material Modal** - Removed overwhelming fields (style/pattern, notes) - only Area and Quality remain for quick material additions (Nov 11)
 ✅ **Dynamic Extras Detection** - Pergola, Fire Pit, and Water Feature automatically populate `extras` object when selected as materials (Nov 11)
 ✅ **Complete n8n Payload Structure** - Added `metadata` object with source, timestamp, quoteType, and webhookDestination matching n8n workflow expectations (Nov 11)
 
@@ -38,10 +40,10 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
 ### Technical Implementations
 - **Frontend:** HTML, Tailwind CSS, JavaScript.
 - **Instant Quote Page (`quote.html`):** Revolutionary 5-step conversational quote system with progressive disclosure:
-  - **Step 1:** Visual feature selection (Patio, Decking, Turf, Driveway, Fencing, Lighting, Full Redesign, Other)
+  - **Step 1:** Mutually exclusive quote mode selection - users choose EITHER "Complete Garden Redesign" (entire plan based on budget/requirements) OR "Select Individual Products" (strict quote based on selected products/sizes only). Clear "How it works" explanations for both modes.
   - **Step 2 (Dual Mode):**
-    - **Standard Mode:** Dynamic product detail fields for individual products (Patio, Decking, etc.) - each gets dedicated material/description textarea and area/size input
-    - **Full Redesign Mode:** Comprehensive material selector with 5 collapsible categories (Paving & Hard Landscaping, Lawn & Planting, Structures, Features, Boundaries) containing 30+ material options. Each material opens simplified modal capturing only area (m²) and quality level (standard/premium/luxury) for quick, non-overwhelming additions. Selected materials appear in real-time summary panel with remove functionality. **Budget-Based Design Option:** Checkbox allowing customers to request design proposals based on budget without specifying materials - enables flexibility to design within price constraints. Design vision notes field for overall project requirements.
+    - **Individual Products Mode:** Product selection grid (Patio, Decking, Turf, Driveway, Fencing, Lighting, Other) followed by dynamic detail fields for each selected product - material/description textarea and area/size input
+    - **Full Redesign Mode:** Comprehensive material selector with 5 collapsible categories (Paving & Hard Landscaping, Lawn & Planting, Structures, Features, Boundaries) containing 30+ material options. **One-click selection** - materials add instantly with single click, no modal needed. Workflow determines sizing and quality automatically based on budget. Selected materials appear in real-time summary panel with remove functionality. **Budget-Based Design Option:** Checkbox allowing customers to request design proposals based on budget without specifying materials - enables flexibility to design within price constraints. Design vision notes field for overall project requirements.
   - **Step 3:** Area slider (10-150 m²) and budget selection cards
   - **Step 4:** Simple 4-field manual address entry (house number, street, city, postcode) - fast, reliable, no API dependencies. Includes drag-and-drop photo/video upload.
   - **Step 5:** Contact details with conditional AI design preview option (only visible if images uploaded; otherwise shows upload prompt)
