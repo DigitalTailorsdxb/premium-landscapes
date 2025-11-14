@@ -298,37 +298,48 @@ async function submitDesign() {
 }
 
 async function sendToWebhook(payload) {
-    console.log('Design Data for Webhook:', payload);
+    console.log('🎨 AI DESIGN REQUEST - Sending to n8n workflow...');
+    console.log('📦 Design Data:', payload);
     
-    // Demo mode: Show success after 2 seconds
-    setTimeout(() => {
+    const webhookUrl = brandConfig?.webhooks?.design || 'https://your-n8n-webhook-url.com';
+    
+    console.log('🔗 Webhook URL:', webhookUrl);
+    
+    if (!webhookUrl || webhookUrl.includes('your-n8n-webhook-url')) {
+        console.warn('⚠️ Webhook URL not configured. Using demo mode.');
+        setTimeout(() => {
+            showSuccess();
+        }, 2000);
+        return;
+    }
+    
+    try {
+        console.log('📤 Sending to n8n...');
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        console.log('✅ Response received:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`Webhook returned status ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('📬 Workflow response:', result);
+        
         showSuccess();
-    }, 2000);
-    
-    // ============================================================================
-    // PRODUCTION IMPLEMENTATION - Uncomment when ready to connect
-    // ============================================================================
-    // 
-    // const webhookUrl = brandConfig?.webhooks?.design || 'https://your-n8n-webhook-url.com';
-    // 
-    // try {
-    //     const response = await fetch(webhookUrl, {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //         },
-    //         body: JSON.stringify(payload)
-    //     });
-    //     
-    //     const result = await response.json();
-    //     showSuccess();
-    //     
-    // } catch (error) {
-    //     console.error('Error submitting design request:', error);
-    //     alert('There was an error processing your request. Please try again or contact us at 07444887813');
-    //     document.getElementById('loadingState').classList.add('hidden');
-    //     document.getElementById('step5').classList.remove('hidden');
-    // }
+        
+    } catch (error) {
+        console.error('❌ Error submitting design request:', error);
+        alert('There was an error processing your request. Please try again or contact us at 07444887813');
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('step4').classList.remove('hidden');
+    }
 }
 
 function showSuccess() {
