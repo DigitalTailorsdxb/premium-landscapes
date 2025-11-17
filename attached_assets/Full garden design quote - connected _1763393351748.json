@@ -1,0 +1,939 @@
+{
+  "name": "Premium Landscapes – Full Garden Redesign (v1.0.1)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "premium-landscapes-full-redesign",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a428c716-4179-4182-b5a1-c907406052f1",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -2064,
+        64
+      ],
+      "webhookId": "61a61d0e-febc-47fe-bb92-4cd0327c3a35"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "a02f0911-b717-4756-a560-c2668dda37ac",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2960,
+        48
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "46071d9c-8600-46a7-ad7a-15e28f3b0fee",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1760,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "Premiumlandscapesuk@gmail.com",
+        "toEmail": "thedigitaltailorsdxb@gmail.com",
+        "subject": "={{`⚠️ Full Redesign Workflow Error – ${$json.execution?.lastNodeExecuted || 'Unknown'}`}}",
+        "html": "<div><p><strong>Error:</strong> {{$json.error.message || 'Unknown error'}}</p><p>Execution ID: {{$json.execution.id}}</p></div>",
+        "options": {}
+      },
+      "id": "b97b4dc1-b9b0-4c95-b48c-fd19d7208b88",
+      "name": "Send Error Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -1504,
+        576
+      ],
+      "webhookId": "77d19835-6d51-4525-a29e-085d92a85636",
+      "credentials": {
+        "smtp": {
+          "id": "dLpXH6yljIeIoVw6",
+          "name": "SMTP account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1008,
+        896
+      ],
+      "typeVersion": 1,
+      "id": "80e3933c-549f-4e12-b37a-80e5d542e33b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Validate Input (Premium Landscapes) v1.5 ===\n// Accepts either {body:{...}} (webhook) or flat JSON (manual).\n// Normalizes payload for downstream nodes (pricing, PDF, email).\n\nconst src = $json.body ?? $json ?? {};\nconst nowIso = new Date().toISOString();\n\n/* ---------------- Helpers ---------------- */\nconst toStr = (v, d = \"\") => (v == null ? d : String(v).trim());\nconst toNum = (v, d = 0) => {\n  const n = Number(v);\n  return Number.isFinite(n) ? n : d;\n};\nconst clamp = (n, lo, hi) => Math.min(Math.max(n, lo), hi);\nconst asArray = (v) => (Array.isArray(v) ? v : v == null ? [] : [v]);\nconst uniq = (arr) => Array.from(new Set(arr));\nconst normBool = (v) => {\n  if (typeof v === \"boolean\") return v;\n  const s = String(v ?? \"\").toLowerCase();\n  return [\"1\", \"true\", \"yes\", \"on\"].includes(s);\n};\nconst normPostcode = (pc) => toStr(pc).toUpperCase().replace(/\\s+/g, \" \").trim();\n\n/* ---------------- Pick roots ---------------- */\nconst customerIn = src.customer ?? {};\nconst projectIn  = src.project ?? {};\nconst extrasIn   = projectIn.extras ?? {};\nconst productsIn = Array.isArray(projectIn.products) ? projectIn.products : [];\nconst gdRaw      = projectIn.gardenDesign ?? {};\nconst metadataIn = src.metadata ?? {};\n\n/* ---------------- Coerce numerics ---------------- */\nconst totalArea_m2    = clamp(toNum(projectIn.totalArea_m2, 0), 0, 10000);\nconst totalBudget_gbp = clamp(toNum(projectIn.totalBudget_gbp, 0), 0, 1_000_000);\n\n/* ---------------- Material selections (Step 2/5) ----------------\n   We accept either:\n   - gardenDesign.materials: [\"porcelain_tiles\", ...]\n   - gardenDesign.categories: { paving:[{material:\"porcelain_tiles\", ...}], ... }\n   We keep both the raw structure and a flat material key list for quick checks. */\nlet categories = {};\nif (gdRaw && typeof gdRaw === \"object\" && gdRaw.categories && !Array.isArray(gdRaw.categories)) {\n  categories = Object.fromEntries(\n    Object.entries(gdRaw.categories).map(([k, v]) => [k, (Array.isArray(v) ? v : []).filter(Boolean)])\n  );\n}\n\nlet materialsFlat = [];\nif (Array.isArray(gdRaw.materials) && gdRaw.materials.length) {\n  materialsFlat = gdRaw.materials;\n} else if (categories && Object.keys(categories).length) {\n  materialsFlat = Object.values(categories)\n    .flat()\n    .map((m) => (typeof m === \"string\" ? m : (m?.material || m?.type || m?.name || \"\")).trim())\n    .filter(Boolean);\n}\nmaterialsFlat = uniq(materialsFlat);\n\n/* ---------------- Budget-mode flag ----------------\n   “Budget-based design” is true if:\n   - explicit flag is true, OR\n   - a UI flag like form.budgetMode is true, OR\n   - there are NO specific selections but a positive budget exists. */\nconst explicitBudgetFlag =\n  gdRaw.budgetBasedDesign ?? src.form?.budgetMode ?? src.budgetMode ?? null;\n\nconst hasAnySelections =\n  materialsFlat.length > 0 ||\n  Object.values(categories).some(arr => Array.isArray(arr) && arr.length > 0);\n\nconst budgetBasedDesign =\n  explicitBudgetFlag !== null\n    ? normBool(explicitBudgetFlag)\n    : (!hasAnySelections && totalBudget_gbp > 0);\n\n/* ---------------- Normalize customer ---------------- */\nconst customer = {\n  name:        toStr(customerIn.name),\n  email:       toStr(customerIn.email).toLowerCase(),\n  phone:       toStr(customerIn.phone),\n  postcode:    normPostcode(customerIn.postcode),\n  city:        toStr(customerIn.city),\n  street:      toStr(customerIn.street),\n  houseNumber: toStr(customerIn.houseNumber),\n  address:     toStr(customerIn.address),\n  ...customerIn,\n};\n\n/* ---------------- Normalize project ---------------- */\nconst project = {\n  type:              toStr(projectIn.type, \"full_garden_redesign\"),\n  title:             toStr(projectIn.title, \"Complete Garden Redesign\"),\n  totalArea_m2,\n  totalBudget_gbp,\n  layoutType:        toStr(projectIn.layoutType || \"standard\"),\n  sunlight:          toStr(projectIn.sunlight || \"\"),\n  stylePreference:   toStr(projectIn.stylePreference || \"\"),\n  maintenanceLevel:  toStr(projectIn.maintenanceLevel || \"\"),\n  siteConditions: {\n    access:   toStr(projectIn.siteConditions?.access),\n    soilType: toStr(projectIn.siteConditions?.soilType),\n    drainage: toStr(projectIn.siteConditions?.drainage),\n    ...projectIn.siteConditions,\n  },\n  // IMPORTANT: pass through raw selections for pricing logic\n  products: productsIn,\n  extras:   (extrasIn && typeof extrasIn === \"object\") ? extrasIn : {},\n  notes:    toStr(projectIn.notes),\n\n  gardenDesign: {\n    ...gdRaw,\n    budgetBasedDesign,\n    categories,              // normalized object-of-arrays\n    materials: materialsFlat, // flat material keys\n    totalMaterialCount: materialsFlat.length\n  },\n};\n\n/* ---------------- Validations & mirrors ---------------- */\nconst errors = [];\nconst warnings = [];\n\nif (!customer.email && !customer.phone) {\n  warnings.push(\"Customer has no email or phone; follow-up may fail.\");\n}\nif (!project.totalArea_m2) {\n  warnings.push(\"Total area (m²) was not provided.\");\n}\nif (budgetBasedDesign && !project.totalBudget_gbp) {\n  errors.push(\"Budget-based design selected but no budget provided.\");\n}\nif (customer.email && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(customer.email)) {\n  warnings.push(\"Customer email looks invalid.\");\n}\n\nconst selectionSummary = Object.fromEntries(\n  Object.entries(categories).map(([k, v]) => [k, (Array.isArray(v) ? v.length : 0)])\n);\n\n/* ---------------- Final output ---------------- */\nreturn [{\n  json: {\n    meta: {\n      normalizedAt: nowIso,\n      source: toStr(metadataIn.source || src.source || \"website_quote_form\"),\n      timestamp: toStr(metadataIn.timestamp || new Date().toISOString()),\n      quoteType: toStr(metadataIn.quoteType || project.type),\n    },\n    customer,\n    project,\n    mirrors: {\n      budgetBasedDesign,\n      totalBudget_gbp: project.totalBudget_gbp,\n      totalArea_m2: project.totalArea_m2,\n      hasAnySelections,\n      selectionSummary\n    },\n    valid: errors.length === 0,\n    errors,\n    warnings,\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1728,
+        64
+      ],
+      "id": "a992a308-6eac-45d9-a897-48dc47d75b0b",
+      "name": "validate Input"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Premium Landscapes | Calculate Pricing (v3.6 full-garden + groundworks) ===\n// Drop-in: REPLACE the entire body of the Function node \"Calculate Pricing\"\n//\n// Key behaviours:\n// • Uses garden area + budget to build a realistic full garden design\n// • NEVER allocates more surfacing area than the total garden area\n// • Premium-first when budget allows: Artificial turf > Natural turf, Composite decking > Wood\n// • Reserves area for big features (kitchen, sunken seating, fire pit, water feature, garden room, etc.)\n// • Lighting is capped to ≤ 8% of total budget\n// • Fills budget to ~95% with: Seating Area → Fire Pit → Pergola → Water Feature → Planters → (then) Outdoor Kitchen\n// • ALWAYS adds Groundworks (dig-out, machine hire, waste removal) at £40/m² on the full garden area\n// • De-dupes identical lines; adds contingency + VAT\n\n// ---------- Tunables ----------\nconst CONTINGENCY_PCT        = 0.05;\nconst VAT_PCT                = 0.20;\nconst LIGHTING_MULTIPLIER    = 1.5;\nconst LIGHTING_BUDGET_PCT    = 0.08;   // max % of budget on lighting\nconst BUDGET_FILL_PCT        = 0.95;   // aim to fill ~95% of budget\n\n// Area shares for main surfacing (relative weights)\nconst AREA_SHARE = {\n  paving:  0.5,\n  lawn:    0.3,\n  decking: 0.2,\n};\n\n// Minimum sensible areas\nconst MIN_M2 = {\n  paving:  10,\n  lawn:     8,\n  decking: 12,\n};\n\n// Default lengths for boundary items\nconst DEFAULT_LM = {\n  fencing: 10,\n  seating:  8, // not used now (seating is per-each), kept for future\n  wall:     6,\n  hedge:    6,\n};\n\n// Premium preference thresholds (budget per m² of garden)\nconst PREF_TURF_BUDGET_PER_M2 = 70;   // prefer Artificial over Natural above this\nconst PREF_DECK_BUDGET_PER_M2 = 150;  // prefer Composite over Wood above this\n\n// Feature footprints (m²) that eat into surfacing area\nconst FOOTPRINT = {\n  outdoor_kitchen: 6,\n  sunken_seating: 10,\n  fire_pit: 4,\n  water_feature: 2,\n  gazebo: 6,\n  storage_shed: 4,\n  summer_house: 6,\n  garden_room: 12, // garden room takes real footprint\n  pergola: 0      // free-standing, no area deduction\n};\n\n// Groundworks – ALWAYS added on full garden area\nconst GROUNDWORKS_RATE_PER_M2 = 40;   // £40 per m² for dig-out, machine hire, waste removal\n\n// Seating area – now a single product, not lm\nconst SEATING_AREA_RATE = 2000;       // £2,000 each (typical sunken seating area)\n\n// ---------- Price List ----------\nconst RATES = {\n  // PAVING\n  patios: {\n    porcelain_20mm: 130,\n    natural_stone: 135,\n    limestone: 135,\n    granite: 150,\n    slate: 140,\n    concrete_paving: 100,\n    block_paving: 90,\n    resin_bound_incl_base: 160,\n    gravel_area_m2: 55,\n    stepping_stone: 80,\n    patterned_inlay_border: 35,\n  },\n\n  // DECKING\n  decking: {\n    composite: 170,\n    softwood_treated: 110,\n    hardwood: 195,\n    subframe_pedestals: 75,\n  },\n\n  // LAWN & PLANTING\n  turf: {\n    natural_rolled: 30,\n    artificial_35_40mm: 85,\n    raised_beds_per_m2: 180,\n    feature_trees_each: 420,\n    flower_beds_per_m2: 95,\n    regrade_topsoil: 22,\n    lawn_edging: 15,\n    wildflower_turf: 36,\n  },\n\n  // BOUNDARIES\n  fencing: {\n    closeboard_featheredge: 85,   // /lm\n    double_slatted_venetian: 132, // /lm\n    decorative_trellis_panel: 96, // /panel\n    concrete_posts_gravel_boards: 66, // /bay\n    timber_posts_gravel_boards: 54,   // /bay\n    timber_garden_gate: 336,          // /each\n  },\n  walls: {\n    brick_garden_wall: 240,        // /m² face\n    rendered_block_planter: 216,   // /m² face\n    stone_walling_cladding: 264,   // /m² face\n    paving_edging_kerbs_setts: 36, // /lm\n    copings_caps: 42,              // /lm\n  },\n  hedging: {\n    native_laid_lm: 45,\n    instant_screen_lm: 165,\n  },\n\n  // ACCESS\n  access: {\n    paved_steps: 192,               // /step\n    bullnose_step_tread: 114,       // /each\n    gravel_path_with_grids: 66,     // /m²\n    non_slip_ramp_threshold: 216,   // /each\n  },\n\n  // DRAINAGE\n  drainage: {\n    linear_aco_channel: 54,         // /lm\n    soakaway_crate_system: 780,     // /each\n    recessed_manhole_cover: 216,    // /each\n  },\n\n  // STRUCTURES\n  structures: {\n    pergola_standard: 1500,\n    timber_pergola_3x3: 1700,\n    timber_pergola_freestanding_hd: 1680,\n    timber_pergola_attached: 1500,\n    gazebo_each: 2800,\n    garden_room_m2: 1450,\n    storage_shed_each: 1250,\n    summer_house_each: 4200,\n  },\n\n  // WATER FEATURES\n  water_features: {\n    corten_bowl_on_plinth: 780,\n    corten_water_table: 1680,\n    bespoke_water_feature_each: 2200,\n  },\n\n  // FEATURES\n  features: {\n    sunken_firepit_each: 0,               // overridden by DEFAULT_FIREPIT_RATE\n    outdoor_kitchen_starter: 4500,\n    outdoor_kitchen_standard: 7500,\n    outdoor_kitchen_premium: 12000,\n    outdoor_kitchen_luxury: 18000,\n    seating_area_each: SEATING_AREA_RATE, // our new per-each seating area\n    bbq_area_module_each: 950,\n  },\n\n  // LIGHTING\n  lighting: {\n    default: 75,\n    spike: 75,\n    deck_uplight: 75,\n    bollard: 95,\n    step_light: 85,\n    wall_light: 90,\n    transformer_each: 120,\n    cable_per_m: 2.5,\n  },\n\n  // AGGREGATES\n  aggregates: {\n    decorative_stone_per_tonne: 200,\n  },\n};\n\n// Optional minimum project values\nconst MIN_PROJECTS = {\n  \"structures.garden_room_m2\": 9000,\n};\n\n// ---------- Helpers ----------\nconst to2 = (n) => +((Number(n) || 0).toFixed(2));\nconst lc  = (s) => (s || \"\").toLowerCase();\nconst num = (v) => (v == null || v === \"\" ? 0 : Number(v) || 0);\nconst N   = (v, d = 0) => {\n  const n = Number(v);\n  return Number.isFinite(n) ? n : d;\n};\nconst pickLength = (item) =>\n  num(item.length_m) || num(item.length) || num(item.metres) || num(item.m) || 0;\n\n// ---------- Quantity / Unit detection ----------\nfunction getQtyUnit(item) {\n  const t  = lc(item.type);\n  const m  = lc(item.material || item.variant || \"\");\n  const ut = lc(item.unitType || \"\");\n\n  // “each” style one-offs\n  if ([\"firepit\", \"fire pit\", \"kitchen\", \"gazebo\", \"shed\", \"summer\", \"bbq\", \"seating\"].some(k => t.includes(k) || m.includes(k))) {\n    return { qty: num(item.qty) || 1, unit: \"each\" };\n  }\n\n  // Fencing / trellis / gates\n  if (t.includes(\"fenc\") || t.includes(\"screen\") || t.includes(\"trellis\") || t.includes(\"gate\")) {\n    const panels = num(item.panels);\n    const bays   = num(item.bays);\n    const len    = pickLength(item);\n    if (t.includes(\"trellis\")) return { qty: panels || num(item.qty), unit: \"panel\" };\n    if (t.includes(\"gate\"))    return { qty: num(item.qty) || 1, unit: \"each\" };\n    if (t.includes(\"post\") || t.includes(\"gravel\")) {\n      if (bays) return { qty: bays, unit: \"bay\" };\n      if (len)  return { qty: len,  unit: \"lm\"  };\n      return { qty: 0, unit: \"bay\" };\n    }\n    if (panels) return { qty: panels, unit: \"panel\" };\n    if (bays)   return { qty: bays,   unit: \"bay\"   };\n    if (len)    return { qty: len,    unit: \"lm\"    };\n    return { qty: 0, unit: \"lm\" };\n  }\n\n  // Respect explicit unit types first\n  if ([\"m2\", \"m²\", \"sqm\", \"sq m\"].includes(ut)) return { qty: num(item.area_m2), unit: \"m²\" };\n  if (ut === \"lm\" || ut === \"m\")            return { qty: pickLength(item),  unit: \"lm\" };\n  if (ut === \"qty\")                         return { qty: num(item.fittings ?? item.qty), unit: \"qty\" };\n  if (ut === \"panel\")                       return { qty: num(item.panels ?? item.qty),   unit: \"panel\" };\n  if (ut === \"bay\")                         return { qty: num(item.bays   ?? item.qty),   unit: \"bay\" };\n  if (ut === \"step\")                        return { qty: num(item.steps  ?? item.qty),   unit: \"step\" };\n  if (ut === \"each\")                        return { qty: num(item.qty) || 1,             unit: \"each\" };\n  if (ut === \"tonne\" || ut === \"t\")         return { qty: num(item.tonnes ?? item.qty),   unit: \"tonne\" };\n\n  // Generic surfacing detection\n  const isAreaSurf = [\"patio\",\"paving\",\"deck\",\"turf\",\"lawn\",\"resin\",\"concrete\",\"gravel\"].some(k => t.includes(k));\n  if (isAreaSurf) return { qty: num(item.area_m2), unit: \"m²\" };\n\n  if (t.includes(\"stepping\")) return { qty: pickLength(item), unit: \"lm\" };\n  if ([\"edging\",\"kerb\",\"coping\",\"aco\"].some(k => t.includes(k))) return { qty: pickLength(item), unit: \"lm\" };\n\n  if ([\"step\",\"bullnose\",\"ramp\",\"threshold\"].some(k => t.includes(k))) {\n    if (t.includes(\"bullnose\")) return { qty: num(item.qty) || 1, unit: \"each\" };\n    if (t.includes(\"ramp\") || t.includes(\"threshold\")) return { qty: num(item.qty) || 1, unit: \"each\" };\n    return { qty: num(item.steps ?? item.qty), unit: \"step\" };\n  }\n\n  if ([\"wall\",\"planter\",\"cladding\"].some(k => t.includes(k))) return { qty: num(item.area_m2), unit: \"m²\" };\n  if ([\"manhole\",\"soakaway\"].some(k => t.includes(k))) return { qty: num(item.qty) || 1, unit: \"each\" };\n  if ([\"drain\",\"aco\"].some(k => t.includes(k))) return { qty: pickLength(item), unit: \"lm\" };\n\n  if (t.includes(\"lighting\")) return { qty: num(item.fittings ?? item.qty), unit: \"qty\" };\n  if (t.includes(\"hedge\"))    return { qty: pickLength(item), unit: \"lm\" };\n\n  if ((t.includes(\"stone\") || t.includes(\"aggregate\") || (t.includes(\"gravel\") && !t.includes(\"path\"))))\n    return { qty: num(item.tonnes ?? item.qty), unit: \"tonne\" };\n\n  // Fallback\n  return { qty: num(item.qty) || 1, unit: item.unitType || \"each\" };\n}\n\n// ---------- Classification ----------\nfunction classify(item) {\n  const t = lc(item.type);\n  const m = lc(item.material || item.variant || \"\");\n\n  // Fencing posts / gravel boards override\n  if (\n    t.includes(\"gravel board\") || t.includes(\"gravel boards\") ||\n    (t.includes(\"post\") && (t.includes(\"fenc\") || t.includes(\"gravel\")))\n  ) {\n    return { cat: \"fencing\", var: \"concrete_posts_gravel_boards\", base: \"bay\" };\n  }\n\n  // Paving / surfaces\n  if (t.includes(\"porcelain\"))        return { cat: \"patios\", var: \"porcelain_20mm\",        base: \"m²\" };\n  if (t.includes(\"natural stone\"))    return { cat: \"patios\", var: \"natural_stone\",         base: \"m²\" };\n  if (t.includes(\"resin\"))            return { cat: \"patios\", var: \"resin_bound_incl_base\", base: \"m²\" };\n  if (t.includes(\"gravel\") && (t.includes(\"path\") || m.includes(\"path\")))\n                                      return { cat: \"access\", var: \"gravel_path_with_grids\", base: \"m²\" };\n  if (t.includes(\"gravel\"))           return { cat: \"patios\", var: \"gravel_area_m2\",        base: \"m²\" };\n  if (t.includes(\"concrete\"))         return { cat: \"patios\", var: \"concrete_paving\",       base: \"m²\" };\n  if (t.includes(\"block paving\"))     return { cat: \"patios\", var: \"block_paving\",          base: \"m²\" };\n\n  // Decking\n  if (t.includes(\"deck\")) {\n    const v =\n      m.includes(\"composite\") ? \"composite\" :\n      m.includes(\"hard\")      ? \"hardwood\"  :\n      m.includes(\"soft\")      ? \"softwood_treated\" :\n      \"composite\";\n    return { cat: \"decking\", var: v, base: \"m²\" };\n  }\n\n  // Lawn & planting\n  if (t.includes(\"artificial\"))       return { cat: \"turf\", var: \"artificial_35_40mm\", base: \"m²\" };\n  if (t.includes(\"natural lawn\"))     return { cat: \"turf\", var: \"natural_rolled\",     base: \"m²\" };\n  if (t.includes(\"raised bed\"))       return { cat: \"turf\", var: \"raised_beds_per_m2\", base: \"m²\" };\n  if (t.includes(\"feature tree\"))     return { cat: \"turf\", var: \"feature_trees_each\", base: \"each\" };\n  if (t.includes(\"flower bed\"))       return { cat: \"turf\", var: \"flower_beds_per_m2\", base: \"m²\" };\n\n  // Boundaries\n  if (t.includes(\"fenc\"))             return { cat: \"fencing\", var: (m.includes(\"venetian\") || m.includes(\"slatted\")) ? \"double_slatted_venetian\" : \"closeboard_featheredge\", base: \"lm\" };\n  if (t.includes(\"gate\"))             return { cat: \"fencing\", var: \"timber_garden_gate\",   base: \"each\" };\n  if (t.includes(\"wall\"))             return { cat: \"walls\",   var: \"brick_garden_wall\",    base: \"m²\" };\n  if (t.includes(\"hedg\"))             return { cat: \"hedging\", var: (m.includes(\"screen\") ? \"instant_screen_lm\" : \"native_laid_lm\"), base: \"lm\" };\n\n  // Structures\n  if (t.includes(\"pergola\"))          return { cat: \"structures\", var: t.includes(\"3x3\") ? \"timber_pergola_3x3\" : \"pergola_standard\", base: \"each\" };\n  if (t.includes(\"gazebo\"))           return { cat: \"structures\", var: \"gazebo_each\",           base: \"each\" };\n  if (t.includes(\"garden room\"))      return { cat: \"structures\", var: \"garden_room_m2\",        base: \"m²\" };\n  if (t.includes(\"storage\") && t.includes(\"shed\"))\n                                      return { cat: \"structures\", var: \"storage_shed_each\",     base: \"each\" };\n  if (t.includes(\"summer house\"))     return { cat: \"structures\", var: \"summer_house_each\",     base: \"each\" };\n\n  // Water features\n  if (t.includes(\"water feature\"))    return { cat: \"water_features\", var: \"bespoke_water_feature_each\", base: \"each\" };\n\n  // Features\n  if (t.includes(\"fire\"))            return { cat: \"features\", var: \"sunken_firepit_each\", base: \"each\" };\n  if (t.includes(\"seating\"))         return { cat: \"features\", var: \"seating_area_each\",   base: \"each\" };\n  if (t.includes(\"bbq\"))             return { cat: \"features\", var: \"bbq_area_module_each\", base: \"each\" };\n\n  // Outdoor kitchen tiers\n  if (t.includes(\"outdoor kitchen\") || t.includes(\"kitchen\")) {\n    if (m.includes(\"lux\") || t.includes(\"luxury\")) return { cat: \"features\", var: \"outdoor_kitchen_luxury\",  base: \"each\" };\n    if (m.includes(\"premium\"))                     return { cat: \"features\", var: \"outdoor_kitchen_premium\", base: \"each\" };\n    if (m.includes(\"standard\"))                    return { cat: \"features\", var: \"outdoor_kitchen_standard\",base: \"each\" };\n    return { cat: \"features\", var: \"outdoor_kitchen_starter\", base: \"each\" };\n  }\n\n  // Lighting\n  if (t.includes(\"lighting\")) {\n    if (m.includes(\"transformer\")) return { cat: \"lighting\", var: \"transformer_each\", base: \"each\" };\n    if (m.includes(\"cable\"))       return { cat: \"lighting\", var: \"cable_per_m\",      base: \"lm\"   };\n    if (m.includes(\"spike\"))       return { cat: \"lighting\", var: \"spike\",            base: \"qty\"  };\n    if (m.includes(\"uplight\") || m.includes(\"deck\")) return { cat: \"lighting\", var: \"deck_uplight\", base: \"qty\" };\n    if (m.includes(\"bollard\"))     return { cat: \"lighting\", var: \"bollard\",          base: \"qty\"  };\n    if (m.includes(\"step\"))        return { cat: \"lighting\", var: \"step_light\",       base: \"qty\"  };\n    if (m.includes(\"wall\"))        return { cat: \"lighting\", var: \"wall_light\",       base: \"qty\"  };\n    return { cat: \"lighting\", var: \"default\", base: \"qty\" };\n  }\n\n  // Aggregates\n  if (t.includes(\"decorative\") && t.includes(\"stone\")) {\n    return { cat: \"aggregates\", var: \"decorative_stone_per_tonne\", base: \"tonne\" };\n  }\n\n  return { cat: null, var: null, base: item.unitType || \"\" };\n}\n\n// ---------- Rate lookup ----------\nconst DEFAULT_FIREPIT_RATE = 1450;\n\nfunction rateFor(item) {\n  const { cat, var: variant } = classify(item);\n  if (item.unitRate != null && !isNaN(Number(item.unitRate))) {\n    return Number(item.unitRate);\n  }\n  if (cat === \"features\" && variant === \"sunken_firepit_each\") {\n    return DEFAULT_FIREPIT_RATE;\n  }\n  if (!cat || !variant || !RATES[cat] || RATES[cat][variant] == null) return 0;\n\n  if (cat === \"patios\" && variant === \"block_paving\" && item.drivewaySpec === true) {\n    return RATES.patios.block_paving + 20;\n  }\n\n  const base = RATES[cat][variant];\n  return cat === \"lighting\" ? +(base * LIGHTING_MULTIPLIER).toFixed(2) : base;\n}\n\nfunction applyMinimums(catVarKey, qty, unit, line) {\n  const min = MIN_PROJECTS[catVarKey];\n  if (!min) return line;\n  if (unit === \"m²\" && line < min) return min;\n  return line;\n}\n\n// ---------- Convert product → line ----------\nfunction lineFrom(item) {\n  const { qty, unit } = getQtyUnit(item);\n  const { cat, var: variant } = classify(item);\n  const q = Number(qty) || 0;\n  const unitRate = Number(rateFor(item)) || 0;\n  let line = q * unitRate;\n\n  if (cat && variant) {\n    const key = `${cat}.${variant}`;\n    line = applyMinimums(key, q, unit, line);\n  }\n\n  if (q <= 0 || unitRate <= 0) return null;\n\n  return {\n    item: item.type || \"\",\n    category: cat || \"\",\n    variant: variant || \"\",\n    description: item.description || item.type || \"\",\n    qty: to2(q),\n    unit,\n    unitCost: to2(unitRate),\n    lineTotal: to2(line),\n  };\n}\n\n// ---------- MAIN ----------\nconst d          = $json;\nconst project    = d.project || {};\nconst categories = project.gardenDesign?.categories || {};\nconst extras     = project.extras || {};\n\nconst totalArea  = N(project.totalArea_m2, 0);\nconst budget     = N($node[\"validate Input\"]?.json?.project?.totalBudget_gbp ?? project.totalBudget_gbp, 0);\nconst BUDGET_CAP = Math.floor(budget * BUDGET_FILL_PCT);\nconst budgetPerM2 = totalArea > 0 ? budget / totalArea : 0;\nconst budgetBased = !!project.gardenDesign?.budgetBasedDesign;\n\nconst counts = {\n  paving:     Array.isArray(categories.paving)     ? categories.paving.length     : 0,\n  lawn:       Array.isArray(categories.lawn)       ? categories.lawn.length       : 0,\n  structures: Array.isArray(categories.structures) ? categories.structures.length : 0,\n  features:   Array.isArray(categories.features)   ? categories.features.length   : 0,\n  boundaries: Array.isArray(categories.boundaries) ? categories.boundaries.length : 0,\n};\n\n// Detect decking from structures\nconst deckingTiles = (categories.structures || []).filter(i => lc(i.material || \"\").includes(\"deck\"));\nconst deckingCount = deckingTiles.length;\n\n// ===== Reserve feature footprints first =====\nlet reservedArea = 0;\n\n// Feature footprints\n(categories.features || []).forEach(it => {\n  const m = lc(it.material || \"\");\n  if (m.includes(\"outdoor_kitchen\") || m.includes(\"kitchen\")) reservedArea += FOOTPRINT.outdoor_kitchen;\n  if (m.includes(\"seating\") || m.includes(\"sunken\"))          reservedArea += FOOTPRINT.sunken_seating;\n  if (m.includes(\"fire\"))                                     reservedArea += FOOTPRINT.fire_pit;\n  if (m.includes(\"water_feature\"))                            reservedArea += FOOTPRINT.water_feature;\n});\n\n// Structures footprints (except pergola)\n(categories.structures || []).forEach(it => {\n  const m = lc(it.material || \"\");\n  if (m.includes(\"gazebo\"))          reservedArea += FOOTPRINT.gazebo;\n  if (m.includes(\"storage_shed\"))    reservedArea += FOOTPRINT.storage_shed;\n  if (m.includes(\"summer_house\"))    reservedArea += FOOTPRINT.summer_house;\n  if (m.includes(\"garden_room\"))     reservedArea += FOOTPRINT.garden_room;\n  // pergola = 0\n});\n\n// Clamp reserved area to avoid negative surfacing\nreservedArea = Math.min(reservedArea, Math.max(0, totalArea - 1));\nconst surfacingArea = Math.max(0, totalArea - reservedArea);\n\n// ===== Decide which surfacing families to use =====\nconst wantPaving  = counts.paving  > 0 || budgetBased;\nconst wantLawn    = counts.lawn    > 0 || budgetBased;\nconst wantDecking = deckingCount   > 0 || budgetBased;\n\nconst surfFamilies = [];\nif (wantPaving)  surfFamilies.push(\"paving\");\nif (wantLawn)    surfFamilies.push(\"lawn\");\nif (wantDecking) surfFamilies.push(\"decking\");\n\nlet alloc = { paving: 0, lawn: 0, decking: 0 };\n\nif (surfFamilies.length && surfacingArea > 0) {\n  let sumWeights = surfFamilies.reduce((sum, fam) => sum + (AREA_SHARE[fam] || 0), 0);\n  if (sumWeights <= 0) sumWeights = 1;\n\n  // initial allocation with mins\n  for (const fam of surfFamilies) {\n    const raw = Math.round((AREA_SHARE[fam] || 0) / sumWeights * surfacingArea);\n    alloc[fam] = Math.max(MIN_M2[fam] || 0, raw);\n  }\n\n  // scale down if overshooting surfacingArea\n  let sumAlloc = alloc.paving + alloc.lawn + alloc.decking;\n  if (sumAlloc > surfacingArea) {\n    const scale = surfacingArea / sumAlloc;\n    for (const fam of [\"paving\",\"lawn\",\"decking\"]) {\n      alloc[fam] = fam === \"paving\" || fam === \"lawn\" || fam === \"decking\"\n        ? Math.floor(alloc[fam] * scale)\n        : 0;\n    }\n  }\n}\n\n// ===== Build products =====\nlet products = [];\n\n// --- PAVING ---\nif (wantPaving && (alloc.paving > 0 || surfacingArea > 0)) {\n  const tiles = counts.paving\n    ? (categories.paving || [])\n    : (budgetBased ? [{ material: \"porcelain_tiles\" }] : []);\n  const per = tiles.length\n    ? Math.max(MIN_M2.paving, Math.round((alloc.paving || surfacingArea * AREA_SHARE.paving) / tiles.length))\n    : 0;\n\n  for (const it of tiles) {\n    const m = lc(it.material || it.type || \"\");\n    let type = \"Natural Stone\";\n    if (m.includes(\"porcelain\"))  type = \"Porcelain Tiles\";\n    else if (m.includes(\"resin\")) type = \"Resin Bound\";\n    else if (m.includes(\"gravel\")) type = \"Gravel\";\n    else if (m.includes(\"block\")) type = \"Block Paving\";\n    else if (m.includes(\"concrete\")) type = \"Concrete\";\n\n    products.push({\n      type,\n      unitType: \"m2\",\n      area_m2: per,\n    });\n  }\n}\n\n// --- LAWN / TURF ---\nif (wantLawn && (alloc.lawn > 0 || surfacingArea > 0)) {\n  let lawnTiles = counts.lawn\n    ? (categories.lawn || [])\n    : (budgetBased ? [{ material: \"artificial\" }] : []);\n\n  const hasArtificial = (categories.lawn || []).some(i => lc(i.material || \"\").includes(\"artificial\"));\n  const hasNatural = (categories.lawn || []).some(i => {\n    const m = lc(i.material || \"\");\n    return m.includes(\"natural_lawn\") || m === \"natural\";\n  });\n\n  // premium preference: if both chosen and budget per m² is high, prefer artificial\n  if (hasArtificial && hasNatural && budgetPerM2 >= PREF_TURF_BUDGET_PER_M2) {\n    lawnTiles = lawnTiles.filter(i => lc(i.material || \"\").includes(\"artificial\"));\n  }\n\n  const per = lawnTiles.length\n    ? Math.max(MIN_M2.lawn, Math.round((alloc.lawn || surfacingArea * AREA_SHARE.lawn) / lawnTiles.length))\n    : 0;\n\n  for (const it of lawnTiles) {\n    const m = lc(it.material || \"\");\n    const type = m.includes(\"artificial\") ? \"Artificial Turf\" : \"Natural Lawn\";\n    products.push({\n      type,\n      unitType: \"m2\",\n      area_m2: per,\n    });\n  }\n}\n\n// --- DECKING ---\nif (wantDecking && (alloc.decking > 0 || surfacingArea > 0)) {\n  let deckTiles = deckingCount\n    ? deckingTiles\n    : (budgetBased ? [{ material: \"composite\" }] : []);\n\n  const hasComposite = deckTiles.some(i => lc(i.material || \"\").includes(\"composite\"));\n  const hasWood = deckTiles.some(i => {\n    const m = lc(i.material || \"\");\n    return m.includes(\"soft\") || m.includes(\"hard\");\n  });\n\n  if (hasComposite && hasWood && budgetPerM2 >= PREF_DECK_BUDGET_PER_M2) {\n    deckTiles = deckTiles.filter(i => lc(i.material || \"\").includes(\"composite\"));\n  }\n\n  const per = deckTiles.length\n    ? Math.max(MIN_M2.decking, Math.round((alloc.decking || surfacingArea * AREA_SHARE.decking) / deckTiles.length))\n    : 0;\n\n  for (const it of deckTiles) {\n    const m = lc(it.material || \"\");\n    const mat =\n      m.includes(\"composite\") ? \"composite\" :\n      m.includes(\"hard\")      ? \"hardwood\"  :\n      m.includes(\"soft\")      ? \"softwood_treated\" :\n      \"composite\";\n    products.push({\n      type: \"Decking\",\n      unitType: \"m2\",\n      area_m2: per,\n      material: mat,\n    });\n  }\n}\n\n// --- BOUNDARIES ---\nif (counts.boundaries) {\n  for (const it of categories.boundaries || []) {\n    const m = lc(it.material || \"\");\n    if (m.includes(\"fencing\")) {\n      products.push({\n        type: \"Fencing\",\n        unitType: \"lm\",\n        length_m: DEFAULT_LM.fencing,\n        material: (m.includes(\"venetian\") || m.includes(\"slatted\")) ? \"double_slatted_venetian\" : \"closeboard\",\n      });\n      products.push({\n        type: \"Posts & Gravel Boards\",\n        unitType: \"bay\",\n        bays: DEFAULT_LM.fencing,\n        material: \"concrete\",\n      });\n    } else if (m.includes(\"walls\")) {\n      products.push({\n        type: \"Walls\",\n        unitType: \"m2\",\n        area_m2: DEFAULT_LM.wall,\n        material: \"brick\",\n      });\n    } else if (m.includes(\"hedging\")) {\n      products.push({\n        type: \"Hedging\",\n        unitType: \"lm\",\n        length_m: DEFAULT_LM.hedge,\n      });\n    } else if (m.includes(\"gates\")) {\n      products.push({\n        type: \"Gate\",\n        unitType: \"each\",\n        qty: 1,\n      });\n    }\n  }\n}\n\n// --- STRUCTURES ---\nif (counts.structures) {\n  for (const it of categories.structures || []) {\n    const m = lc(it.material || \"\");\n    if (m.includes(\"pergola\")) {\n      products.push({ type: \"Pergola 3x3\", unitType: \"each\", qty: 1 });\n    } else if (m.includes(\"gazebo\")) {\n      products.push({ type: \"Gazebo\", unitType: \"each\", qty: 1 });\n    } else if (m.includes(\"garden_room\")) {\n      products.push({ type: \"Garden Room\", unitType: \"m2\", area_m2: 12 });\n    } else if (m.includes(\"storage_shed\")) {\n      products.push({ type: \"Storage Shed\", unitType: \"each\", qty: 1 });\n    } else if (m.includes(\"summer_house\")) {\n      products.push({ type: \"Summer House\", unitType: \"each\", qty: 1 });\n    }\n  }\n}\n\n// --- FEATURES from tiles ---\nlet wantsLighting = false;\nlet userRequestedKitchen = false;\n\nif (counts.features) {\n  for (const it of categories.features || []) {\n    const m = lc(it.material || \"\");\n    if (m.includes(\"outdoor_lighting\") || m.includes(\"lighting\")) {\n      wantsLighting = true;\n    }\n    if (m.includes(\"water_feature\")) {\n      products.push({ type: \"Water Feature\", unitType: \"each\", qty: 1 });\n    }\n    if (m.includes(\"fire_pit\") || m.includes(\"firepit\")) {\n      products.push({ type: \"Fire Pit\", unitType: \"each\", qty: 1 });\n    }\n    if (m.includes(\"seating_area\") || m.includes(\"sunken_seating\")) {\n      products.push({ type: \"Seating Area\", unitType: \"each\", qty: 1 });\n    }\n    if (m.includes(\"outdoor_kitchen\") || m.includes(\"kitchen\")) {\n      userRequestedKitchen = true;\n    }\n    if (m.includes(\"bbq\")) {\n      products.push({ type: \"BBQ Area\", unitType: \"each\", qty: 1 });\n    }\n  }\n}\n\n// --- FEATURES from extras (if used) ---\nif (extras?.pergola?.include && !products.some(p => lc(p.type).includes(\"pergola\"))) {\n  products.push({ type: \"Pergola 3x3\", unitType: \"each\", qty: 1 });\n}\nif (extras?.firePit?.include && !products.some(p => lc(p.type).includes(\"fire pit\"))) {\n  products.push({ type: \"Fire Pit\", unitType: \"each\", qty: 1 });\n}\nif (extras?.waterFeature?.include && !products.some(p => lc(p.type).includes(\"water feature\"))) {\n  products.push({ type: \"Water Feature\", unitType: \"each\", qty: 1 });\n}\nif (extras?.outdoorKitchen?.include) {\n  userRequestedKitchen = true;\n}\n\n// ===== GROUNDWORKS – ALWAYS ADD =====\nif (totalArea > 0) {\n  products.push({\n    type: \"Groundworks: dig-out, machinery & waste removal\",\n    unitType: \"m2\",\n    area_m2: totalArea,\n    unitRate: GROUNDWORKS_RATE_PER_M2,\n  });\n}\n\n// ===== BASE LINES → BREAKDOWN =====\nlet breakdown = [];\nfor (const p of products) {\n  const r = lineFrom(p);\n  if (r) breakdown.push(r);\n}\n\n// ===== LIGHTING (capped to 8% of budget) =====\nfunction addLightingCapped() {\n  if (!wantsLighting || budget <= 0) return;\n  const fittingsGuess = Math.max(6, Math.round((totalArea || 40) / 3));\n  const cableGuess    = Math.max(12, Math.round((totalArea || 40) * 2));\n\n  const baseLines = [\n    { type: \"Lighting transformer\", material: \"transformer\", unitType: \"each\", qty: 1 },\n    { type: \"Lighting cable\",       material: \"cable\",       unitType: \"lm\",   length_m: cableGuess },\n    { type: \"Lighting fittings\",    material: \"spike\",       unitType: \"qty\",  fittings: fittingsGuess },\n  ];\n\n  let temp = [];\n  for (const p of baseLines) {\n    const r = lineFrom(p);\n    if (r) temp.push(r);\n  }\n\n  let lightingSubtotal = temp.reduce((a, b) => a + Number(b.lineTotal || 0), 0);\n  const cap = budget * LIGHTING_BUDGET_PCT;\n  if (cap > 0 && lightingSubtotal > cap) {\n    const transformerCost = temp[0]?.lineTotal || 0;\n    const rest = (temp[1]?.lineTotal || 0) + (temp[2]?.lineTotal || 0);\n    const xf = rest > 0 ? (cap - transformerCost) / rest : 0;\n\n    const scale = Math.max(0.2, Math.min(1, xf));\n    const cableScaled = Math.max(6, Math.floor(cableGuess * scale));\n    const fitScaled   = Math.max(4, Math.floor(fittingsGuess * scale));\n\n    temp = [];\n    for (const p of [\n      { type:\"Lighting transformer\", material:\"transformer\", unitType:\"each\", qty:1 },\n      { type:\"Lighting cable\",       material:\"cable\",       unitType:\"lm\",   length_m:cableScaled },\n      { type:\"Lighting fittings\",    material:\"spike\",       unitType:\"qty\",  fittings:fitScaled },\n    ]) {\n      const r = lineFrom(p);\n      if (r) temp.push(r);\n    }\n  }\n\n  breakdown.push(...temp);\n}\naddLightingCapped();\n\n// ===== De-dupe identical lines =====\nconst merged = new Map();\nfor (const r of breakdown) {\n  const key = [r.category, r.variant, r.unitCost, r.unit].join(\"|\");\n  if (!merged.has(key)) merged.set(key, { ...r });\n  else {\n    const m = merged.get(key);\n    m.qty = to2(Number(m.qty) + Number(r.qty));\n    m.lineTotal = to2(Number(m.lineTotal) + Number(r.lineTotal));\n    merged.set(key, m);\n  }\n}\nbreakdown = Array.from(merged.values());\n\n// ===== Subtotal & helpers =====\nlet subtotal = breakdown.reduce((a, b) => a + Number(b.lineTotal || 0), 0);\n\nfunction projectedTotal(withSubtotal) {\n  const contingency = withSubtotal * CONTINGENCY_PCT;\n  const preVat = withSubtotal + contingency;\n  const vat = preVat * VAT_PCT;\n  return preVat + vat;\n}\n\nfunction tryPushItem(item) {\n  const r = lineFrom(item);\n  if (!r) return false;\n  const addCost = Number(r.lineTotal || 0);\n  const newSubtotal = subtotal + addCost;\n  if (projectedTotal(newSubtotal) <= BUDGET_CAP) {\n    breakdown.push(r);\n    subtotal = newSubtotal;\n    return true;\n  }\n  return false;\n}\nfunction hasLine(matchFn) {\n  return breakdown.some(matchFn);\n}\nfunction addKitchenByHeadroom() {\n  const remain = Math.max(0, BUDGET_CAP - projectedTotal(subtotal));\n  if (remain <= 0) return false;\n  const tier =\n    remain >= 18000 ? \"luxury\" :\n    remain >= 12000 ? \"premium\" :\n    remain >=  7500 ? \"standard\" :\n    \"starter\";\n  return tryPushItem({\n    type: `Outdoor Kitchen ${tier}`,\n    material: tier,\n    unitType: \"each\",\n    qty: 1,\n  });\n}\n\n// ===== Budget fill (features before kitchen) =====\nif (budget > 0 && projectedTotal(subtotal) < BUDGET_CAP) {\n  let changed = true;\n  while (changed) {\n    changed = false;\n\n    // 1) Seating Area – only add if none yet\n    if (!hasLine(r => lc(r.item).includes(\"seating area\"))) {\n      if (tryPushItem({ type:\"Seating Area\", unitType:\"each\", qty:1 })) {\n        changed = true;\n        continue;\n      }\n    }\n\n    // 2) Fire Pit – only if not present\n    if (!hasLine(r => lc(r.item).includes(\"fire pit\"))) {\n      if (tryPushItem({ type:\"Fire Pit\", unitType:\"each\", qty:1 })) {\n        changed = true;\n        continue;\n      }\n    }\n\n    // 3) Pergola – only if not present\n    if (!hasLine(r => lc(r.item).includes(\"pergola\"))) {\n      if (tryPushItem({ type:\"Pergola 3x3\", unitType:\"each\", qty:1 })) {\n        changed = true;\n        continue;\n      }\n    }\n\n    // 4) Water Feature – only if not present\n    if (!hasLine(r => (r.category || \"\") === \"water_features\" || lc(r.item).includes(\"water feature\"))) {\n      if (tryPushItem({ type:\"Water Feature\", unitType:\"each\", qty:1 })) {\n        changed = true;\n        continue;\n      }\n    }\n\n    // 5) Planters – small rendered planters up to 6 m² total\n    const planterAdded = breakdown\n      .filter(r => (r.variant || \"\") === \"rendered_block_planter\")\n      .reduce((a, b) => a + Number(b.qty || 0), 0);\n\n    if (planterAdded < 6) {\n      if (tryPushItem({\n        type: \"Planter\",\n        unitType: \"m2\",\n        area_m2: 1,\n        material: \"rendered_block_planter\",\n      })) {\n        changed = true;\n        continue;\n      }\n    }\n\n    // 6) Outdoor Kitchen – LAST, luxury add, only if user has shown interest\n    if (userRequestedKitchen && !hasLine(r => (r.variant || \"\").includes(\"outdoor_kitchen\"))) {\n      if (addKitchenByHeadroom()) {\n        changed = true;\n        continue;\n      }\n    }\n\n    // Nothing else can be added within budget cap\n  }\n}\n\n// ===== Totals =====\nconst contingency = to2(subtotal * CONTINGENCY_PCT);\nconst preVat      = to2(subtotal + contingency);\nconst vat         = to2(preVat * VAT_PCT);\nconst total       = to2(preVat + vat);\n\nreturn [{\n  json: {\n    pricing: {\n      breakdown,\n      subtotal: to2(subtotal),\n      contingency,\n      vat,\n      total,\n    }\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        48
+      ],
+      "id": "f1314a9e-974c-4658-b47f-838b21be1f2e",
+      "name": "Calculate pricing"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Premium Landscapes | AI Summary for PDF (v2.0) ===\n// Node: AI Summary1  ➜ REPLACE ENTIRE CODE\n\nconst j = $json;\nconst name = j.customer?.name || \"Client\";\nconst items = Array.isArray(j.pricing?.breakdown) ? j.pricing.breakdown : [];\n\nconst surf = items\n  .filter(r => r.unit === \"m²\" && [\"patios\",\"decking\",\"turf\",\"access\"].includes(r.category))\n  .map(r => `• ${r.item} – ${r.qty} m²`);\nconst features = items\n  .filter(r => [\"structures\",\"features\",\"walls\",\"water_features\",\"fencing\",\"hedging\"].includes(r.category))\n  .map(r => {\n    const qty = r.unit === \"each\" ? `${r.qty} ×` :\n                r.unit === \"lm\"   ? `${r.qty} lm` :\n                r.unit === \"m²\"   ? `${r.qty} m²` : `${r.qty} ${r.unit}`;\n    return `• ${r.item} – ${qty}`;\n  });\n\nconst totals = j.pricing || {};\nconst body =\n`Hi ${name},\n\nHere’s your tailored full-garden concept based on your area and budget.\n\nSurface layout:\n${surf.length ? surf.join(\"\\n\") : \"• Surfacing split will be finalised after survey.\"}\n\nFeatures & extras:\n${features.length ? features.join(\"\\n\") : \"• Optional features to be confirmed during design workshop.\"}\n\nEstimate (incl. VAT): £${Number(totals.total||0).toLocaleString(\"en-GB\")}\nBreakdown: Subtotal £${Number(totals.subtotal||0).toLocaleString(\"en-GB\")}, Contingency £${Number(totals.contingency||0).toLocaleString(\"en-GB\")}, VAT £${Number(totals.vat||0).toLocaleString(\"en-GB\")}\n\nNext steps: we’ll review the layout, confirm material choices (porcelain, composite, artificial turf as applicable), and schedule a site visit.`;\n\nreturn [{ json: { ...j, aiSummary: body } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        48
+      ],
+      "id": "b066270a-1b05-4caf-8bad-465e0b5c6c4a",
+      "name": "AI Summary1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2192,
+        576
+      ],
+      "id": "740388d0-c1c6-4dfc-a54a-203af40ccae7",
+      "name": "Manual Trigger (Mock)",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Premium Landscapes — Build LLM Brief (single-concept) v1.2 ===\n// Purpose: produce ONE budget-based concept with clean numeric allocations that map to your pricing keys,\n// while intelligently scaling feature richness to stay close to (but not exceed) 95% of total budget.\n\nconst d = $json ?? {};\nconst customer = d.customer || {};\nconst proj = d.project || {};\nconst design = proj.gardenDesign || {};\nconst budget = Math.max(0, Number(proj.totalBudget_gbp || 0));\nconst area   = Math.max(1, Number(proj.totalArea_m2   || 1)); // avoid div/0\nconst styleNotes = String(design.designVisionNotes || proj.notes || proj.stylePreference || \"\")\n  .trim();\n\n// Simple derived targets to anchor realism\nconst perM2 = budget / area;\nconst softCapM2 = Math.round(area * 0.7);  // patio+decking should not exceed 70% of area\nconst lawnMinM2 = Math.round(area * 0.15); // try to keep at least 15% green unless low area\nconst lightingTarget = Math.max(4, Math.round(area / 12)); // rough fittings count\nconst drainageHint = (proj.siteConditions?.drainage || \"\").toLowerCase().includes(\"poor\");\n\n// === Strict JSON schema (single concept) ===\nconst schema = {\n  type: \"object\",\n  required: [\"concept\"],\n  properties: {\n    concept: {\n      type: \"object\",\n      required: [\"name\",\"narrative\",\"allocations\",\"features\",\"notes\",\"risk_checks\"],\n      properties: {\n        name: { type: \"string\" },\n        narrative: { type: \"string\" },\n        allocations: {\n          type: \"object\",\n          additionalProperties: false,\n          properties: {\n            // Hardscape\n            porcelain_patio_m2:      { type: \"number\" },\n            block_paving_m2:         { type: \"number\" },\n            resin_bound_m2:          { type: \"number\" },\n            composite_deck_m2:       { type: \"number\" },\n            softwood_deck_m2:        { type: \"number\" },\n            hardwood_deck_m2:        { type: \"number\" },\n            // Softscape\n            artificial_turf_m2:      { type: \"number\" },\n            natural_turf_m2:         { type: \"number\" },\n            // Paths / edges / drainage\n            gravel_path_m2:          { type: \"number\" },\n            edging_lm:               { type: \"number\" },\n            aco_drain_lm:            { type: \"number\" },\n            // Boundaries\n            fencing_closeboard_lm:   { type: \"number\" },\n            fencing_venetian_lm:     { type: \"number\" },\n            trellis_panels:          { type: \"number\" },\n            gates_each:              { type: \"number\" },\n            // Walls / planters\n            sleeper_wall_m2:         { type: \"number\" },\n            brick_wall_m2:           { type: \"number\" },\n            rendered_planter_m2:     { type: \"number\" },\n            stone_cladding_m2:       { type: \"number\" },\n            // Access / levels\n            steps_count:             { type: \"number\" },\n            bullnose_each:           { type: \"number\" },\n            // Drainage items\n            soakaway_each:           { type: \"number\" },\n            manhole_each:            { type: \"number\" },\n            // Structures\n            pergola_3x3_each:        { type: \"number\" },\n            pergola_attached_each:   { type: \"number\" },\n            // Water / feature\n            pond_liner_m2:           { type: \"number\" },\n            wildlife_pond_m2:        { type: \"number\" },\n            decorative_stone_tonnes: { type: \"number\" },\n            // Lighting\n            lighting_fittings_qty:   { type: \"number\" },\n            lighting_transformers:   { type: \"number\" },\n            lighting_cable_m:        { type: \"number\" },\n            // Hero feature\n            sunken_firepit_each:     { type: \"number\" }\n          }\n        },\n        features:   { type: \"array\", items: { type: \"string\" } },\n        notes:      { type: \"string\" },\n        risk_checks:{ type: \"array\", items: { type: \"string\" } }\n      }\n    }\n  }\n};\n\n// === SYSTEM MESSAGE (DESIGN RULES) ===\nconst system = `\nYou are a senior UK landscape designer at Premium Landscapes.\nDesign ONE realistic concept *purely from the budget* and site info.\nStay within budget and keep a ~5% contingency inside the total.\nOutput STRICT JSON that matches the provided schema; no extra keys or text.\nUse only the allocation keys exactly as named.\nPrioritise low maintenance unless told otherwise. No house/architecture changes.\nRespect proportionality: hardscape should not dominate the entire garden.\n\n=== Budget Utilisation Logic ===\nIf the projected total cost appears significantly below the client's stated budget (under roughly 90%),\nintroduce optional premium features that fit the style and use remaining budget wisely.\n\nAdd features in this priority order until the design reaches approximately 90–95% of the total budget:\n1. Pergola (aluminium, 3×3 m or 4×4 m)\n2. Sunken fire pit area (built-in seating or gas firepit)\n3. Raised rendered planters with coping stones\n4. Small modern water feature or blade wall\n5. Low-voltage path lighting, step lights, or wall wash uplights\n\nEnsure total cost remains between 90% and 95% of the totalBudget_gbp (including contingency).\nNever exceed the client's totalBudget_gbp.\nIf already within range, avoid adding unnecessary extras.\n`;\n\n// === USER MESSAGE (PROJECT INPUTS) ===\nconst user = `\nClient: ${customer.name || \"N/A\"}\nGarden area: ${area} m²\nBudget: £${budget} (≈ £${perM2.toFixed(0)}/m²)\nStyle/notes: ${styleNotes || \"none\"}\nSunlight: ${proj.sunlight || \"unknown\"}\nMaintenance: ${proj.maintenanceLevel || \"unspecified\"}\n\nTargets & hints:\n- Hardscape (patio + decking) combined ≤ ${softCapM2} m² where possible.\n- Keep at least ~${lawnMinM2} m² of green surface unless a fully-hardscape brief is implied.\n- Lighting target ≈ ${lightingTarget} fittings; cable length can be ~3–5 m per fitting.\n- Drainage: ${drainageHint ? \"include aco_drain_lm and consider soakaway_each if needed\" : \"standard drainage; ACO only if necessary\"}.\n- Structures optional; include only if budget allows.\n- If including firepit, use \"sunken_firepit_each\".\n- Use non-zero numeric quantities only; omit zero-value keys entirely.\n- Keep an internal buffer of ~5%.\n`;\n\n// === OUTPUT TO LLM ===\nreturn [{\n  json: {\n    llm: {\n      model: \"gpt-4.1-mini\",\n      temperature: 0.9,\n      max_tokens: 1200,\n      schema,\n      messages: [\n        { role: \"system\", content: system },\n        { role: \"user\",   content: user }\n      ]\n    },\n    customer,\n    project: proj,\n    derived: {\n      perM2,\n      softCapM2,\n      lawnMinM2,\n      lightingTarget,\n      drainageHint\n    }\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1088,
+        48
+      ],
+      "id": "ae03d805-de4e-4c6e-9251-eeac6557936b",
+      "name": "Build LLM Brief"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.llm.messages[1].content }}\n",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "={{$json.llm.messages[0].content}}"
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "={{$json.llm.messages[1].content}}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -864,
+        48
+      ],
+      "id": "e246d507-bad7-4b40-ac96-3de4dbe24852",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {
+          "maxTokens": 1200,
+          "responseFormat": "json_object",
+          "temperature": 0.9,
+          "timeout": 60000,
+          "maxRetries": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -800,
+        288
+      ],
+      "id": "52b66a1a-35eb-4bbf-a558-5df3ffc11c5d",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "eELTpqDo2P3x6OJF",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"required\": [\"concepts\"],\n  \"properties\": {\n    \"concepts\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"maxItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"required\": [\"name\", \"narrative\", \"allocations\", \"features\", \"notes\", \"risk_checks\"],\n        \"properties\": {\n          \"name\": { \"type\": \"string\" },\n          \"narrative\": { \"type\": \"string\" },\n          \"allocations\": {\n            \"type\": \"object\",\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"porcelain_patio_m2\": { \"type\": \"number\", \"minimum\": 0 },\n              \"block_paving_m2\": { \"type\": \"number\", \"minimum\": 0 },\n              \"resin_bound_m2\": { \"type\": \"number\", \"minimum\": 0 },\n              \"composite_deck_m2\": { \"type\": \"number\", \"minimum\": 0 },\n              \"softwood_deck_m2\": { \"type\": \"number\", \"minimum\": 0 },\n              \"hardwood_deck_m2\": { \"type\": \"number\", \"minimum\": 0 },\n              \"artificial_turf_m2\": { \"type\": \"number\", \"minimum\": 0 },\n              \"natural_turf_m2\": { \"type\": \"number\", \"minimum\": 0 },\n              \"gravel_path_m2\": { \"type\": \"number\", \"minimum\": 0 },\n              \"edging_lm\": { \"type\": \"number\", \"minimum\": 0 },\n              \"aco_drain_lm\": { \"type\": \"number\", \"minimum\": 0 },\n              \"fencing_closeboard_lm\": { \"type\": \"number\", \"minimum\": 0 },\n              \"fencing_venetian_lm\": { \"type\": \"number\", \"minimum\": 0 },\n              \"trellis_panels\": { \"type\": \"number\", \"minimum\": 0 },\n              \"gates_each\": { \"type\": \"number\", \"minimum\": 0 },\n              \"sleeper_wall_m2\": { \"type\": \"number\", \"minimum\": 0 },\n              \"brick_wall_m2\": { \"type\": \"number\", \"minimum\": 0 },\n              \"rendered_planter_m2\": { \"type\": \"number\", \"minimum\": 0 },\n              \"stone_cladding_m2\": { \"type\": \"number\", \"minimum\": 0 },\n              \"steps_count\": { \"type\": \"number\", \"minimum\": 0 },\n              \"bullnose_each\": { \"type\": \"number\", \"minimum\": 0 },\n              \"soakaway_each\": { \"type\": \"number\", \"minimum\": 0 },\n              \"manhole_each\": { \"type\": \"number\", \"minimum\": 0 },\n              \"pergola_3x3_each\": { \"type\": \"number\", \"minimum\": 0 },\n              \"pergola_attached_each\": { \"type\": \"number\", \"minimum\": 0 },\n              \"pond_liner_m2\": { \"type\": \"number\", \"minimum\": 0 },\n              \"wildlife_pond_m2\": { \"type\": \"number\", \"minimum\": 0 },\n              \"decorative_stone_tonnes\": { \"type\": \"number\", \"minimum\": 0 },\n              \"lighting_fittings_qty\": { \"type\": \"number\", \"minimum\": 0 },\n              \"lighting_transformers\": { \"type\": \"number\", \"minimum\": 0 },\n              \"lighting_cable_m\": { \"type\": \"number\", \"minimum\": 0 },\n              \"sunken_firepit_each\": { \"type\": \"number\", \"minimum\": 0 }\n            }\n          },\n          \"features\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } },\n          \"notes\": { \"type\": \"string\" },\n          \"risk_checks\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } }\n        }\n      }\n    }\n  }\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -560,
+        256
+      ],
+      "id": "dbeec3a3-95d9-440e-8197-1b775eba2c4b",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -400,
+        -224
+      ],
+      "id": "f8d0b680-d041-4a69-bb93-5f3b602b44da",
+      "name": "Merge",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Map LLM Concept → Products (Premium Landscapes) v3.0 ===\n// Merges the LLM concept into structured product items for pricing.\n\nconst src = $json;\n\n// 1️⃣ Safely locate the concept\nconst concept =\n  src.output?.concepts?.[0] ||            // normal LLM output\n  src.llm?.output?.concepts?.[0] ||       // wrapped under 'llm'\n  src.concept ||                          // already normalized\n  src.selectedConcept ||                  // carried forward\n  null;\n\nif (!concept) {\n  // No concept found → return fallback structure\n  return [\n    {\n      json: {\n        ...src,\n        selectedConcept: null,\n        allocations: {},\n        project: {\n          ...(src.project || {}),\n          products: []\n        }\n      }\n    }\n  ];\n}\n\n// 2️⃣ Build metadata\nconst selectedConcept = {\n  name: concept.name,\n  narrative: concept.narrative,\n  features: concept.features || [],\n  notes: concept.notes || '',\n  risk_checks: concept.risk_checks || []\n};\n\n// 3️⃣ Extract allocations and initialize products array\nconst a = concept.allocations || {};\nconst products = [];\n\nconst add = (type, material, measure, quantity) => {\n  if (!quantity || isNaN(quantity) || quantity <= 0) return;\n  products.push({ type, material, [measure]: Number(quantity) });\n};\n\n// ---------- HARD SURFACES ----------\nadd(\"patio\", \"porcelain\", \"area_m2\", a.porcelain_patio_m2);\nadd(\"paving\", \"block\", \"area_m2\", a.block_paving_m2);\nadd(\"surfacing\", \"resin_bound\", \"area_m2\", a.resin_bound_m2);\nadd(\"deck\", \"composite\", \"area_m2\", a.composite_deck_m2);\nadd(\"deck\", \"softwood\", \"area_m2\", a.softwood_deck_m2);\nadd(\"deck\", \"hardwood\", \"area_m2\", a.hardwood_deck_m2);\nadd(\"turf\", \"artificial\", \"area_m2\", a.artificial_turf_m2);\nadd(\"turf\", \"natural\", \"area_m2\", a.natural_turf_m2);\nadd(\"path\", \"gravel\", \"area_m2\", a.gravel_path_m2);\nadd(\"edging\", \"stone\", \"length_m\", a.edging_lm);\nadd(\"drainage\", \"aco_channel\", \"length_m\", a.aco_drain_lm);\n\n// ---------- FENCING ----------\nadd(\"fencing\", \"closeboard\", \"length_m\", a.fencing_closeboard_lm);\nadd(\"fencing\", \"venetian\", \"length_m\", a.fencing_venetian_lm);\nadd(\"fencing\", \"trellis\", \"qty\", a.trellis_panels);\nadd(\"fencing\", \"gate\", \"qty\", a.gates_each);\n\n// ---------- WALLS / STRUCTURES ----------\nadd(\"wall\", \"sleeper\", \"area_m2\", a.sleeper_wall_m2);\nadd(\"wall\", \"brick\", \"area_m2\", a.brick_wall_m2);\nadd(\"planter\", \"rendered\", \"area_m2\", a.rendered_planter_m2);\nadd(\"cladding\", \"stone\", \"area_m2\", a.stone_cladding_m2);\nadd(\"step\", \"standard\", \"qty\", a.steps_count);\nadd(\"step\", \"bullnose\", \"qty\", a.bullnose_each);\n\n// ---------- DRAINAGE ----------\nadd(\"drainage\", \"soakaway\", \"qty\", a.soakaway_each);\nadd(\"drainage\", \"manhole_upgrade\", \"qty\", a.manhole_each);\n\n// ---------- STRUCTURES ----------\nadd(\"pergola\", \"freestanding\", \"qty\", a.pergola_3x3_each);\nadd(\"pergola\", \"attached\", \"qty\", a.pergola_attached_each);\n\n// ---------- WATER FEATURES ----------\nadd(\"pond\", \"liner\", \"area_m2\", a.pond_liner_m2);\nadd(\"pond\", \"wildlife\", \"area_m2\", a.wildlife_pond_m2);\nadd(\"stone\", \"decorative\", \"tonnes\", a.decorative_stone_tonnes);\n\n// ---------- LIGHTING ----------\nadd(\"lighting\", \"fitting\", \"qty\", a.lighting_fittings_qty);\nadd(\"lighting\", \"transformer\", \"qty\", a.lighting_transformers);\nadd(\"lighting\", \"cable\", \"length_m\", a.lighting_cable_m);\n\n// ---------- FIRE FEATURES ----------\nadd(\"firepit\", \"sunken_gas\", \"qty\", a.sunken_firepit_each);\n\n// 4️⃣ Return enriched payload\nreturn [\n  {\n    json: {\n      ...src,\n      selectedConcept,\n      allocations: a,\n      project: {\n        ...(src.project || {}),\n        products\n      }\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        48
+      ],
+      "id": "28e2ae4b-1072-46ff-aafb-028a8ce145c4",
+      "name": "Map LLM Concept → Products"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Map parsed concept allocations into project.products[] for pricing\n\nconst src   = $json || {};\nconst alloc = (src.output?.concepts?.[0]?.allocations) || src.allocations || {};\nconst products = [];\n\n// helpers\nconst n = v => Number(v) || 0;\nconst add = (cond, item) => { if (n(cond) > 0) products.push(item); };\n\n// --- patios / paving (m²)\nadd(alloc.porcelain_patio_m2, { type: 'patio', material: 'porcelain', area_m2: n(alloc.porcelain_patio_m2) });\nadd(alloc.block_paving_m2,    { type: 'block paving', area_m2: n(alloc.block_paving_m2) });\nadd(alloc.resin_bound_m2,     { type: 'resin bound', area_m2: n(alloc.resin_bound_m2) });\n\n// --- decking (m²)\nadd(alloc.composite_deck_m2,  { type: 'deck', material: 'composite', area_m2: n(alloc.composite_deck_m2) });\nadd(alloc.softwood_deck_m2,   { type: 'deck', material: 'softwood',  area_m2: n(alloc.softwood_deck_m2) });\nadd(alloc.hardwood_deck_m2,   { type: 'deck', material: 'hardwood',  area_m2: n(alloc.hardwood_deck_m2) });\n\n// --- turf & lawns (m²)\nadd(alloc.artificial_turf_m2, { type: 'turf', material: 'artificial', area_m2: n(alloc.artificial_turf_m2) });\nadd(alloc.natural_turf_m2,    { type: 'turf', material: 'natural',    area_m2: n(alloc.natural_turf_m2) });\n\n// --- paths / edging / drainage (linear m)\nadd(alloc.gravel_path_m2,     { type: 'gravel path', area_m2: n(alloc.gravel_path_m2) }); // priced as m² in your classifier\nadd(alloc.edging_lm,          { type: 'edging',              length_m: n(alloc.edging_lm) });\nadd(alloc.aco_drain_lm,       { type: 'aco channel',         length_m: n(alloc.aco_drain_lm) });\n\n// --- boundaries (lm / panels / each)\nadd(alloc.fencing_closeboard_lm, { type: 'fencing', material: 'closeboard', length_m: n(alloc.fencing_closeboard_lm) });\nadd(alloc.fencing_venetian_lm,   { type: 'fencing', material: 'venetian',   length_m: n(alloc.fencing_venetian_lm) });\nadd(alloc.trellis_panels,        { type: 'trellis', panels: n(alloc.trellis_panels) });\nadd(alloc.gates_each,            { type: 'gate',    qty: n(alloc.gates_each) });\n\n// --- walls / planters / cladding (m²)\nadd(alloc.sleeper_wall_m2,     { type: 'sleeper wall',          area_m2: n(alloc.sleeper_wall_m2) });\nadd(alloc.brick_wall_m2,       { type: 'brick wall',            area_m2: n(alloc.brick_wall_m2) });\nadd(alloc.rendered_planter_m2, { type: 'rendered planter',      area_m2: n(alloc.rendered_planter_m2) });\nadd(alloc.stone_cladding_m2,   { type: 'stone cladding',        area_m2: n(alloc.stone_cladding_m2) });\n\n// --- access / levels\nadd(alloc.steps_count,         { type: 'steps', steps: n(alloc.steps_count) });\nadd(alloc.bullnose_each,       { type: 'bullnose step tread', qty: n(alloc.bullnose_each) });\n\n// --- drainage items (each)\nadd(alloc.soakaway_each,       { type: 'soakaway', qty: n(alloc.soakaway_each) });\nadd(alloc.manhole_each,        { type: 'recessed manhole cover', qty: n(alloc.manhole_each) });\n\n// --- structures / water / aggregates\nadd(alloc.pergola_3x3_each,    { type: 'pergola 3x3', qty: n(alloc.pergola_3x3_each) });\nadd(alloc.pergola_attached_each,{ type: 'pergola attached', qty: n(alloc.pergola_attached_each) });\nadd(alloc.pond_liner_m2,       { type: 'pond liner', area_m2: n(alloc.pond_liner_m2) });\nadd(alloc.wildlife_pond_m2,    { type: 'wildlife pond', area_m2: n(alloc.wildlife_pond_m2) });\nadd(alloc.decorative_stone_tonnes, { type: 'decorative stone', tonnes: n(alloc.decorative_stone_tonnes) });\n\n// --- lighting (qty / lm)\nadd(alloc.lighting_fittings_qty, { type: 'lighting', material: 'spike', fittings: n(alloc.lighting_fittings_qty) });\nadd(alloc.lighting_transformers, { type: 'lighting', material: 'transformer', qty: n(alloc.lighting_transformers) });\nadd(alloc.lighting_cable_m,      { type: 'lighting', material: 'cable', length_m: n(alloc.lighting_cable_m) });\n\n// --- hero feature\nadd(alloc.sunken_firepit_each, { type: 'firepit', qty: n(alloc.sunken_firepit_each) });\n\nreturn [{\n  json: {\n    ...src,\n    project: {\n      ...(src.project || {}),\n      products\n    }\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        48
+      ],
+      "id": "4963717c-3778-43a7-9c1d-245c71e176f9",
+      "name": "Map Allocations to Products"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7f47b32f-9be8-4bcf-a328-8e82dbb772ec",
+              "leftValue": "={{$json.valid}}{{ $json.valid === true || String($json.valid).toLowerCase().trim() === 'true' }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1312,
+        64
+      ],
+      "id": "179546ab-6a59-492f-9682-0cb20abc847a",
+      "name": "IF (valid)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const j = $json;\nreturn [{\n  json: {\n    topLevelKeys: Object.keys(j),\n    hasOutput: !!j.output,\n    outputKeys: j.output ? Object.keys(j.output) : [],\n    exampleConceptName: j.output?.concepts?.[0]?.name || null\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        -384
+      ],
+      "id": "03297768-bfd2-4cec-bd06-ffc4ba022316",
+      "name": "Test code after merge"
+    },
+    {
+      "parameters": {
+        "fromEmail": "premiumlandscapesuk@gmail.com",
+        "toEmail": "={{$node[\"validate Input\"].json.customer.email}}",
+        "subject": "={{$node[\"validate Input\"].json.customer.name || \"Client\"}} – {{$node[\"validate Input\"].json.project.title || \"Garden Redesign\"}}\n",
+        "html": "=<!-- Preheader -->\n<span style=\"display:none!important\">Your tailored quote is attached as a PDF.</span>\n\n<div style=\"font-family:Inter,Arial,sans-serif;line-height:1.5;color:#0b2e4c;\">\n  <p>Hi {{$node[\"validate Input\"].json.customer.name || \"there\"}},</p>\n\n  <p>Thanks for the details — your tailored quote for\n    <strong>{{$node[\"validate Input\"].json.project.title || \"Garden Project\"}}</strong> is ready.</p>\n\n  <p style=\"margin:.8em 0\">\n    <strong>Estimate (incl. VAT):</strong>\n    {{\n      $node[\"Calculate pricing\"].json.pricing?.total\n        ? \"£\" + $node[\"Calculate pricing\"].json.pricing.total.toLocaleString(\"en-GB\")\n        : \"See attached PDF\"\n    }}\n    <span style=\"color:#6b7280\"> — subject to final site survey</span>\n  </p>\n\n  <p style=\"margin:1em 0\">\n    <a href=\"{{$node['validate Input'].json.customer?.bookingUrl || 'mailto:hello@premium-landscapes.co.uk?subject=Site%20visit%20booking'}}\"\n       style=\"background:#0b2e4c;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;display:inline-block;\">\n      Book a quick call\n    </a>\n  </p>\n\n  <p style=\"margin:1.2em 0 0\">\n    Best regards,<br>\n    <strong>Premium Landscapes</strong><br>\n    <a href=\"mailto:hello@premium-landscapes.co.uk\">hello@premium-landscapes.co.uk</a> · 07444&nbsp;887813<br>\n    <a href=\"https://www.premium-landscapes.co.uk\">www.premium-landscapes.co.uk</a>\n  </p>\n</div>\n",
+        "options": {
+          "attachments": "data"
+        }
+      },
+      "id": "e06ec7d9-d1c9-4bd9-9199-991c5935fbb8",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        2144,
+        48
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "ab3e512a-7b66-44ee-9210-d627ca379a3d",
+      "credentials": {
+        "smtp": {
+          "id": "dLpXH6yljIeIoVw6",
+          "name": "SMTP account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1GIlzFrvqkdYGYQotkKaOox4m6x2qrqvLk0X6xMYJg7s",
+          "mode": "list",
+          "cachedResultName": "Premium Landscapes Quotes Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GIlzFrvqkdYGYQotkKaOox4m6x2qrqvLk0X6xMYJg7s/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Quotes Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GIlzFrvqkdYGYQotkKaOox4m6x2qrqvLk0X6xMYJg7s/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{$now}}",
+            "Customer Name": "={{$json.customerName}}",
+            "Email": "={{$json.email}}",
+            "Postcode": "={{$json.postcode}}",
+            "Products": "={{$json.products}}",
+            "AI Summary": "={{$json.aiSummary}}",
+            "Quote Total (£)": "={{$json.total}}\n",
+            "Status": "\"Sent\"",
+            "Phone": "={{$json.phone}}",
+            "Drive File URL": "''"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Postcode",
+              "displayName": "Postcode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Products",
+              "displayName": "Products",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Summary",
+              "displayName": "AI Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quote Total (£)",
+              "displayName": "Quote Total (£)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Drive File URL",
+              "displayName": "Drive File URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "a5a192d5-9f03-4fce-84a8-ec78350213f3",
+      "name": "Log Quote to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        2656,
+        48
+      ],
+      "typeVersion": 4.7,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "hR4LdQOOAXNVJApD",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize whatever binary key the PDF node produced → \"data\"\nreturn items.map(item => {\n  if (!item.binary || Object.keys(item.binary).length === 0) {\n    throw new Error('No binary found from PDF step');\n  }\n  const firstKey = Object.keys(item.binary)[0];   // e.g. \"file\" or \"pdf\"\n  item.binary.data = item.binary[firstKey];       // rename to \"data\"\n  if (firstKey !== 'data') delete item.binary[firstKey];\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        48
+      ],
+      "id": "5f14aa4d-1445-44e9-9a7b-9f94342e081c",
+      "name": "Rename PDF Binary"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      ...($json.json ?? $json),\n      customerName: $json.customer?.name || \"Client\",\n      projectTitle: $json.project?.title || \"\",\n      totalFormatted: ($json.pricing?.total || 0).toLocaleString(\"en-GB\", { minimumFractionDigits: 2 }),\n    },\n    binary: {\n      data: $binary?.data, // <-- keep the normalized PDF here\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        48
+      ],
+      "id": "3f8a73d1-e552-450a-b07f-7b05a97408cb",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log Quote — robust totals for Google Sheets\n\nconst data     = $json ?? {};\nconst customer = data.customer ?? {};\nconst project  = data.project  ?? {};\nconst here     = data.pricing  ?? {};\n\n// Helper: get node.json if it exists (try several names)\nfunction getNodeJson(names = []) {\n  try {\n    const bag = $item(0).$node || {};\n    for (const n of names) if (bag[n]?.json) return bag[n].json;\n  } catch (_) {}\n  return null;\n}\n\n// Helper: numeric coercion (strips £, commas, whitespace/newlines)\nconst toNum = (v) => {\n  if (v == null) return 0;\n  const s = String(v).replace(/[£, \\t\\r\\n]/g, '');\n  const n = Number(s);\n  return Number.isFinite(n) ? n : 0;\n};\n\n// Try all likely places the pricing could be\nconst fromCalc   = getNodeJson([\"Calculate pricing\", \"Calculate Pricing\"]);\nconst fromAI     = getNodeJson([\"AI Summary1\", \"AI Summary\"]);\nconst fromBuild1 = getNodeJson([\"Build PDF HTML1\", \"Build PDF HTML\"]);\n\nconst pricing =\n  here?.total ? here :\n  fromCalc?.pricing ? fromCalc.pricing :\n  fromAI?.pricing ? fromAI.pricing :\n  fromBuild1?.pricing ? fromBuild1.pricing :\n  { subtotal: 0, contingency: 0, vat: 0, total: 0 };\n\n// Coerce to pure numbers for Sheets\nconst subtotal    = toNum(pricing.subtotal);\nconst contingency = toNum(pricing.contingency);\nconst vat         = toNum(pricing.vat);\nconst total       = toNum(pricing.total);\n\n// AI summary fallback\nconst summary = (data.aiSummary || project.notes || \"\").toString().trim();\n\n// Optional quick items preview\nconst lines = Array.isArray(pricing.breakdown) ? pricing.breakdown : [];\nconst itemsPreview = lines\n  .map(l => (l.item || l.description || \"\").toString())\n  .filter(Boolean)\n  .slice(0, 6)\n  .join(\", \");\n\nreturn [{\n  json: {\n    Timestamp: new Date().toISOString(),\n    \"Customer Name\": customer.name || \"Client\",\n    Email: customer.email || \"\",\n    Phone: customer.phone || \"\",\n    Postcode: customer.postcode || \"\",\n    \"AI Summary\": summary,\n\n    // ← send *numbers* to Sheets (format the column as Currency in Sheets)\n    \"Quote Total (£)\": total,\n    \"Subtotal (£)\": subtotal,\n    \"Contingency (£)\": contingency,\n    \"VAT (£)\": vat,\n\n    Status: \"Sent\",\n    \"Drive File URL\": data.fileUrl || \"\",\n    \"Items Preview\": itemsPreview,\n    \"Project Title\": project.title || \"\"\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2384,
+        48
+      ],
+      "id": "ead5ec27-bb2d-4396-90b5-614195c81c88",
+      "name": "Log Quote"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseKey": "=return [\n  {\n    json: {\n      success: true,\n      message: \"Quote logged and sent successfully\",\n      customer: $json.customer?.name || \"Test Client\",\n      email: $json.customer?.email || \"test@example.com\",\n      total: $json.pricing?.total\n        ? `£${Number($json.pricing.total).toLocaleString(\"en-GB\", {\n            minimumFractionDigits: 2,\n          })}`\n        : \"£0.00\",\n    },\n  },\n];\n"
+        }
+      },
+      "id": "5357a71c-7f02-4809-8ca8-be7cece693a8",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        2992,
+        752
+      ],
+      "typeVersion": 1.4
+    },
+    {
+      "parameters": {
+        "resource": "conversion",
+        "htmlContent": "={{$json.html}}",
+        "filename": "={{ \"Landscaping Quotation - Premium Landscapes\" }}\n",
+        "conversionOptions": {
+          "paper_size": "a4",
+          "orientation": "portrait",
+          "conversionOutput": "file"
+        }
+      },
+      "type": "@pdfgeneratorapi/n8n-nodes-pdf-generator-api.pdfGeneratorApi",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        48
+      ],
+      "id": "5a2aae62-321e-4b03-a496-046810e821ba",
+      "name": "Convert HTML to PDF1",
+      "credentials": {
+        "pdfGeneratorApi": {
+          "id": "tEyclVvnGiP0hZsZ",
+          "name": "PDF Generator account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pass webhook data forward for merging later\nreturn [{ json: $json }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        448
+      ],
+      "id": "757d46d6-98c7-4c94-b530-e0c7dc5efd3a",
+      "name": "Attach Original Webhook Data"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2176,
+        400
+      ],
+      "id": "a64e7af2-f7f3-4437-bb06-bdf540f18136",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Premium Landscapes | Proposal PDF (A4 Portrait) ===\n// Version: 2.0.0-pro | gradient header + summary strip + grouped cards + subtotals\n\nconst data    = $json ?? {};\nconst client  = data.customer ?? $node[\"validate Input\"]?.json?.customer ?? {};\nconst project = data.project  ?? $node[\"validate Input\"]?.json?.project  ?? {};\nconst pricing = data.pricing  ?? $node[\"Calculate Pricing\"]?.json?.pricing ?? { breakdown: [] };\nconst aiText  = (data.aiSummary ?? \"\").toString().trim();\n\n// --- BRAND / COLORS (aligned with website) ---\nconst LOGO_URL   = \"https://i.imgur.com/pTGHU6S.png\";\nconst BRAND      = \"#0b2e4c\";      // deep navy\nconst ACCENT1    = \"#2b6ef1\";      // button blue\nconst ACCENT2    = \"#7a5af8\";      // button purple\nconst BG_LIGHT   = \"#f8fafc\";\n\nconst fmtGBP = (n) =>\n  \"£\" + Number(n ?? 0).toLocaleString(\"en-GB\", {\n    minimumFractionDigits: 2,\n    maximumFractionDigits: 2,\n  });\n\nconst tcase = (s = \"\") =>\n  s\n    .toString()\n    .toLowerCase()\n    .replace(/\\b\\w/g, (c) => c.toUpperCase());\n\nconst joinParts = (...xs) => xs.filter(Boolean).join(\", \");\nconst nz = (n) => Number(n ?? 0) || 0;\nconst quoteDate = new Date().toLocaleDateString(\"en-GB\");\n\n// Address fallback – avoids duplicate postcode issue\nconst addr = client.address\n  ? client.address\n  : joinParts(\n      client.houseNumber,\n      client.street,\n      client.city,\n      client.postcode,\n      client.country || \"UK\"\n    );\n\n// --- GROUP / DEDUPE HELPERS ---\nfunction groupBy(arr, keyFn) {\n  return (arr || []).reduce((acc, x) => {\n    const k = keyFn(x) || \"General\";\n    if (!acc[k]) acc[k] = [];\n    acc[k].push(x);\n    return acc;\n  }, {});\n}\n\n// Same dedupe logic as before\nfunction dedupe(lines) {\n  const g = {};\n  for (const i of lines || []) {\n    const key = [\n      i.category || \"\",\n      i.variant || \"\",\n      i.unit || \"\",\n      Number(i.unitCost) || 0,\n    ].join(\"|\");\n    if (!g[key]) {\n      g[key] = {\n        ...i,\n        qty: nz(i.qty),\n        lineTotal: nz(i.lineTotal),\n      };\n    } else {\n      g[key].qty += nz(i.qty);\n      g[key].lineTotal += nz(i.lineTotal);\n    }\n  }\n  return Object.values(g).map((r) => ({\n    ...r,\n    qty: +r.qty,\n    unitCost: +r.unitCost,\n    lineTotal: +r.lineTotal,\n  }));\n}\n\n// Friendly labels (short but clean)\nfunction labelFor(i) {\n  const c = (i.category || \"\").toLowerCase();\n  const v = (i.variant || \"\").toLowerCase();\n\n  // Patios\n  if (c === \"patios\") {\n    if (v.includes(\"porcelain\")) return \"Porcelain Patio (20 mm)\";\n    if (v.includes(\"indian\")) return \"Indian Sandstone Patio\";\n    if (v.includes(\"limestone\")) return \"Limestone Patio\";\n    if (v.includes(\"granite\")) return \"Granite Paving Patio\";\n    if (v.includes(\"slate\")) return \"Slate Paving Patio\";\n    if (v.includes(\"block\")) return \"Block Paving\";\n    if (v.includes(\"resin\")) return \"Resin-Bound Surfacing\";\n    if (v.includes(\"stepping\")) return \"Stepping-Stone Pathway\";\n    if (v.includes(\"patterned_inlay\")) return \"Patterned Border Course\";\n    return \"Patio / Paving\";\n  }\n\n  // Decking\n  if (c === \"decking\") {\n    if (v.includes(\"composite\")) return \"Composite Decking\";\n    if (v.includes(\"hardwood\")) return \"Hardwood Decking\";\n    if (v.includes(\"softwood\")) return \"Treated Softwood Decking\";\n    if (v.includes(\"subframe\")) return \"Decking Subframe & Pedestals\";\n    return \"Decking\";\n  }\n\n  // Turf\n  if (c === \"turf\") {\n    if (v.includes(\"artificial\")) return \"Artificial Turf\";\n    if (v.includes(\"natural_rolled\")) return \"Rolled Natural Turf\";\n    if (v.includes(\"regrade\")) return \"Lawn Regrade & Topsoil\";\n    if (v.includes(\"edging\")) return \"Lawn Edging\";\n    if (v.includes(\"wildflower\")) return \"Wildflower Turf\";\n    return \"Turf & Planting\";\n  }\n\n  // Fencing\n  if (c === \"fencing\") {\n    if (v.includes(\"double_slatted\") || v.includes(\"venetian\"))\n      return \"Double-Slatted / Venetian Fencing\";\n    if (v.includes(\"trellis\")) return \"Decorative Trellis Panels\";\n    if (v.includes(\"concrete_posts\")) return \"Concrete Posts & Gravel Boards\";\n    if (v.includes(\"timber_posts\")) return \"Timber Posts & Gravel Boards\";\n    if (v.includes(\"timber_garden_gate\")) return \"Timber Garden Gate\";\n    if (v.includes(\"closeboard\")) return \"Closeboard / Featheredge Fencing\";\n    return \"Fencing\";\n  }\n\n  // Lighting\n  if (c === \"lighting\") return \"Garden Lighting\";\n\n  // Generic fallback – title case the item text\n  return tcase(i.item || \"Item\");\n}\n\nconst rowsData = dedupe(pricing.breakdown || []);\n\n// --- GROUPED CATEGORY CARDS + SUBTOTALS ---\nconst grouped = groupBy(rowsData, (i) => tcase(i.category || \"General\"));\n\nconst groupedTables = Object.entries(grouped)\n  .map(([cat, items]) => {\n    const catTotal = items.reduce((sum, i) => sum + nz(i.lineTotal), 0);\n\n    const rows = items\n      .map(\n        (i) => `\n        <tr>\n          <td>${labelFor(i)}</td>\n          <td>${tcase((i.description || \"\").replace(/_/g, \" \"))}</td>\n          <td class=\"num\">${(i.qty || 0).toLocaleString(\"en-GB\")}</td>\n          <td class=\"num\">${i.unit || \"\"}</td>\n          <td class=\"num\">${fmtGBP(i.unitCost)}</td>\n          <td class=\"num total\">${fmtGBP(i.lineTotal)}</td>\n        </tr>`\n      )\n      .join(\"\");\n\n    return `\n      <section class=\"category-card\">\n        <div class=\"category-header\">\n          <span>${cat}</span>\n        </div>\n        <table class=\"pricing-table\">\n          <thead>\n            <tr>\n              <th>Item</th>\n              <th>Description</th>\n              <th class=\"num\">Qty</th>\n              <th class=\"num\">Unit</th>\n              <th class=\"num\">Unit Cost</th>\n              <th class=\"num\">Total</th>\n            </tr>\n          </thead>\n          <tbody>\n            ${rows}\n          </tbody>\n        </table>\n        <div class=\"category-subtotal\">\n          <span>Subtotal (${cat})</span>\n          <span>${fmtGBP(catTotal)}</span>\n        </div>\n      </section>\n    `;\n  })\n  .join(\"\");\n\n// --- PROJECT SUMMARY ---\nfunction projectSummary() {\n  const chips = [];\n  const sc = project.siteConditions ?? {};\n\n  if (project.stylePreference)\n    chips.push(`Style: ${tcase(project.stylePreference)}`);\n  if (project.maintenanceLevel)\n    chips.push(`Maintenance: ${tcase(project.maintenanceLevel)}`);\n  if (project.totalArea_m2)\n    chips.push(`Area: ${project.totalArea_m2} m²`);\n  if (project.totalBudget_gbp)\n    chips.push(`Budget: ${fmtGBP(project.totalBudget_gbp)}`);\n\n  const details = [];\n  if (sc.access)\n    details.push(`<li><strong>Access:</strong> ${tcase(sc.access)}</li>`);\n  if (sc.soilType)\n    details.push(`<li><strong>Soil:</strong> ${tcase(sc.soilType)}</li>`);\n  if (sc.drainage)\n    details.push(`<li><strong>Drainage:</strong> ${tcase(sc.drainage)}</li>`);\n  if (project.notes)\n    details.push(`<li><strong>Notes:</strong> ${tcase(project.notes)}</li>`);\n\n  return `\n    <div class=\"project-title\">\n      <strong>${tcase(project.title || \"Landscape Project\")}</strong>\n    </div>\n    ${\n      chips.length\n        ? `<div class=\"chips\">${chips\n            .map((c) => `<span>${c}</span>`)\n            .join(\"\")}</div>`\n        : \"\"\n    }\n    ${\n      details.length\n        ? `<ul class=\"detail-list\">${details.join(\"\")}</ul>`\n        : \"\"\n    }\n  `;\n}\n\n// Optional quote reference (simple fallback)\nconst quoteRef =\n  data.meta?.quoteRef ||\n  data.meta?.id ||\n  `PL-${String(Date.now()).slice(-6)}`;\n\n// Optional AI design URL for CTA button\nconst designUrl = project.designUrl || project.designURL || project.aiDesignUrl;\n\n// --- HTML ---\nconst html = `\n<!doctype html>\n<html>\n<head>\n<meta charset=\"utf-8\"/>\n<title>Landscaping Quotation</title>\n<style>\n  @page {\n    size: A4;\n    margin: 18mm;\n  }\n  :root {\n    --brand: ${BRAND};\n    --accent1: ${ACCENT1};\n    --accent2: ${ACCENT2};\n    --bg-light: ${BG_LIGHT};\n  }\n  body {\n    font-family: \"Open Sans\", Arial, sans-serif;\n    color: #0f172a;\n    background: #ffffff;\n    margin: 0;\n  }\n  .page {\n    display: flex;\n    flex-direction: column;\n    min-height: 100vh;\n  }\n  header {\n    background: linear-gradient(90deg, var(--accent1), var(--accent2));\n    color: #ffffff;\n    padding: 18px 32px 14px;\n  }\n  .header-inner {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n  }\n  .logo img {\n    width: 150px;\n    height: auto;\n    display: block;\n  }\n  .header-text {\n    text-align: right;\n  }\n  .header-text h1 {\n    margin: 0;\n    font-size: 22px;\n    letter-spacing: 0.3px;\n  }\n  .header-text p {\n    margin: 4px 0 0;\n    font-size: 12px;\n    opacity: 0.9;\n  }\n  main {\n    padding: 24px 32px 28px;\n    background: #ffffff;\n  }\n  h2.section-title {\n    color: var(--brand);\n    font-size: 15px;\n    background: #f1f5f9;\n    border-left: 4px solid var(--brand);\n    padding: 6px 10px;\n    margin: 18px 0 10px;\n    border-radius: 4px;\n  }\n  .summary-strip {\n    display: grid;\n    grid-template-columns: 2fr 2fr;\n    gap: 16px;\n    background: var(--bg-light);\n    border-radius: 10px;\n    padding: 14px 16px;\n    border: 1px solid #e5e7eb;\n    margin-top: 16px;\n    margin-bottom: 8px;\n  }\n  .summary-col-title {\n    font-size: 11px;\n    text-transform: uppercase;\n    letter-spacing: 0.08em;\n    color: #6b7280;\n    margin-bottom: 4px;\n  }\n  .summary-col strong {\n    font-size: 13px;\n  }\n  .summary-meta {\n    font-size: 12px;\n    color: #4b5563;\n    line-height: 1.5;\n  }\n  .summary-meta span {\n    display: block;\n  }\n  .project-title {\n    margin-bottom: 4px;\n  }\n  .chips span {\n    display: inline-block;\n    background: #eef2ff;\n    color: var(--brand);\n    border-radius: 999px;\n    padding: 3px 9px;\n    font-size: 11px;\n    margin: 3px 4px 0 0;\n  }\n  .detail-list {\n    margin: 8px 0 0 18px;\n    padding: 0;\n    font-size: 12.5px;\n  }\n  .detail-list li {\n    margin: 2px 0;\n  }\n  .ai-summary {\n    background: #f9fafb;\n    border-left: 4px solid var(--brand);\n    padding: 14px 16px;\n    border-radius: 8px;\n    font-size: 12.5px;\n    color: #111827;\n    margin-top: 12px;\n    box-shadow: 0 0 6px rgba(15, 23, 42, 0.04);\n  }\n  .ai-summary strong {\n    display: block;\n    margin-bottom: 4px;\n  }\n\n  .category-card {\n    margin-top: 18px;\n    border-radius: 10px;\n    border: 1px solid #e5e7eb;\n    background: #ffffff;\n    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);\n    overflow: hidden;\n  }\n  .category-header {\n    background: #f3f4f6;\n    padding: 8px 12px;\n    border-bottom: 1px solid #e5e7eb;\n  }\n  .category-header span {\n    font-size: 13px;\n    font-weight: 600;\n    color: var(--brand);\n  }\n  table.pricing-table {\n    width: 100%;\n    border-collapse: collapse;\n    font-size: 12.5px;\n  }\n  table.pricing-table thead tr {\n    background: #f9fafb;\n  }\n  table.pricing-table th,\n  table.pricing-table td {\n    padding: 7px 6px;\n    border: 1px solid #e5e7eb;\n    vertical-align: top;\n  }\n  table.pricing-table th {\n    font-weight: 600;\n    color: var(--brand);\n    text-align: left;\n  }\n  table.pricing-table th.num,\n  table.pricing-table td.num {\n    text-align: center;\n  }\n  table.pricing-table td.num {\n    white-space: nowrap;\n  }\n  table.pricing-table td.total {\n    font-weight: 600;\n  }\n  .category-subtotal {\n    display: flex;\n    justify-content: space-between;\n    padding: 8px 10px;\n    font-size: 12.5px;\n    background: #f9fafb;\n    border-top: 1px solid #e5e7eb;\n  }\n  .category-subtotal span:first-child {\n    font-weight: 500;\n    color: #4b5563;\n  }\n  .category-subtotal span:last-child {\n    font-weight: 600;\n    color: var(--brand);\n  }\n\n  .totals-box {\n    margin-top: 22px;\n    width: 320px;\n    margin-left: auto;\n    border-radius: 10px;\n    border: 1px solid #e5e7eb;\n    padding: 12px 16px;\n    font-size: 13px;\n    background: #ffffff;\n    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);\n  }\n  .totals-box table {\n    width: 100%;\n    border-collapse: collapse;\n  }\n  .totals-box td {\n    padding: 4px 0;\n  }\n  .totals-box tr:last-child td {\n    border-top: 1px solid #e5e7eb;\n    padding-top: 8px;\n    font-weight: 700;\n    font-size: 14px;\n    color: var(--brand);\n  }\n  .totals-box td:last-child {\n    text-align: right;\n  }\n\n  .cta-wrap {\n    margin-top: 18px;\n    text-align: left;\n  }\n  .cta-btn {\n    display: inline-block;\n    padding: 8px 18px;\n    border-radius: 999px;\n    background: linear-gradient(90deg, var(--accent1), var(--accent2));\n    color: #ffffff;\n    font-size: 12.5px;\n    text-decoration: none;\n    font-weight: 500;\n  }\n\n  footer {\n    margin-top: 26px;\n    font-size: 11px;\n    color: #e5e7eb;\n    text-align: center;\n    padding: 10px 0 8px;\n    background: linear-gradient(90deg, var(--accent1), var(--accent2));\n  }\n  footer a {\n    color: #e5e7eb;\n    text-decoration: none;\n  }\n</style>\n</head>\n<body>\n<div class=\"page\">\n  <header>\n    <div class=\"header-inner\">\n      <div class=\"logo\">\n        <img src=\"${LOGO_URL}\" alt=\"Premium Landscapes Logo\">\n      </div>\n      <div class=\"header-text\">\n        <h1>Garden Design &amp; Build Proposal</h1>\n        <p>Quote Date: ${quoteDate} &nbsp;|&nbsp; Ref: ${quoteRef}</p>\n      </div>\n    </div>\n  </header>\n\n  <main>\n    <div class=\"summary-strip\">\n      <div class=\"summary-col\">\n        <div class=\"summary-col-title\">Client</div>\n        <div><strong>${client.name || \"Client\"}</strong></div>\n        <div class=\"summary-meta\">\n          ${addr ? `<span>${addr}</span>` : \"\"}\n          ${client.email ? `<span>${client.email}</span>` : \"\"}\n          ${client.phone ? `<span>${client.phone}</span>` : \"\"}\n        </div>\n      </div>\n      <div class=\"summary-col\">\n        <div class=\"summary-col-title\">Quote Details</div>\n        <div class=\"summary-meta\">\n          <span><strong>Project:</strong> ${tcase(\n            project.title || \"Landscape Project\"\n          )}</span>\n          <span><strong>Estimate (incl. VAT):</strong> ${fmtGBP(\n            pricing.total\n          )}</span>\n          ${\n            project.totalArea_m2\n              ? `<span><strong>Approx. Area:</strong> ${project.totalArea_m2} m²</span>`\n              : \"\"\n          }\n          ${\n            project.totalBudget_gbp\n              ? `<span><strong>Budget Input:</strong> ${fmtGBP(\n                  project.totalBudget_gbp\n                )}</span>`\n              : \"\"\n          }\n        </div>\n      </div>\n    </div>\n\n    <h2 class=\"section-title\">Project Summary</h2>\n    ${projectSummary()}\n\n    ${\n      aiText\n        ? `<div class=\"ai-summary\">\n             <strong>AI Project Summary</strong>\n             <div>${aiText.replace(/\\n/g, \"<br>\")}</div>\n           </div>`\n        : \"\"\n    }\n\n    <h2 class=\"section-title\">Pricing Breakdown</h2>\n    ${groupedTables}\n\n    <div class=\"totals-box\">\n      <table>\n        <tr><td>Subtotal</td><td>${fmtGBP(pricing.subtotal)}</td></tr>\n        <tr><td>Contingency</td><td>${fmtGBP(pricing.contingency)}</td></tr>\n        <tr><td>VAT</td><td>${fmtGBP(pricing.vat)}</td></tr>\n        <tr><td>Grand Total</td><td>${fmtGBP(pricing.total)}</td></tr>\n      </table>\n    </div>\n\n    ${\n      designUrl\n        ? `<div class=\"cta-wrap\">\n             <a href=\"${designUrl}\" class=\"cta-btn\">✏️ See AI Garden Designs</a>\n           </div>`\n        : \"\"\n    }\n  </main>\n\n  <footer>\n    hello@premium-landscapes.co.uk &nbsp;|&nbsp;\n    <a href=\"tel:+447444887813\">07444 887813</a> &nbsp;|&nbsp;\n    <a href=\"https://www.premium-landscapes.co.uk\">premium-landscapes.co.uk</a><br/>\n    <span>All quotes subject to final site survey and material availability.</span>\n  </footer>\n</div>\n</body>\n</html>\n`;\n\nreturn [\n  {\n    json: {\n      html,\n      pricing,\n      fileName: `Landscaping Quotation - ${client.name || \"Client\"}.pdf`,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        48
+      ],
+      "id": "9d632b5a-1f46-4ed2-ab66-cccab1c8a393",
+      "name": "Build PDF HTML"
+    }
+  ],
+  "pinData": {
+    "Manual Trigger (Mock)": [
+      {
+        "json": {
+          "customer": {
+            "name": "Sarah Thompson",
+            "email": "sarah.thompson@example.com",
+            "phone": "07712 345678",
+            "postcode": "B15 2TT",
+            "city": "Birmingham",
+            "street": "Oak Avenue",
+            "houseNumber": "42",
+            "address": "42, Oak Avenue, Birmingham, B15 2TT, UK"
+          },
+          "project": {
+            "title": "Full Garden Redesign at B15 2TT",
+            "type": "full_garden_redesign",
+            "totalArea_m2": 150,
+            "totalBudget_gbp": 35000,
+            "layoutType": "standard",
+            "sunlight": "partial sun",
+            "stylePreference": "contemporary",
+            "maintenanceLevel": "low maintenance",
+            "siteConditions": {
+              "access": "standard access",
+              "soilType": "loam",
+              "drainage": "good"
+            },
+            "products": [],
+            "extras": {
+              "pergola": {
+                "include": true
+              },
+              "firePit": {
+                "include": true
+              },
+              "waterFeature": {
+                "include": true
+              }
+            },
+            "notes": "low maintenance & pet friendly",
+            "gardenDesign": {
+              "budgetBasedDesign": true,
+              "categories": {}
+            }
+          },
+          "metadata": {
+            "source": "website_quote_form",
+            "timestamp": "2025-11-05T17:00:00Z",
+            "quoteType": "full_garden_redesign",
+            "webhookDestination": "https://n8n.example.com/webhook/premium-landscapes-full-redesign"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send Error Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "validate Input": {
+      "main": [
+        [
+          {
+            "node": "IF (valid)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Attach Original Webhook Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate pricing": {
+      "main": [
+        [
+          {
+            "node": "AI Summary1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger (Mock)": {
+      "main": [
+        []
+      ]
+    },
+    "AI Summary1": {
+      "main": [
+        [
+          {
+            "node": "Build PDF HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build LLM Brief": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Test code after merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Map LLM Concept → Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map LLM Concept → Products": {
+      "main": [
+        [
+          {
+            "node": "Map Allocations to Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF (valid)": {
+      "main": [
+        [
+          {
+            "node": "Build LLM Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Allocations to Products": {
+      "main": [
+        [
+          {
+            "node": "Calculate pricing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test code after merge": {
+      "main": [
+        []
+      ]
+    },
+    "Log Quote to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename PDF Binary": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Quote": {
+      "main": [
+        [
+          {
+            "node": "Log Quote to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert HTML to PDF1": {
+      "main": [
+        [
+          {
+            "node": "Rename PDF Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "Log Quote",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Original Webhook Data": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Log Quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build PDF HTML": {
+      "main": [
+        [
+          {
+            "node": "Convert HTML to PDF1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a04c0000-bcc5-4de8-8945-6a50e3f9a296",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e1c866f51f89be40bb7a8fd6d598585ff0ef85e3ee97add539aaea059383a17d"
+  },
+  "id": "bcncolaCBzUvgf2b",
+  "tags": []
+}

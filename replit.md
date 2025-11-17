@@ -22,6 +22,13 @@
 ✅ **Clean Material Selector Design** - Uniform gray/white category headers instead of multicolored options for professional appearance (Nov 11)
 ✅ **Dynamic Extras Detection** - Pergola, Fire Pit, and Water Feature automatically populate `extras` object when selected as materials (Nov 11)
 ✅ **Complete n8n Payload Structure** - Added `metadata` object with source, timestamp, quoteType, and webhookDestination matching n8n workflow expectations (Nov 11)
+✅ **Workflow Integration Complete** - All 3 workflows (Individual Quote, Full Redesign Quote, AI Garden Design) now fully connected with bidirectional flow (Nov 14):
+  - Quote forms include optional "Also send me AI garden design concepts" checkbox - triggers both quote + design workflows simultaneously
+  - AI Design workflow accepts data from both standalone design form AND quote forms
+  - Design emails include "Get Instant Quote" CTA for seamless conversion path
+  - Source detection (`metadata.source`) enables customized messaging based on entry point
+✅ **AI Design Always Available** - AI design checkbox now always visible in quote form (not photo-dependent) - works with photos (image-based) OR without (budget-based) (Nov 14)
+✅ **Dynamic Confirmation Messaging** - Quote confirmation automatically mentions AI designs when checkbox selected (Nov 14)
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.

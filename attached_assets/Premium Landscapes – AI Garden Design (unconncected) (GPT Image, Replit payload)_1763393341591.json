@@ -1,0 +1,255 @@
+{
+  "name": "Premium Landscapes – AI Garden Design (GPT Image, Replit payload)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "premium-landscapes-ai-design",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "2a5669c9-feb4-44ff-a77d-145e5e66dae8",
+      "name": "Webhook – AI Garden Design",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        992,
+        1408
+      ],
+      "webhookId": "premium-landscapes-ai-design"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate & normalise Replit design payload, build SINGLE prompt variant\n\n// n8n sometimes wraps the request body in $json.body\nconst root = $json.body ?? $json;\n\n// pull email from multiple possible locations\nconst emailFromCustomer = root.customer?.email;\nconst emailFlat = root.customer_email ?? root.email;\nconst customerEmail = (emailFromCustomer || emailFlat || '').toString().trim();\n\nif (!customerEmail) {\n  throw new Error('Customer email is required');\n}\n\n// customer object\nconst customer = {\n  email: customerEmail.toLowerCase(),\n  phone: root.customer?.phone ?? root.phone ?? ''\n};\n\n// design object\nconst design = root.design ?? {};\nconst featuresArr = Array.isArray(design.features) ? design.features : [];\nconst featuresList = featuresArr.join(', ');\nconst style = design.styleDescription || 'contemporary outdoor living space';\nconst gardenSize = design.gardenSize || 'not specified';\nconst budgetLabel = design.budget || 'not specified';\n\n// budget numeric range (optional, but we keep it for context)\nconst budgetMap = {\n  'Under £5k':   { min: 2500, max: 5000 },\n  '£5k-£10k':    { min: 5000, max: 10000 },\n  '£10k-£20k':   { min: 10000, max: 20000 },\n  '£20k-£30k':   { min: 20000, max: 30000 },\n  '£30k+':       { min: 30000, max: 50000 },\n};\nconst budgetRange = budgetMap[budgetLabel] || { min: 5000, max: 15000 };\n\n// simple “tier” so the prompt can talk sensibly about cost level\nlet budgetTier = 'mid';\nif (budgetRange.max <= 10000) budgetTier = 'low';\nelse if (budgetRange.max <= 20000) budgetTier = 'mid';\nelse if (budgetRange.max <= 30000) budgetTier = 'high';\nelse budgetTier = 'premium';\n\n// feature flags (case-insensitive)\nconst lowerFeatures = featuresArr.map(f => String(f).toLowerCase());\nconst wantsPatio   = lowerFeatures.includes('patio');\nconst wantsDecking = lowerFeatures.includes('decking');\nconst wantsLawn    = lowerFeatures.includes('lawn') || lowerFeatures.includes('turf');\n\n// photo handling\nconst photo = root.photo ?? null;\nlet hasPhoto = false;\nlet photoBase64 = null;\n\nif (photo && photo.data) {\n  hasPhoto = true;\n  const parts = String(photo.data).split(',');\n  photoBase64 = parts.length > 1 ? parts[1] : parts[0];\n}\n\nconst timestamp = root.metadata?.timestamp || new Date().toISOString();\nconst requestId = `DESIGN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;\n\n// -----------------------\n// Budget-aware design scope\n// -----------------------\n\nlet budgetScopeText = '';\nlet structuralLimitsText = '';\n\nif (budgetTier === 'low') {\n  budgetScopeText = `\nThis is a LOW budget (${budgetLabel}) UK domestic garden.\nDesign something that is genuinely buildable for this price range in the UK today.\n\nFocus the spend on:\n- A simple, clean main surface (patio and/or small decking area)\n- Either a modest lawn area or compact artificial turf\n- Straightforward planting beds using low-maintenance shrubs and grasses\n\nYou MUST AVOID expensive features such as:\n- Outdoor kitchen or built-in BBQ units\n- Large water features or long feature walls\n- Complex multi-level terracing, big retaining walls, or heavy structural changes\n- Extensive feature lighting schemes\n\nKeep the design realistic, tidy, and achievable on a sensible 5–10k style budget.`.trim();\n\n  structuralLimitsText = `\nLOW-BUDGET STRUCTURE RULES:\n- Do NOT include pergolas, garden rooms, large fixed seating platforms, or big rendered feature walls.\n- Do NOT add built-in corner sofas; use only simple loose furniture (a dining table and chairs is fine).\n- Keep raised planters, if any, very simple and minimal – avoid long, high, expensive rendered structures.\n- Planting should feel modest and achievable, not like a full show garden packed with specimen plants.`.trim();\n\n} else if (budgetTier === 'mid') {\n  budgetScopeText = `\nThis is a MID-range budget (${budgetLabel}) UK domestic garden.\nYou can include one or two stronger focal features, but it still needs to feel cost-conscious.`.trim();\n\n  structuralLimitsText = `\nMID-BUDGET STRUCTURE RULES:\n- You may include ONE main structure (for example a simple timber pergola OR a small firepit area OR a compact water feature), not several.\n- Avoid anything that feels like a full outdoor room or complicated multi-level construction.\n- Only add a pergola or similar structure if it feels consistent with the client's selected features: ${featuresList || 'not specified'}.\n- Prioritise good-quality paving, a clear lawn/turf area, and a few key focal planting beds.`.trim();\n\n} else if (budgetTier === 'high') {\n  budgetScopeText = `\nThis is a HIGHER budget (${budgetLabel}) UK domestic garden.\nYou can comfortably include several strong focal features (pergola, feature walls, firepit, water feature, more lighting), but it should still feel like something a good UK landscaper could build without going into ultra-luxury territory.`.trim();\n\n  structuralLimitsText = `\nHIGH-BUDGET STRUCTURE RULES:\n- You may include up to two main structures (for example a pergola and a firepit area) plus some raised planters.\n- Make sure these structures still relate to the selected features list: ${featuresList || 'not specified'}.\n- Focus on clear zones (dining, seating, lawn/soft area) rather than overfilling the space.`.trim();\n\n} else {\n  budgetScopeText = `\nThis is a PREMIUM budget (${budgetLabel}) UK domestic garden.\nYou may include multiple premium focal features such as pergola, outdoor kitchen, water feature, firepit, detailed lighting, and rendered planters, while still keeping everything practical and buildable.`.trim();\n\n  structuralLimitsText = `\nPREMIUM STRUCTURE RULES:\n- You can combine several strong focal elements (pergola, outdoor kitchen, firepit, water feature, feature walls).\n- Still respect the footprint of a realistic UK garden – do not turn it into a resort.\n- Make sure the design still feels like it belongs to a UK new-build home, not a hotel.`.trim();\n}\n\n// Priority features based on what the client actually selected\nconst priorityFeatureLines = [];\n\nif (wantsPatio) {\n  priorityFeatureLines.push(\n    '- A modern, practical main patio for dining and seating, sized appropriately for the garden area and budget.'\n  );\n}\nif (wantsDecking) {\n  priorityFeatureLines.push(\n    '- A clean composite or softwood decking zone as a secondary space, sized realistically for the budget.'\n  );\n}\nif (wantsLawn) {\n  priorityFeatureLines.push(\n    '- A simple rectangular lawn or artificial turf section for greenery and softness.'\n  );\n}\n\nif (priorityFeatureLines.length === 0) {\n  priorityFeatureLines.push(\n    '- Use a simple mix of modern paving, low-maintenance planting, and a compact lawn/turf area appropriate to the budget.'\n  );\n}\n\n// -----------------------\n// CORE PROMPT TEXT\n// -----------------------\n\nconst coreBrief = `\nYou are designing a hyper-realistic, photorealistic 4K daytime render of a landscaped UK garden\nthat sits directly behind the SAME house as in the reference image provided by the client.\n\nCRITICAL ACCURACY RULES (DO NOT BREAK THESE):\n- The house, roof, walls, windows, doors, and any visible neighbouring houses or buildings must remain 100% unchanged.\n- Keep the camera angle, perspective, horizon line, and proportions identical to the reference photo.\n- Do not move, resize, or redesign the house or surrounding buildings.\n- Only redesign the garden surfaces, planting, and freestanding garden features within the plot.\n\nCLIENT INPUT SNAPSHOT\n- Style preference: ${style}\n- Selected key features: ${featuresList || 'not specified'}\n- Approximate garden size: ${gardenSize} m²\n- Budget band: ${budgetLabel} (treat this as the real-world build budget in the UK)\n- The client has uploaded a photo: ${hasPhoto ? 'YES – use it as the exact base view.' : 'NO – imagine a typical new-build UK garden behind a red-brick house.'}\n\nDESIGN SCOPE & BUDGET CONSTRAINTS\n${budgetScopeText}\n\nSTRUCTURAL LIMITS BY BUDGET\n${structuralLimitsText}\n\nPRIORITY ZONES AND FEATURES (BASED ON CLIENT SELECTIONS)\n${priorityFeatureLines.join('\\n')}\n\nGENERAL DESIGN STYLE\n- Contemporary outdoor living space with a warm, natural feel.\n- Mood: elegant yet practical, designed for entertaining and relaxation.\n- Colour palette: light neutrals, soft greys, warm timber, and natural greenery.\n- Lighting: bright UK daylight with soft natural Shadows (midday).\n- Atmosphere: balanced, family-friendly, low-maintenance.\n\nLAYOUT & MATERIAL GUIDELINES\n- Favour clean, rectilinear layouts (no complicated curves) so the design is buildable.\n- Main surfaces should feel proportional to the garden size – avoid oversizing expensive areas in lower budgets.\n- Use realistic, widely available UK materials (porcelain paving, simple decking, standard fencing, affordable planting).\n\nABSOLUTE DO-NOT-INCLUDE LIST (UNLESS CLEARLY ALLOWED BY BUDGET SCOPE ABOVE):\n- Swimming pools, hot tubs, glass balustrades, or luxury spa elements.\n- Huge outdoor kitchens, pizza-oven walls, or hotel-style fire features.\n- Massive water features spanning the whole boundary.\n- Any structural changes to the house or neighbouring buildings.\n\nYour job is to create ONE clear, realistic garden design image that:\n- Respects the budget band described above.\n- Prioritises the client’s chosen features.\n- Looks like a real UK new-build garden that a professional landscaper could actually build.\n`.trim();\n\n// Wrap with one specific camera focus (still using same angle as reference)\nconst singlePrompt = `${coreBrief}\n\nCamera and composition:\n- Match the exact camera angle and position of the client's reference photo.\n- Show the whole garden depth from the back doors to the rear boundary.\n`;\n\n// Build ONE item only (shape unchanged)\nreturn [{\n  json: {\n    requestId,\n    timestamp,\n    index: 1,\n    customer,\n    design: {\n      ...design,\n      budgetMin: budgetRange.min,\n      budgetMax: budgetRange.max,\n      budgetTier,\n    },\n    hasPhoto,\n    photoBase64,\n    photoMeta: photo ? { name: photo.name, type: photo.type, size: photo.size } : null,\n    prompt: singlePrompt,\n  },\n}];\n"
+      },
+      "id": "1bb52423-2655-4016-9b70-39129898d893",
+      "name": "Code – Validate + Build Variants",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/generations",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-image-1"
+            },
+            {
+              "name": "prompt",
+              "value": "={{$json.prompt}}"
+            },
+            {
+              "name": "size",
+              "value": "1024x1024"
+            },
+            {
+              "name": "n",
+              "value": "={{ 1 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7d74f5bc-9e8b-47b5-9072-7d36461a4739",
+      "name": "HTTP – GPT Image (per variant)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Aggregate single GPT image + build email HTML ===\n\n// All responses coming from \"HTTP – GPT Image (per variant)\"\nconst responses = $input.all();\n\n// The original item from \"Code – Validate + Build Variants\"\nconst sourceItem = $items('Code – Validate + Build Variants', 0, 0);\n\nif (!responses.length) {\n  throw new Error('No GPT image responses received');\n}\nif (!sourceItem) {\n  throw new Error('No source design data from \"Code – Validate + Build Variants\"');\n}\n\nconst base = sourceItem.json || {};\nconst customer = base.customer || {};\nconst design = base.design || {};\nconst hasPhoto = !!base.hasPhoto;\nconst requestId = base.requestId || null;\nconst timestamp = base.timestamp || new Date().toISOString();\nconst originalPrompt = base.prompt || '';\n\n// --- Extract the first image base64 from OpenAI ---\nconst first = responses[0].json || {};\nconst b64 =\n  first.data && first.data[0] && first.data[0].b64_json\n    ? first.data[0].b64_json\n    : '';\n\nif (!b64) {\n  throw new Error('GPT image response did not contain b64_json');\n}\n\n// --- Build a lightweight HTML email (no embedded base64) ---\nconst featuresList = Array.isArray(design.features)\n  ? design.features.join(', ')\n  : 'Not specified';\n\nconst style = design.styleDescription || 'Not specified';\nconst size = design.gardenSize || 'Not specified';\nconst budget = design.budget || 'Not specified';\n\nconst emailSubject = 'Your AI Garden Designs Are Ready!';\n\nconst emailHtml = `\n  <div style=\"font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; color: #0b2e4c;\">\n    <h1 style=\"font-size: 26px; margin: 0 0 8px; color: #0b2e4c;\">\n      Your AI Garden Designs Are Ready!\n    </h1>\n    <p style=\"margin: 0 0 16px; font-size: 14px; color: #333;\">\n      Based on your <strong>${style}</strong> preferences featuring\n      <strong>${featuresList}</strong>, garden size <strong>${size}</strong>\n      and budget <strong>${budget}</strong>.\n    </p>\n\n    <p style=\"margin: 0 0 16px; font-size: 14px; color: #333;\">\n      We've attached your AI-generated garden design as a high-resolution PNG image.\n      You can open it on any device, zoom in, or forward it to your landscaper.\n    </p>\n\n    <p style=\"margin: 0 0 16px; font-size: 13px; color: #555;\">\n      If you'd like revisions or a fresh set of design concepts, just reply to this\n      email and tell us what you'd like to change (materials, layout, features, etc.).\n    </p>\n\n    <p style=\"margin: 0; font-size: 13px; color: #777;\">\n      Kind regards,<br/>\n      <strong>Premium Landscapes</strong>\n    </p>\n  </div>\n`.trim();\n\n// --- Attach the image as binary data ---\n// n8n expects base64 in binary.data, so we pass b64 directly.\nconst binary = {\n  design1: {\n    data: b64,\n    mimeType: 'image/png',\n    fileName: 'ai-garden-design.png'\n  }\n};\n\n// Return everything we might need later in json + the image in binary\nreturn [\n  {\n    json: {\n      requestId,\n      timestamp,\n      hasPhoto,\n      customer,\n      design,\n      originalPrompt,\n      emailSubject,\n      emailHtml\n    },\n    binary\n  }\n];\n"
+      },
+      "id": "975a4ad7-00ed-4218-8281-1221e1c7d816",
+      "name": "Code – Aggregate Designs + Email HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2048,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "premiumlandscapesuk@gmail.com",
+        "toEmail": "=thedigitaltailorsdxb@gmail.com",
+        "subject": "={{ $json.emailSubject }}",
+        "html": "={{ $json.emailHtml }}",
+        "options": {
+          "attachments": "design1"
+        }
+      },
+      "id": "f5f3e5f0-9ff3-49b6-bf3d-bffafa5aab0a",
+      "name": "Send Email – AI Designs",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2416,
+        1408
+      ],
+      "webhookId": "11cd3c0a-ab62-4216-a6a9-42a0a4dfcd6a",
+      "credentials": {
+        "smtp": {
+          "id": "dLpXH6yljIeIoVw6",
+          "name": "SMTP account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, requestId: $json.requestId, customerEmail: $json.customer.email, designCount: Array.isArray($json.designs) ? $json.designs.length : 0 } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "3478130c-8d20-4d7f-8285-72a503f99bfe",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2736,
+        1408
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "ae14c5dd-48b6-4ecd-8bff-6ec6b8782cb6",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        1088
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "Premiumlandscapesuk@gmail.com",
+        "toEmail": "thedigitaltailorsdxb@gmail.com",
+        "subject": "={{`⚠️ AI Garden Design Workflow Error – ${$json.execution?.lastNodeExecuted || 'Unknown'}`}}",
+        "html": "<div><p><strong>Error:</strong> {{$json.error.message || 'Unknown error'}}</p><p>Execution ID: {{$json.execution.id}}</p></div>",
+        "options": {}
+      },
+      "id": "8dcc0a0f-952b-489b-91cc-8c3995d8844c",
+      "name": "Send Error Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1680,
+        1088
+      ],
+      "webhookId": "5d4afe1b-3fc7-4de8-a46a-c80bd7bda5ec",
+      "credentials": {
+        "smtp": {
+          "id": "dLpXH6yljIeIoVw6",
+          "name": "SMTP account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook – AI Garden Design": {
+      "main": [
+        [
+          {
+            "node": "Code – Validate + Build Variants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code – Validate + Build Variants": {
+      "main": [
+        [
+          {
+            "node": "HTTP – GPT Image (per variant)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP – GPT Image (per variant)": {
+      "main": [
+        [
+          {
+            "node": "Code – Aggregate Designs + Email HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code – Aggregate Designs + Email HTML": {
+      "main": [
+        [
+          {
+            "node": "Send Email – AI Designs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email – AI Designs": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send Error Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "57cce2aa-c6dd-4cc4-b899-c602aa54a355",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e1c866f51f89be40bb7a8fd6d598585ff0ef85e3ee97add539aaea059383a17d"
+  },
+  "id": "NWudJUXaq55hkqLS",
+  "tags": []
+}

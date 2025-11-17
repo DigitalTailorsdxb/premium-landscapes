@@ -781,34 +781,18 @@
                                 <p class="text-xs text-gray-500 mt-2"><i class="fas fa-info-circle"></i> We'll only call if you request a site visit</p>
                             </div>
                             
-                            <!-- AI Design Section - Shows if photos uploaded -->
+                            <!-- AI Design Section - Always Available -->
                             <div id="aiDesignSection" class="mb-6 bg-gradient-to-br from-accent to-primary bg-opacity-10 p-6 rounded-xl border-2 border-accent">
                                 <label class="flex items-start space-x-3 cursor-pointer">
                                     <input type="checkbox" id="aiDesign" class="mt-1 w-5 h-5 text-accent rounded">
-                                    <div>
+                                    <div class="flex-1">
                                         <p class="font-semibold text-gray-900 flex items-center">
                                             <i class="fas fa-magic text-accent mr-2"></i>
-                                            Generate AI design preview (Free)
+                                            Also send me AI garden design concepts (Free)
                                         </p>
-                                        <p class="text-sm text-gray-700 mt-1">See photorealistic visual concepts of your new garden in 60 seconds</p>
+                                        <p id="aiDesignDescription" class="text-sm text-gray-700 mt-1">Based on your budget and preferences, we'll generate photorealistic design concepts and email them to you within 60 seconds</p>
                                     </div>
                                 </label>
-                            </div>
-                            
-                            <!-- No Photo Uploaded - Prompt to Upload -->
-                            <div id="noPhotoPrompt" class="hidden mb-6 bg-stone p-6 rounded-xl border-2 border-dashed border-gray-300">
-                                <div class="text-center mb-4">
-                                    <i class="fas fa-camera text-4xl text-gray-400 mb-3"></i>
-                                    <h4 class="font-semibold text-gray-900 mb-2">Want AI design previews?</h4>
-                                    <p class="text-sm text-gray-600 mb-4">Upload a photo of your garden to unlock AI-generated design concepts</p>
-                                </div>
-                                <div class="border-2 border-dashed border-accent rounded-xl p-6 text-center hover:bg-white transition-colors cursor-pointer" id="dropZoneStep5">
-                                    <i class="fas fa-cloud-upload-alt text-3xl text-accent mb-2"></i>
-                                    <p class="text-gray-700 font-semibold mb-1">Upload Photo Now</p>
-                                    <p class="text-xs text-gray-500">Click to browse or drag & drop</p>
-                                    <input type="file" id="fileInputStep5" class="hidden" accept="image/*,video/*" multiple>
-                                </div>
-                                <div id="filePreviewStep5" class="mt-4 grid grid-cols-3 gap-3"></div>
                             </div>
                             
                             <div class="flex gap-3">
@@ -854,7 +838,7 @@
                                     <i class="fas fa-info-circle text-2xl text-primary mr-3 mt-1"></i>
                                     <div>
                                         <h3 class="font-semibold text-lg text-gray-900 mb-2">What Happens Next?</h3>
-                                        <ul class="space-y-2 text-gray-700">
+                                        <ul id="nextStepsList" class="space-y-2 text-gray-700">
                                             <li class="flex items-start">
                                                 <i class="fas fa-check-circle text-accent mr-2 mt-1"></i>
                                                 <span>Our AI analyzes your requirements and local pricing data</span>

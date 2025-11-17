@@ -400,19 +400,18 @@ function removeFile(index) {
     updateSummary();
 }
 
-// Update AI design section visibility based on whether photos are uploaded
+// Update AI design description based on whether photos are uploaded
 function updateAIDesignVisibility() {
-    const aiDesignSection = document.getElementById('aiDesignSection');
-    const noPhotoPrompt = document.getElementById('noPhotoPrompt');
+    const aiDesignDescription = document.getElementById('aiDesignDescription');
+    
+    if (!aiDesignDescription) return;
     
     if (quoteData.files.length > 0) {
-        // Show AI design checkbox
-        aiDesignSection.classList.remove('hidden');
-        noPhotoPrompt.classList.add('hidden');
+        // With photos - image-based design
+        aiDesignDescription.textContent = 'Based on your uploaded photos, we\'ll transform your current garden into stunning AI-generated design concepts and email them within 60 seconds';
     } else {
-        // Hide checkbox, show upload prompt
-        aiDesignSection.classList.add('hidden');
-        noPhotoPrompt.classList.remove('hidden');
+        // Without photos - budget-based design
+        aiDesignDescription.textContent = 'Based on your budget and preferences, we\'ll generate photorealistic design concepts and email them to you within 60 seconds';
     }
 }
 
@@ -952,15 +951,212 @@ function prepareWebhookPayload() {
 // DISPLAY QUOTE RESULT
 // Shows confirmation message - actual quote sent via email from n8n
 // ============================================================================
-function showQuoteResult(data) {
+async function showQuoteResult(data) {
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('quoteResult').classList.remove('hidden');
     
     console.log('✅ Quote request submitted successfully!');
     console.log('Customer will receive detailed PDF quote via email from n8n workflow');
     
+    // Check if AI design was requested
+    if (quoteData.aiDesign) {
+        console.log('🎨 AI Design requested - sending to AI Design workflow...');
+        
+        try {
+            await sendToAIDesignWorkflow();
+            
+            // Add AI design success message to confirmation
+            const nextStepsList = document.getElementById('nextStepsList');
+            if (nextStepsList) {
+                const aiDesignItem = document.createElement('li');
+                aiDesignItem.className = 'flex items-start';
+                aiDesignItem.innerHTML = `
+                    <i class="fas fa-check-circle text-accent mr-2 mt-1"></i>
+                    <span>You'll also receive AI-generated garden design concepts in a separate email</span>
+                `;
+                nextStepsList.appendChild(aiDesignItem);
+            }
+            
+        } catch (error) {
+            // Add AI design error message to confirmation
+            const nextStepsList = document.getElementById('nextStepsList');
+            if (nextStepsList) {
+                const aiDesignErrorItem = document.createElement('li');
+                aiDesignErrorItem.className = 'flex items-start';
+                aiDesignErrorItem.innerHTML = `
+                    <i class="fas fa-exclamation-triangle text-yellow-600 mr-2 mt-1"></i>
+                    <span class="text-sm">AI design generation unavailable at the moment. Your quote has been sent successfully.</span>
+                `;
+                nextStepsList.appendChild(aiDesignErrorItem);
+            }
+            console.error('AI Design workflow failed, but quote was successful');
+        }
+    }
+    
     // Scroll to result
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Send quote data to AI Design workflow
+async function sendToAIDesignWorkflow() {
+    const designWebhookUrl = brandConfig?.webhooks?.design;
+    
+    if (!designWebhookUrl || designWebhookUrl.includes('your-')) {
+        console.warn('⚠️ AI Design webhook not configured');
+        throw new Error('AI Design webhook not configured');
+    }
+    
+    // Build photo object with full metadata (or null)
+    let photoObject = null;
+    if (quoteData.files.length > 0) {
+        const file = quoteData.files[0];
+        const base64Data = await convertFileToBase64(file);
+        photoObject = {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            data: base64Data
+        };
+    }
+    
+    // Build design payload from quote data
+    const isFullRedesign = quoteData.quoteMode === 'full-redesign';
+    const hasMaterials = isFullRedesign && Object.keys(gardenDesignMaterials).length > 0;
+    
+    const designPayload = {
+        customer: {
+            email: quoteData.email,
+            phone: quoteData.phone,
+            name: quoteData.name
+        },
+        design: {
+            features: extractDesignFeatures(),
+            styleDescription: buildStyleDescription(),
+            gardenSize: String(quoteData.area || ''),
+            budget: formatBudgetForDesign(quoteData.budget),
+            // Include full redesign materials if available
+            materials: hasMaterials ? Object.values(gardenDesignMaterials).map(m => ({
+                category: m.category,
+                name: m.material,
+                displayName: m.displayName
+            })) : [],
+            budgetBasedDesign: isFullRedesign && !hasMaterials,
+            designNotes: isFullRedesign ? (quoteData.designVisionNotes || '') : ''
+        },
+        photo: photoObject,
+        metadata: {
+            timestamp: new Date().toISOString(),
+            source: 'quote-form',
+            formVersion: '2.0',
+            quoteType: quoteData.quoteMode || 'individual-products',
+            hasPhoto: !!photoObject,
+            hasMaterials: hasMaterials
+        }
+    };
+    
+    try {
+        console.log('📤 Sending to AI Design workflow:', designWebhookUrl);
+        console.log('📦 Design payload:', {
+            customer: designPayload.customer,
+            design: designPayload.design,
+            hasPhoto: !!photoObject,
+            metadata: designPayload.metadata
+        });
+        
+        const response = await fetch(designWebhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(designPayload)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`AI Design webhook returned status ${response.status}: ${errorText}`);
+        }
+        
+        console.log('✅ AI Design workflow triggered successfully');
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Error triggering AI Design workflow:', error);
+        throw error;
+    }
+}
+
+// Helper: Extract design features from quote data
+function extractDesignFeatures() {
+    const isFullRedesign = quoteData.quoteMode === 'full-redesign';
+    
+    if (isFullRedesign && gardenDesignMaterials && Object.keys(gardenDesignMaterials).length > 0) {
+        // Extract material names from Full Redesign mode
+        return Object.values(gardenDesignMaterials).map(m => m.material || m.name || 'feature');
+    }
+    
+    // For individual products mode, return selected products (excluding 'full-redesign')
+    return quoteData.features.filter(f => f !== 'full-redesign');
+}
+
+// Helper: Build style description from quote data
+function buildStyleDescription() {
+    const isFullRedesign = quoteData.quoteMode === 'full-redesign';
+    
+    if (isFullRedesign) {
+        if (quoteData.designVisionNotes) {
+            return quoteData.designVisionNotes;
+        }
+        
+        // Build from selected materials
+        if (gardenDesignMaterials && Object.keys(gardenDesignMaterials).length > 0) {
+            const materials = Object.values(gardenDesignMaterials)
+                .map(m => m.material || m.name || '')
+                .filter(Boolean)
+                .join(', ');
+            return `Complete garden redesign with ${materials}`;
+        }
+        
+        return 'Complete garden redesign based on budget and requirements';
+    }
+    
+    // Build description from selected products
+    const productNames = {
+        'patio': 'patio area',
+        'decking': 'decking',
+        'turf': 'lawn',
+        'driveway': 'driveway',
+        'fencing': 'fencing',
+        'lighting': 'garden lighting',
+        'other': 'custom features'
+    };
+    
+    const features = quoteData.features.map(f => productNames[f] || f).join(', ');
+    return `Garden with ${features}`;
+}
+
+// Helper: Format budget for design workflow
+function formatBudgetForDesign(budget) {
+    if (!budget) return '<5000';
+    
+    // If numeric, convert to range
+    if (typeof budget === 'number') {
+        if (budget < 5000) return '<5000';
+        if (budget < 10000) return '5000-10000';
+        if (budget < 20000) return '10000-20000';
+        return '>20000';
+    }
+    
+    return String(budget);
+}
+
+// Helper: Convert file to base64 string
+async function convertFileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
+    });
 }
 
 // ============================================================================
