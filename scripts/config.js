@@ -40,13 +40,6 @@ const brandConfig = {
     },
     
     // ============================================================================
-    // ADDRESS LOOKUP API CONFIGURATION
-    // ============================================================================
-    // Google Maps API key for UK address autocomplete
-    // Free tier: $200/month credit = ~11,700 lookups/month
-    googleMapsApiKey: "",
-    
-    // ============================================================================
     // PRICING SYSTEM CONFIGURATION
     // ============================================================================
     pricing: {
@@ -123,15 +116,8 @@ function applyBranding() {
 // Export brandConfig to window so other scripts can access it
 window.brandConfig = brandConfig;
 
-// Load Google Maps API key from environment variable (injected by server)
-// Note: ENV_GOOGLE_MAPS_API_KEY is loaded from /scripts/config-env.js
-window.GOOGLE_MAPS_API_KEY = brandConfig.googleMapsApiKey;
-
 // Debug logging to verify config is loaded
 console.log('✅ Config loaded! Webhook URL:', brandConfig?.webhooks?.quote);
-
-// Note: Google Maps API key check is handled in quote.html after API loads
-// No need for early check here as it causes confusing warnings
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', applyBranding);
