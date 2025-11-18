@@ -713,7 +713,23 @@ async function submitQuote() {
         console.error('Error type:', error.constructor.name);
         console.error('Error message:', error.message);
         console.error('Error stack:', error.stack);
-        alert('There was an error processing your quote. Please try again or contact us at 07444 887813');
+        
+        // Show detailed error message for debugging
+        let errorMessage = 'There was an error processing your quote.\n\n';
+        
+        if (error.message.includes('Webhook returned status')) {
+            errorMessage += 'The workflow is not responding correctly.\n';
+            errorMessage += 'Please ensure the n8n workflow is active and try again.\n\n';
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            errorMessage += 'Unable to connect to the workflow.\n';
+            errorMessage += 'Please check your internet connection and try again.\n\n';
+        } else {
+            errorMessage += error.message + '\n\n';
+        }
+        
+        errorMessage += 'Contact us at 07444 887813 if this persists.';
+        
+        alert(errorMessage);
         document.getElementById('loadingState').classList.add('hidden');
         document.getElementById('step5').classList.remove('hidden');
     }
@@ -1223,13 +1239,12 @@ function toggleAIUploadSection() {
     }
 }
 
-// Handle AI design file uploads
+// Handle AI design file uploads (limit: 1 image only)
 function handleAIFiles(files) {
-    files.forEach(file => {
-        if (!aiDesignFiles.find(f => f.name === file.name)) {
-            aiDesignFiles.push(file);
-        }
-    });
+    if (files.length === 0) return;
+    
+    // Only accept the first image (replace existing if any)
+    aiDesignFiles = [files[0]];
     
     displayAIFilePreview();
 }
