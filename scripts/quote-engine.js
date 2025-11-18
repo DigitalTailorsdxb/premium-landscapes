@@ -1007,9 +1007,12 @@ async function sendToAIDesignWorkflow() {
     }
     
     // Build photo object with full metadata (or null)
+    // Priority: AI-specific photos > Step 4 photos
     let photoObject = null;
-    if (quoteData.files.length > 0) {
-        const file = quoteData.files[0];
+    const photoSource = aiDesignFiles.length > 0 ? aiDesignFiles : quoteData.files;
+    
+    if (photoSource.length > 0) {
+        const file = photoSource[0];
         const base64Data = await convertFileToBase64(file);
         photoObject = {
             name: file.name,
@@ -1157,6 +1160,109 @@ async function convertFileToBase64(file) {
         reader.onerror = (error) => reject(error);
         reader.readAsDataURL(file);
     });
+}
+
+// ============================================================================
+// AI DESIGN PHOTO UPLOAD (Step 5)
+// ============================================================================
+let aiDesignFiles = [];
+let aiUploadHandlersInitialized = false;
+
+// Initialize AI design file upload handlers
+function initAIUploadHandlers() {
+    if (aiUploadHandlersInitialized) return;
+    
+    const aiDropZone = document.getElementById('aiDropZone');
+    const aiFileInput = document.getElementById('aiFileInput');
+    
+    if (!aiDropZone || !aiFileInput) return;
+    
+    // Click to browse
+    aiDropZone.addEventListener('click', () => aiFileInput.click());
+    
+    // File selection
+    aiFileInput.addEventListener('change', (e) => {
+        handleAIFiles(Array.from(e.target.files));
+    });
+    
+    // Drag and drop
+    aiDropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        aiDropZone.classList.add('border-accent');
+    });
+    
+    aiDropZone.addEventListener('dragleave', () => {
+        aiDropZone.classList.remove('border-accent');
+    });
+    
+    aiDropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        aiDropZone.classList.remove('border-accent');
+        const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+        handleAIFiles(files);
+    });
+    
+    aiUploadHandlersInitialized = true;
+}
+
+// Toggle AI upload section visibility
+function toggleAIUploadSection() {
+    const checkbox = document.getElementById('aiDesign');
+    const uploadSection = document.getElementById('aiDesignUploadSection');
+    
+    if (checkbox.checked) {
+        uploadSection.classList.remove('hidden');
+        // Initialize handlers when section becomes visible
+        setTimeout(initAIUploadHandlers, 100);
+    } else {
+        uploadSection.classList.add('hidden');
+        // Clear AI-specific files when unchecked
+        aiDesignFiles = [];
+        const preview = document.getElementById('aiFilePreview');
+        if (preview) preview.innerHTML = '';
+    }
+}
+
+// Handle AI design file uploads
+function handleAIFiles(files) {
+    files.forEach(file => {
+        if (!aiDesignFiles.find(f => f.name === file.name)) {
+            aiDesignFiles.push(file);
+        }
+    });
+    
+    displayAIFilePreview();
+}
+
+// Display AI file preview
+function displayAIFilePreview() {
+    const preview = document.getElementById('aiFilePreview');
+    preview.innerHTML = '';
+    
+    aiDesignFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const div = document.createElement('div');
+            div.className = 'relative';
+            div.innerHTML = `
+                <img src="${e.target.result}" class="w-full h-24 object-cover rounded-lg">
+                <button 
+                    onclick="removeAIFile(${index})" 
+                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                >
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            `;
+            preview.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// Remove AI file
+function removeAIFile(index) {
+    aiDesignFiles.splice(index, 1);
+    displayAIFilePreview();
 }
 
 // ============================================================================

@@ -784,7 +784,7 @@
                             <!-- AI Design Section - Always Available -->
                             <div id="aiDesignSection" class="mb-6 bg-gradient-to-br from-accent to-primary bg-opacity-10 p-6 rounded-xl border-2 border-accent">
                                 <label class="flex items-start space-x-3 cursor-pointer">
-                                    <input type="checkbox" id="aiDesign" class="mt-1 w-5 h-5 text-accent rounded">
+                                    <input type="checkbox" id="aiDesign" class="mt-1 w-5 h-5 text-accent rounded" onchange="toggleAIUploadSection()">
                                     <div class="flex-1">
                                         <p class="font-semibold text-gray-900 flex items-center">
                                             <i class="fas fa-magic text-accent mr-2"></i>
@@ -793,6 +793,21 @@
                                         <p id="aiDesignDescription" class="text-sm text-gray-700 mt-1">Based on your budget and preferences, we'll generate photorealistic design concepts and email them to you within 60 seconds</p>
                                     </div>
                                 </label>
+                                
+                                <!-- AI Design Photo Upload (appears when checkbox is checked) -->
+                                <div id="aiDesignUploadSection" class="hidden mt-4 pt-4 border-t border-accent border-opacity-30">
+                                    <p class="text-sm font-semibold text-gray-900 mb-3">
+                                        <i class="fas fa-camera text-accent mr-2"></i>
+                                        Upload photos of your current garden (optional)
+                                    </p>
+                                    <div class="border-2 border-dashed border-accent border-opacity-40 rounded-xl p-6 text-center hover:border-accent transition-colors cursor-pointer bg-white" id="aiDropZone">
+                                        <i class="fas fa-cloud-upload-alt text-4xl text-accent mb-2"></i>
+                                        <p class="text-gray-700 mb-1 font-medium">Drag & drop photos here, or click to browse</p>
+                                        <p class="text-xs text-gray-600">For better results, upload photos of your current garden</p>
+                                        <input type="file" id="aiFileInput" class="hidden" accept="image/*" multiple>
+                                    </div>
+                                    <div id="aiFilePreview" class="mt-3 grid grid-cols-3 gap-2"></div>
+                                </div>
                             </div>
                             
                             <div class="flex gap-3">

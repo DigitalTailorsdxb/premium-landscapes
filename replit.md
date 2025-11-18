@@ -29,6 +29,7 @@
   - Source detection (`metadata.source`) enables customized messaging based on entry point
 ✅ **AI Design Always Available** - AI design checkbox now always visible in quote form (not photo-dependent) - works with photos (image-based) OR without (budget-based) (Nov 14)
 ✅ **Dynamic Confirmation Messaging** - Quote confirmation automatically mentions AI designs when checkbox selected (Nov 14)
+✅ **AI Design Photo Upload (Step 5)** - When AI design checkbox is selected, upload section appears allowing users to upload garden photos specifically for AI design generation. Photos uploaded here take priority over Step 4 photos. Drag-and-drop interface with image preview and remove functionality (Nov 18)
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
@@ -53,7 +54,7 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
     - **Full Redesign Mode:** Comprehensive material selector with 5 collapsible categories (Paving & Hard Landscaping, Lawn & Planting, Structures, Features, Boundaries) containing 30+ material options. **One-click selection** - materials add instantly with single click, no modal needed. Workflow determines sizing and quality automatically based on budget. Selected materials appear in real-time summary panel with remove functionality. **Budget-Based Design Option:** Checkbox allowing customers to request design proposals based on budget without specifying materials - enables flexibility to design within price constraints. Design vision notes field for overall project requirements.
   - **Step 3:** Area slider (10-150 m²) and budget selection cards
   - **Step 4:** Simple 4-field manual address entry (house number, street, city, postcode) - fast, reliable, no API dependencies. Includes drag-and-drop photo/video upload.
-  - **Step 5:** Contact details with conditional AI design preview option (only visible if images uploaded; otherwise shows upload prompt)
+  - **Step 5:** Contact details with AI design checkbox. When checked, reveals drag-and-drop photo upload section for garden images. AI-specific photos take priority over Step 4 photos in the workflow payload
   - Live summary panel updates in real-time showing selected products, area, budget, location, and photo count
   - Progress bar with step indicator and percentage
   - **Quote Submission:** After submission, shows confirmation message explaining quote will be emailed. No fake pricing displayed on site.
