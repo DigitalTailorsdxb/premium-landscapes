@@ -11,7 +11,7 @@
 ✅ **One-Click Material Selection** - Full Redesign materials add instantly with single click, no modal/quality/area inputs needed - workflow determines sizing and quality based on budget (Nov 13)
 ✅ **Dedicated Area Input Fields** - Each product now has a dedicated area/size input field for more accurate quotes
 ✅ **Clean Quote Submission** - No fake pricing shown on site; actual quote sent via email from n8n workflow
-✅ **Dual Webhook Routing** - Automatic routing to separate workflows: Standard quotes → `/webhook/premium-landscapes-quote`, Full redesigns → `/webhook/premium-landscapes-full-redesign` (Nov 5)
+✅ **Dual Webhook Routing** - Automatic routing to separate workflows on PRODUCTION endpoints: Standard quotes → `/webhook/premium-landscapes-quote`, Full redesigns → `/webhook/premium-landscapes-full-redesign`, AI Design → `/webhook/premium-landscapes-ai-design` (Nov 18)
 ✅ **Logo URL for PDFs** - https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev/static/logo.png
 ✅ **Fencing Data Structure Fixed** - Changed from `length_m` to `length` and `unitType: 'qty'` to `unitType: 'm'` (Nov 5)
 ✅ **Simple Manual Address Entry** - Clean 4-field form (house number, street, city, postcode) - 100% reliable, no API dependencies (Nov 5)
