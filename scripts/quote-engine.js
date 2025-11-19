@@ -1082,6 +1082,18 @@ async function sendToAIDesignWorkflow() {
             metadata: designPayload.metadata
         });
         
+        // Log photo details if present
+        if (photoObject) {
+            console.log('📸 Photo details:', {
+                name: photoObject.name,
+                type: photoObject.type,
+                size: `${(photoObject.size / 1024).toFixed(2)} KB`,
+                dataPreview: photoObject.data.substring(0, 50) + '...'
+            });
+        } else {
+            console.log('📸 No photo uploaded - will use budget-based design');
+        }
+        
         const response = await fetch(designWebhookUrl, {
             method: 'POST',
             headers: {
