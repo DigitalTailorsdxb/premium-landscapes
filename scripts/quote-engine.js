@@ -988,7 +988,7 @@ async function showQuoteResult(data) {
                 aiDesignItem.className = 'flex items-start';
                 aiDesignItem.innerHTML = `
                     <i class="fas fa-check-circle text-accent mr-2 mt-1"></i>
-                    <span>You'll also receive AI-generated garden design concepts in a separate email</span>
+                    <span>You'll also receive your AI-generated garden design in a separate email</span>
                 `;
                 nextStepsList.appendChild(aiDesignItem);
             }
