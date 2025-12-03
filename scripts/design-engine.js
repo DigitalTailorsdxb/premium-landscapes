@@ -214,7 +214,8 @@ function updateSummary() {
             case '<5000': budgetText = 'Under £5k'; break;
             case '5000-10000': budgetText = '£5k - £10k'; break;
             case '10000-20000': budgetText = '£10k - £20k'; break;
-            case '>20000': budgetText = '£20k+'; break;
+            case '20000-30000': budgetText = '£20k - £30k'; break;
+            case '>30000': budgetText = '£30k+'; break;
         }
         html += `
             <div class="summary-item bg-white px-3 py-2 rounded-lg mt-2">
@@ -243,9 +244,12 @@ async function submitDesign() {
     designData.email = emailInput.value.trim();
     
     const phoneInput = document.getElementById('phone');
-    if (phoneInput) {
-        designData.phone = phoneInput.value.trim();
+    if (!phoneInput.value.trim()) {
+        alert('Please enter your phone number');
+        phoneInput.focus();
+        return;
     }
+    designData.phone = phoneInput.value.trim();
     
     const sizeInput = document.getElementById('gardenSize');
     if (sizeInput) {

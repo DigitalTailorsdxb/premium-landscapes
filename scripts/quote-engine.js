@@ -601,9 +601,12 @@ async function submitQuote() {
     quoteData.email = emailInput.value.trim();
     
     const phoneInput = document.getElementById('phone');
-    if (phoneInput) {
-        quoteData.phone = phoneInput.value.trim();
+    if (!phoneInput.value.trim()) {
+        alert('Please enter your phone number');
+        phoneInput.focus();
+        return;
     }
+    quoteData.phone = phoneInput.value.trim();
     
     const aiDesignCheckbox = document.getElementById('aiDesign');
     if (aiDesignCheckbox && !aiDesignCheckbox.disabled) {
