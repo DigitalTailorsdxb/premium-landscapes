@@ -234,13 +234,20 @@ function updateSummary() {
 // Submit design request
 async function submitDesign() {
     // Validation
+    const nameInput = document.getElementById('name');
+    if (!nameInput.value.trim()) {
+        alert('Please enter your name');
+        nameInput.focus();
+        return;
+    }
+    designData.name = nameInput.value.trim();
+    
     const emailInput = document.getElementById('email');
     if (!emailInput.value.trim() || !emailInput.value.includes('@')) {
         alert('Please enter a valid email address');
         emailInput.focus();
         return;
     }
-    
     designData.email = emailInput.value.trim();
     
     const phoneInput = document.getElementById('phone');
@@ -265,6 +272,7 @@ async function submitDesign() {
     // Prepare webhook payload
     const webhookPayload = {
         customer: {
+            name: designData.name,
             email: designData.email,
             phone: designData.phone
         },
