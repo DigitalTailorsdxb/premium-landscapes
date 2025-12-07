@@ -258,6 +258,35 @@ async function submitDesign() {
     }
     designData.phone = phoneInput.value.trim();
     
+    // Address validation
+    const streetInput = document.getElementById('street');
+    if (!streetInput.value.trim()) {
+        alert('Please enter your street name');
+        streetInput.focus();
+        return;
+    }
+    
+    const cityInput = document.getElementById('city');
+    if (!cityInput.value.trim()) {
+        alert('Please enter your city or town');
+        cityInput.focus();
+        return;
+    }
+    
+    const postcodeInput = document.getElementById('postcode');
+    if (!postcodeInput.value.trim()) {
+        alert('Please enter your postcode');
+        postcodeInput.focus();
+        return;
+    }
+    
+    // Collect address data
+    const houseNumberInput = document.getElementById('houseNumber');
+    designData.houseNumber = houseNumberInput ? houseNumberInput.value.trim() : '';
+    designData.street = streetInput.value.trim();
+    designData.city = cityInput.value.trim();
+    designData.postcode = postcodeInput.value.trim();
+    
     const sizeInput = document.getElementById('gardenSize');
     if (sizeInput) {
         designData.gardenSize = sizeInput.value.trim();
@@ -274,7 +303,12 @@ async function submitDesign() {
         customer: {
             name: designData.name,
             email: designData.email,
-            phone: designData.phone
+            phone: designData.phone,
+            houseNumber: designData.houseNumber,
+            street: designData.street,
+            city: designData.city,
+            postcode: designData.postcode,
+            address: `${designData.houseNumber ? designData.houseNumber + ' ' : ''}${designData.street}, ${designData.city}, ${designData.postcode}`
         },
         design: {
             features: designData.features,
