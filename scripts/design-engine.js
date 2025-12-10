@@ -211,11 +211,11 @@ function updateSummary() {
     if (designData.budget) {
         let budgetText = '';
         switch(designData.budget) {
-            case '<5000': budgetText = 'Under £5k'; break;
             case '5000-10000': budgetText = '£5k - £10k'; break;
             case '10000-20000': budgetText = '£10k - £20k'; break;
             case '20000-30000': budgetText = '£20k - £30k'; break;
-            case '>30000': budgetText = '£30k+'; break;
+            case '30000-50000': budgetText = '£30k - £50k'; break;
+            case '>50000': budgetText = '£50k+'; break;
         }
         html += `
             <div class="summary-item bg-white px-3 py-2 rounded-lg mt-2">
@@ -277,6 +277,12 @@ async function submitDesign() {
     if (!postcodeInput.value.trim()) {
         alert('Please enter your postcode');
         postcodeInput.focus();
+        return;
+    }
+    
+    // Budget validation
+    if (!designData.budget) {
+        alert('Please select a budget range');
         return;
     }
     
