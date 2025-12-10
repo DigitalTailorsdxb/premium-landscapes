@@ -216,6 +216,7 @@ function updateSummary() {
             case '20000-30000': budgetText = '£20k - £30k'; break;
             case '30000-50000': budgetText = '£30k - £50k'; break;
             case '>50000': budgetText = '£50k+'; break;
+            default: budgetText = designData.budget; break;
         }
         html += `
             <div class="summary-item bg-white px-3 py-2 rounded-lg mt-2">
