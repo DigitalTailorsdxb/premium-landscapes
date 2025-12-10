@@ -18,8 +18,20 @@ const designData = {
 document.addEventListener('DOMContentLoaded', function() {
     setupFeatureCards();
     setupPhotoUpload();
+    setupGardenSizeInput();
     updateProgress();
 });
+
+// Garden size input handler
+function setupGardenSizeInput() {
+    const gardenSizeInput = document.getElementById('gardenSize');
+    if (gardenSizeInput) {
+        gardenSizeInput.addEventListener('input', function() {
+            designData.gardenSize = this.value.trim();
+            updateSummary();
+        });
+    }
+}
 
 // Feature card selection (Step 1)
 function setupFeatureCards() {
@@ -203,6 +215,15 @@ function updateSummary() {
         html += `
             <div class="summary-item bg-white px-3 py-2 rounded-lg mt-2">
                 <p class="text-sm"><i class="fas fa-image text-accent mr-2"></i>Photo: <strong>Uploaded</strong></p>
+            </div>
+        `;
+    }
+    
+    // Garden Size
+    if (designData.gardenSize) {
+        html += `
+            <div class="summary-item bg-white px-3 py-2 rounded-lg mt-2">
+                <p class="text-sm"><i class="fas fa-ruler-combined text-accent mr-2"></i>Size: <strong>${designData.gardenSize}</strong></p>
             </div>
         `;
     }
