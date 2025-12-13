@@ -636,8 +636,8 @@ async function submitQuote() {
         
         // Route to appropriate webhook
         const webhookUrl = isFullRedesign 
-            ? brandConfig?.webhooks?.quoteFullRedesign 
-            : brandConfig?.webhooks?.quote;
+            ? window.brandConfig?.webhooks?.quoteFullRedesign 
+            : window.brandConfig?.webhooks?.quote;
         
         const quoteType = isFullRedesign ? 'FULL GARDEN REDESIGN' : 'INDIVIDUAL PRODUCTS';
         console.log(`🎯 Quote Type: ${quoteType}`);
@@ -957,8 +957,8 @@ function prepareWebhookPayload() {
             timestamp: new Date().toISOString(),
             quoteType: isFullRedesign ? 'full_garden_redesign' : 'individual_products',
             webhookDestination: isFullRedesign 
-                ? brandConfig?.webhooks?.quoteFullRedesign || 'https://n8n.example.com/webhook/premium-landscapes-full-redesign'
-                : brandConfig?.webhooks?.quote || 'https://n8n.example.com/webhook/premium-landscapes-quote'
+                ? window.brandConfig?.webhooks?.quoteFullRedesign || 'https://n8n.example.com/webhook/premium-landscapes-full-redesign'
+                : window.brandConfig?.webhooks?.quote || 'https://n8n.example.com/webhook/premium-landscapes-quote'
         };
         
         return payload;
@@ -1018,7 +1018,7 @@ async function showQuoteResult(data) {
 
 // Send quote data to AI Design workflow
 async function sendToAIDesignWorkflow() {
-    const designWebhookUrl = brandConfig?.webhooks?.design;
+    const designWebhookUrl = window.brandConfig?.webhooks?.design;
     
     if (!designWebhookUrl || designWebhookUrl.includes('your-')) {
         console.warn('⚠️ AI Design webhook not configured');

@@ -375,7 +375,7 @@ async function sendToWebhook(payload) {
     console.log('🎨 AI DESIGN REQUEST - Sending to n8n workflow...');
     console.log('📦 Design Data:', payload);
     
-    const webhookUrl = brandConfig?.webhooks?.design || 'https://your-n8n-webhook-url.com';
+    const webhookUrl = window.brandConfig?.webhooks?.design || 'https://your-n8n-webhook-url.com';
     
     console.log('🔗 Webhook URL:', webhookUrl);
     
