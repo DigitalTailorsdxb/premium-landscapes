@@ -1016,9 +1016,9 @@ async function showQuoteResult(data) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Send quote data to AI Design workflow
+// Send quote data to AI Design workflow (separate from standalone AI Design page)
 async function sendToAIDesignWorkflow() {
-    const designWebhookUrl = window.brandConfig?.webhooks?.design;
+    const designWebhookUrl = window.brandConfig?.webhooks?.quoteDesign;
     
     if (!designWebhookUrl || designWebhookUrl.includes('your-')) {
         console.warn('⚠️ AI Design webhook not configured');
