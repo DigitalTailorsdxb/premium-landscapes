@@ -518,8 +518,21 @@ function updateSummary() {
     const summaryContent = document.getElementById('summaryContent');
     let html = '';
     
-    if (quoteData.features.length > 0) {
-        html += '<div class="space-y-2">';
+    // Show quote type at the top
+    if (quoteData.quoteMode) {
+        const modeLabel = quoteData.quoteMode === 'full-redesign' ? 'Full redesign' : 'Individual products';
+        const modeIcon = quoteData.quoteMode === 'full-redesign' ? 'fa-magic' : 'fa-th';
+        html += `
+            <div class="summary-item flex items-center space-x-2 bg-gradient-to-r from-blue-50 to-purple-50 px-3 py-2 rounded-lg border border-accent">
+                <i class="fas ${modeIcon} text-accent"></i>
+                <span class="text-sm font-bold text-primary">${modeLabel}</span>
+            </div>
+        `;
+    }
+    
+    // Show selected products for individual mode
+    if (quoteData.quoteMode === 'individual-products' && quoteData.features.length > 0) {
+        html += '<div class="space-y-2 mt-2">';
         quoteData.features.forEach(feature => {
             const featureName = feature.charAt(0).toUpperCase() + feature.slice(1).replace('-', ' ');
             const details = quoteData.productDetails[feature] || '';
@@ -535,10 +548,28 @@ function updateSummary() {
         html += '</div>';
     }
     
-    if (quoteData.area && quoteData.area != 40) {
+    // Show selected materials count for full redesign mode
+    if (quoteData.quoteMode === 'full-redesign' && typeof gardenDesignMaterials !== 'undefined') {
+        const materialCount = Object.keys(gardenDesignMaterials).length;
+        if (materialCount > 0) {
+            const materialNames = Object.values(gardenDesignMaterials)
+                .map(m => m.name || m.material)
+                .slice(0, 3)
+                .join(', ');
+            const moreText = materialCount > 3 ? ` +${materialCount - 3} more` : '';
+            html += `
+                <div class="summary-item bg-stone px-3 py-2 rounded-lg mt-2">
+                    <p class="text-sm"><i class="fas fa-layer-group text-accent mr-2"></i>Materials: <strong>${materialNames}${moreText}</strong></p>
+                </div>
+            `;
+        }
+    }
+    
+    // Always show area if set (important for quotes)
+    if (quoteData.area) {
         html += `
             <div class="summary-item bg-stone px-3 py-2 rounded-lg mt-2">
-                <p class="text-sm"><i class="fas fa-ruler-combined text-accent mr-2"></i>Area: <strong>${quoteData.area} m²</strong></p>
+                <p class="text-sm"><i class="fas fa-ruler-combined text-accent mr-2"></i>Garden size: <strong>${quoteData.area} m²</strong></p>
             </div>
         `;
     }
@@ -566,6 +597,16 @@ function updateSummary() {
         html += `
             <div class="summary-item bg-stone px-3 py-2 rounded-lg mt-2">
                 <p class="text-sm"><i class="fas fa-image text-accent mr-2"></i>Photos: <strong>${quoteData.files.length} uploaded</strong></p>
+            </div>
+        `;
+    }
+    
+    // Show if AI design is selected
+    const aiDesignCheckbox = document.getElementById('aiDesign');
+    if (aiDesignCheckbox && aiDesignCheckbox.checked) {
+        html += `
+            <div class="summary-item bg-gradient-to-r from-purple-50 to-blue-50 px-3 py-2 rounded-lg mt-2 border border-purple-200">
+                <p class="text-sm"><i class="fas fa-sparkles text-accent mr-2"></i><strong>+ Free AI Design</strong></p>
             </div>
         `;
     }
@@ -1252,6 +1293,9 @@ function toggleAIUploadSection() {
         const preview = document.getElementById('aiFilePreview');
         if (preview) preview.innerHTML = '';
     }
+    
+    // Update summary to show AI design selection
+    updateSummary();
 }
 
 // Handle AI design file uploads (limit: 1 image only)
