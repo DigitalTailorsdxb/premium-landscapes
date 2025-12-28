@@ -1014,7 +1014,9 @@ function prepareWebhookPayload() {
                 },
                 products: transformProducts(),
                 extras: detectExtras(),
-                notes: quoteData.additionalNotes || 'Website quote request'
+                notes: isFullRedesign 
+                    ? (quoteData.designVisionNotes || quoteData.additionalNotes || 'Website quote request')
+                    : (quoteData.additionalNotes || 'Website quote request')
             }
         };
         
