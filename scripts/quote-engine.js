@@ -1016,7 +1016,8 @@ function prepareWebhookPayload() {
                 extras: detectExtras(),
                 notes: isFullRedesign 
                     ? (quoteData.designVisionNotes || quoteData.additionalNotes || 'Website quote request')
-                    : (quoteData.additionalNotes || 'Website quote request')
+                    : (quoteData.additionalNotes || 'Website quote request'),
+                designPreferences: quoteData.designVisionNotes || ''
             }
         };
         
