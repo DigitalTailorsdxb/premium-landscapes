@@ -9,6 +9,7 @@ let quoteData = {
     productDetails: {}, // Stores details for each product
     productAreas: {}, // Stores area/size for each product
     additionalNotes: '',
+    designVisionNotes: '', // Design vision & requirements for full redesign
     area: 40,
     budget: '',
     postcode: '',
@@ -41,8 +42,20 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeFileUploadStep5();
     initializeAddProductButtons();
     initializePostcodeLookup();
+    initializeDesignVisionNotes();
     updateSummary();
 });
+
+// Initialize design vision notes field (for full redesign mode)
+function initializeDesignVisionNotes() {
+    const designVisionNotes = document.getElementById('designVisionNotes');
+    if (designVisionNotes) {
+        designVisionNotes.addEventListener('input', function() {
+            quoteData.designVisionNotes = this.value;
+            updateSummary();
+        });
+    }
+}
 
 // Quote mode card selection (Step 1 - mutually exclusive)
 function initializeQuoteModeCards() {
@@ -195,6 +208,16 @@ function buildProductDetailFields() {
         additionalNotes.value = quoteData.additionalNotes;
         additionalNotes.addEventListener('input', function() {
             quoteData.additionalNotes = this.value;
+        });
+    }
+    
+    // Listen to design vision notes (for full redesign mode)
+    const designVisionNotes = document.getElementById('designVisionNotes');
+    if (designVisionNotes) {
+        designVisionNotes.value = quoteData.designVisionNotes;
+        designVisionNotes.addEventListener('input', function() {
+            quoteData.designVisionNotes = this.value;
+            updateSummary();
         });
     }
 }
@@ -563,6 +586,16 @@ function updateSummary() {
                 </div>
             `;
         }
+    }
+    
+    // Show design vision notes if provided
+    if (quoteData.designVisionNotes && quoteData.designVisionNotes.trim()) {
+        const visionPreview = quoteData.designVisionNotes.substring(0, 50) + (quoteData.designVisionNotes.length > 50 ? '...' : '');
+        html += `
+            <div class="summary-item bg-stone px-3 py-2 rounded-lg mt-2">
+                <p class="text-sm"><i class="fas fa-lightbulb text-accent mr-2"></i>Vision: <strong>${visionPreview}</strong></p>
+            </div>
+        `;
     }
     
     // Always show area if set (important for quotes)
