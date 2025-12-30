@@ -947,30 +947,14 @@ function prepareWebhookPayload() {
         
         // Format garden design materials for n8n
         const formatGardenDesignMaterials = () => {
-            // Check if budget-based design mode is enabled
-            const budgetBasedCheckbox = document.getElementById('budgetBasedDesign');
-            const isBudgetBased = budgetBasedCheckbox ? budgetBasedCheckbox.checked : false;
+            // Full redesign mode always uses budget-based design now (simplified UI)
+            // The designVisionNotes textarea contains all requirements
             
-            // Group materials by category
-            const materialsByCategory = {};
-            Object.values(gardenDesignMaterials).forEach(mat => {
-                if (!materialsByCategory[mat.category]) {
-                    materialsByCategory[mat.category] = [];
-                }
-                materialsByCategory[mat.category].push({
-                    material: mat.material,
-                    displayName: mat.displayName,
-                    quality: mat.quality,
-                    area_m2: mat.area,
-                    style: mat.style || '',
-                    notes: mat.notes || ''
-                });
-            });
-            
-            // Return clean structure for n8n
+            // Return clean structure for n8n - always budget-based for full redesign
             return {
-                budgetBasedDesign: isBudgetBased,
-                categories: materialsByCategory
+                budgetBasedDesign: true,
+                categories: {},
+                designVision: quoteData.designVisionNotes || ''
             };
         };
         
@@ -1139,7 +1123,7 @@ async function sendToAIDesignWorkflow() {
                 name: m.material,
                 displayName: m.displayName
             })) : [],
-            budgetBasedDesign: isFullRedesign && !hasMaterials,
+            budgetBasedDesign: isFullRedesign, // Always true for full redesign (simplified UI)
             designNotes: isFullRedesign ? (quoteData.designVisionNotes || '') : ''
         },
         photo: photoObject,
