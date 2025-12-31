@@ -782,8 +782,20 @@ async function submitQuote() {
             console.log('n8n returned empty response, using demo mode');
         }
         
-        // Show success message
-        showQuoteResult(result);
+        // Check if webhook returned an error in the response body
+        const hasError = result.success === false || 
+                         result.error || 
+                         result.status === 'error' ||
+                         result.status === 'failed';
+        
+        if (hasError) {
+            const errorMessage = result.error || result.message || 'The workflow encountered an error processing your quote.';
+            console.error('❌ Webhook returned error:', errorMessage);
+            showQuoteError(errorMessage);
+        } else {
+            // Show success message
+            showQuoteResult(result);
+        }
         
     } catch (error) {
         console.error('❌ Error submitting quote:', error);
@@ -1072,6 +1084,70 @@ async function showQuoteResult(data) {
             console.error('AI Design workflow failed, but quote was successful');
         }
     }
+    
+    // Scroll to result
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================================
+// DISPLAY QUOTE ERROR
+// Shows error message when webhook returns an error response
+// ============================================================================
+function showQuoteError(errorMessage) {
+    document.getElementById('loadingState').classList.add('hidden');
+    document.getElementById('quoteResult').classList.add('hidden');
+    
+    // Check if error result element exists, create if not
+    let errorResult = document.getElementById('quoteError');
+    if (!errorResult) {
+        // Create error element dynamically
+        const loadingState = document.getElementById('loadingState');
+        errorResult = document.createElement('div');
+        errorResult.id = 'quoteError';
+        errorResult.className = 'text-center py-8';
+        loadingState.parentNode.insertBefore(errorResult, loadingState.nextSibling);
+    }
+    
+    errorResult.innerHTML = `
+        <div class="text-center mb-6">
+            <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exclamation-triangle text-4xl text-red-600"></i>
+            </div>
+            <h2 class="font-heading font-bold text-3xl text-red-600 mb-3">Quote Request Failed</h2>
+            <p class="text-gray-600 text-lg mb-6">${errorMessage}</p>
+        </div>
+        
+        <div class="bg-red-50 p-8 rounded-2xl mb-6 border-2 border-red-200">
+            <div class="flex items-start mb-4">
+                <i class="fas fa-info-circle text-2xl text-red-500 mr-3 mt-1"></i>
+                <div>
+                    <h3 class="font-semibold text-lg text-gray-900 mb-2">What You Can Do</h3>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start">
+                            <i class="fas fa-redo text-red-500 mr-2 mt-1"></i>
+                            <span>Try submitting your quote again in a few moments</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-phone text-red-500 mr-2 mt-1"></i>
+                            <span>Call us directly at <strong>07444 887813</strong> for immediate assistance</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-envelope text-red-500 mr-2 mt-1"></i>
+                            <span>Email us at <strong>info@premiumlandscapes.co.uk</strong></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <button onclick="location.reload()" class="bg-primary text-white px-8 py-3 rounded-full font-semibold hover:bg-primary-dark transition">
+            <i class="fas fa-redo mr-2"></i>Try Again
+        </button>
+    `;
+    
+    errorResult.classList.remove('hidden');
+    
+    console.error('❌ Quote request failed:', errorMessage);
     
     // Scroll to result
     window.scrollTo({ top: 0, behavior: 'smooth' });

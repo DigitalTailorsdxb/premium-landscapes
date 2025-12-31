@@ -403,10 +403,28 @@ async function sendToWebhook(payload) {
             throw new Error(`Webhook returned status ${response.status}`);
         }
         
-        const result = await response.json();
-        console.log('📬 Workflow response:', result);
+        // Try to parse JSON response
+        let result = {};
+        try {
+            result = await response.json();
+            console.log('📬 Workflow response:', result);
+        } catch (e) {
+            console.warn('Response is not JSON, treating as success');
+        }
         
-        showSuccess();
+        // Check if webhook returned an error in the response body
+        const hasError = result.success === false || 
+                         result.error || 
+                         result.status === 'error' ||
+                         result.status === 'failed';
+        
+        if (hasError) {
+            const errorMessage = result.error || result.message || 'The workflow encountered an error generating your design.';
+            console.error('❌ Webhook returned error:', errorMessage);
+            showError(errorMessage);
+        } else {
+            showSuccess();
+        }
         
     } catch (error) {
         console.error('❌ Error submitting design request:', error);
@@ -420,6 +438,49 @@ function showSuccess() {
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('successResult').classList.remove('hidden');
     document.getElementById('confirmEmail').textContent = designData.email;
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showError(errorMessage) {
+    document.getElementById('loadingState').classList.add('hidden');
+    document.getElementById('successResult').classList.add('hidden');
+    
+    // Check if error result element exists, create if not
+    let errorResult = document.getElementById('designError');
+    if (!errorResult) {
+        // Create error element dynamically
+        const loadingState = document.getElementById('loadingState');
+        errorResult = document.createElement('div');
+        errorResult.id = 'designError';
+        errorResult.className = 'step-container text-center py-8';
+        loadingState.parentNode.insertBefore(errorResult, loadingState.nextSibling);
+    }
+    
+    errorResult.innerHTML = `
+        <div class="bg-red-100 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-exclamation-triangle text-red-600 text-4xl"></i>
+        </div>
+        <h3 class="font-heading font-bold text-3xl text-red-600 mb-4">Design Request Failed</h3>
+        <p class="text-lg text-gray-700 mb-6">${errorMessage}</p>
+        <div class="bg-red-50 rounded-xl p-6 max-w-md mx-auto mb-6 border border-red-200">
+            <p class="text-gray-700 mb-4">
+                <i class="fas fa-phone text-red-500 mr-2"></i>
+                Call us at <strong>07444 887813</strong> for help
+            </p>
+            <p class="text-sm text-gray-500">
+                Or email us at info@premiumlandscapes.co.uk
+            </p>
+        </div>
+        <button onclick="location.reload()" class="bg-primary text-white px-8 py-3 rounded-full font-semibold hover:bg-primary-dark transition">
+            <i class="fas fa-redo mr-2"></i>Try Again
+        </button>
+    `;
+    
+    errorResult.classList.remove('hidden');
+    
+    console.error('❌ Design request failed:', errorMessage);
     
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });

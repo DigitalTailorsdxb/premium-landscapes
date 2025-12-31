@@ -30,6 +30,9 @@
 ✅ **AI Design Always Available** - AI design checkbox now always visible in quote form (not photo-dependent) - works with photos (image-based) OR without (budget-based) (Nov 14)
 ✅ **Dynamic Confirmation Messaging** - Quote confirmation automatically mentions AI designs when checkbox selected (Nov 14)
 ✅ **AI Design Photo Upload (Step 5)** - When AI design checkbox is selected, upload section appears allowing users to upload garden photos specifically for AI design generation. Photos uploaded here take priority over Step 4 photos. Drag-and-drop interface with image preview and remove functionality (Nov 18)
+✅ **Webhook Error Handling** - Quote and Design forms now check webhook response for error indicators (`success: false`, `error`, `status: 'error'`). Displays proper error UI with red styling, error message from webhook, and "Try Again" button instead of always showing success (Dec 31)
+✅ **Mobile Navigation Fixes** - Homepage logo now clickable (links to index.html), "Home" link added to mobile hamburger menu on all pages (Dec 31)
+✅ **iOS Safari Hero Fix** - Removed `background-attachment: fixed` on mobile to fix hero image not displaying on iOS Safari (Dec 31)
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
