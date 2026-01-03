@@ -31,14 +31,14 @@ let progressState = {
     timeouts: []
 };
 
-// Progress step timings (milliseconds) - simulated based on typical workflow duration
+// Progress step timings (milliseconds) - ~25 seconds total to match n8n workflow
 const progressStepDurations = [
-    3000,  // Reading requirements
-    3500,  // Planning structure
-    4500,  // Building design
-    4000,  // Mapping products
-    5000,  // Building PDF
-    3000,  // Sending email
+    4000,  // Reading requirements
+    4500,  // Planning structure
+    6000,  // Building design
+    5000,  // Mapping products
+    5500,  // Building PDF
+    0,     // Sending email - waits for webhook
     1500   // Done
 ];
 
