@@ -33,13 +33,13 @@ let progressState = {
 
 // Progress step timings (milliseconds) - simulated based on typical workflow duration
 const progressStepDurations = [
-    2000,  // Reading requirements
-    2500,  // Planning structure
-    3000,  // Building design
-    2800,  // Mapping products
-    3500,  // Building PDF
-    2000,  // Sending email
-    1200   // Done
+    3000,  // Reading requirements
+    3500,  // Planning structure
+    4500,  // Building design
+    4000,  // Mapping products
+    5000,  // Building PDF
+    3000,  // Sending email
+    1500   // Done
 ];
 
 // Reset progress timeline to initial state
