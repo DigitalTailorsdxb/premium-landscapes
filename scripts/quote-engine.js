@@ -755,8 +755,8 @@ function updateSummary() {
         `;
     }
     
-    // Always show area if set (important for quotes)
-    if (quoteData.area) {
+    // Only show area after step 3 (where it's set)
+    if (quoteData.area && currentStep >= 3) {
         html += `
             <div class="summary-item bg-stone px-3 py-2 rounded-lg mt-2">
                 <p class="text-sm"><i class="fas fa-ruler-combined text-accent mr-2"></i>Garden size: <strong>${quoteData.area} m²</strong></p>
