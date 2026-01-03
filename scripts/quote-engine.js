@@ -609,18 +609,7 @@ function nextStep() {
         return;
     }
     
-    // Step 3: Budget validation for Full Garden Redesign
-    if (currentStep === 3) {
-        const isFullRedesign = quoteData.features.includes('full-redesign');
-        const budgetInput = document.getElementById('customBudgetInput');
-        const budgetValue = parseFloat(budgetInput.value);
-        
-        if (isFullRedesign && (!budgetValue || budgetValue < 1000)) {
-            alert('Please enter your budget (minimum £1,000) for the Full Garden Redesign. This helps us create a design proposal tailored to your price range.');
-            budgetInput.focus();
-            return;
-        }
-    }
+    // Step 3: Budget is now optional for Full Garden Redesign to allow creative freedom
     
     if (currentStep === 4) {
         const postcodeInput = document.getElementById('postcode');
