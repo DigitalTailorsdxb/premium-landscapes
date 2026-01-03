@@ -33,6 +33,7 @@
 ✅ **Webhook Error Handling** - Quote and Design forms now check webhook response for error indicators (`success: false`, `error`, `status: 'error'`). Displays proper error UI with red styling, error message from webhook, and "Try Again" button instead of always showing success (Dec 31)
 ✅ **Mobile Navigation Fixes** - Homepage logo now clickable (links to index.html), "Home" link added to mobile hamburger menu on all pages (Dec 31)
 ✅ **iOS Safari Hero Fix** - Removed `background-attachment: fixed` on mobile to fix hero image not displaying on iOS Safari (Dec 31)
+✅ **Animated Progress Timeline (Full Redesign)** - Full garden redesign quotes now show an animated step-by-step progress: Reading requirements → Planning structure → Building design → Mapping products → Building PDF → Sending email → Done! Each step animates with active/completed states. Animation syncs with actual webhook response (Jan 3)
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.

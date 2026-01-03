@@ -103,6 +103,71 @@
         .progress-bar {
             transition: width 0.5s ease;
         }
+        
+        /* Progress Step States */
+        .progress-step.active .step-icon {
+            background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
+            animation: pulse-glow 1.5s infinite;
+        }
+        .progress-step.active .step-icon i {
+            color: white;
+        }
+        .progress-step.active .step-label {
+            color: #1e40af;
+            font-weight: 600;
+        }
+        .progress-step.active .step-status i {
+            color: #2563eb;
+            animation: pulse 1s infinite;
+        }
+        
+        .progress-step.completed .step-icon {
+            background: #10b981;
+        }
+        .progress-step.completed .step-icon i {
+            color: white;
+        }
+        .progress-step.completed .step-label {
+            color: #059669;
+        }
+        .progress-step.completed .step-status i {
+            display: none;
+        }
+        .progress-step.completed .step-status::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: #10b981;
+        }
+        
+        .progress-step.error .step-icon {
+            background: #ef4444;
+        }
+        .progress-step.error .step-icon i {
+            color: white;
+        }
+        .progress-step.error .step-label {
+            color: #dc2626;
+        }
+        .progress-step.error .step-status i {
+            display: none;
+        }
+        .progress-step.error .step-status::after {
+            content: '\f00d';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: #ef4444;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
     </style>
 </head>
 <body class="bg-white text-gray-800">
@@ -626,7 +691,7 @@
                             </div>
                         </div>
                         
-                        <!-- Loading State -->
+                        <!-- Loading State - Standard (Individual Products) -->
                         <div id="loadingState" class="hidden text-center py-12">
                             <div class="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-accent mx-auto mb-4"></div>
                             <h3 class="font-heading font-bold text-xl text-primary mb-2">Analysing your project...</h3>
@@ -639,6 +704,112 @@
                                     <div class="text-sm text-gray-700">
                                         <p class="font-semibold text-gray-900 mb-1">About Your Quote</p>
                                         <p>We generate quotes as accurately as possible using live market data and local pricing. However, final prices may vary based on site conditions, material availability, and project complexity. This is an estimate that we strive to make as precise as possible.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Loading State - Full Redesign (Animated Progress) -->
+                        <div id="loadingStateRedesign" class="hidden py-12">
+                            <div class="max-w-lg mx-auto">
+                                <h3 class="font-heading font-bold text-2xl text-primary mb-2 text-center">Creating Your Custom Design</h3>
+                                <p class="text-gray-600 mb-8 text-center">Our AI is crafting a bespoke garden plan for you</p>
+                                
+                                <!-- Progress Timeline -->
+                                <div id="progressTimeline" class="space-y-4">
+                                    <div class="progress-step flex items-center" data-step="0">
+                                        <div class="step-icon w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4 transition-all duration-300">
+                                            <i class="fas fa-clipboard-list text-gray-400"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="step-label font-medium text-gray-400 transition-all duration-300">Reading requirements...</p>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-circle text-gray-300 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="progress-step flex items-center" data-step="1">
+                                        <div class="step-icon w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4 transition-all duration-300">
+                                            <i class="fas fa-drafting-compass text-gray-400"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="step-label font-medium text-gray-400 transition-all duration-300">Planning structure...</p>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-circle text-gray-300 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="progress-step flex items-center" data-step="2">
+                                        <div class="step-icon w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4 transition-all duration-300">
+                                            <i class="fas fa-pencil-ruler text-gray-400"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="step-label font-medium text-gray-400 transition-all duration-300">Building design...</p>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-circle text-gray-300 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="progress-step flex items-center" data-step="3">
+                                        <div class="step-icon w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4 transition-all duration-300">
+                                            <i class="fas fa-boxes text-gray-400"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="step-label font-medium text-gray-400 transition-all duration-300">Mapping products...</p>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-circle text-gray-300 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="progress-step flex items-center" data-step="4">
+                                        <div class="step-icon w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4 transition-all duration-300">
+                                            <i class="fas fa-file-pdf text-gray-400"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="step-label font-medium text-gray-400 transition-all duration-300">Building PDF...</p>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-circle text-gray-300 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="progress-step flex items-center" data-step="5">
+                                        <div class="step-icon w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4 transition-all duration-300">
+                                            <i class="fas fa-envelope text-gray-400"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="step-label font-medium text-gray-400 transition-all duration-300">Sending email...</p>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-circle text-gray-300 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="progress-step flex items-center" data-step="6">
+                                        <div class="step-icon w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4 transition-all duration-300">
+                                            <i class="fas fa-check-double text-gray-400"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="step-label font-medium text-gray-400 transition-all duration-300">Done!</p>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-circle text-gray-300 text-xs"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Price Accuracy Disclaimer -->
+                                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-8">
+                                    <div class="flex items-start text-left">
+                                        <i class="fas fa-info-circle text-blue-600 mr-3 mt-1 flex-shrink-0"></i>
+                                        <div class="text-sm text-gray-700">
+                                            <p class="font-semibold text-gray-900 mb-1">About Your Quote</p>
+                                            <p>Your custom design proposal is being crafted based on your requirements and budget. Final prices may vary based on site conditions.</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

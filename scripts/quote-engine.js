@@ -20,6 +20,163 @@ let quoteData = {
     files: []
 };
 
+// Progress animation state for full redesign quotes
+let progressState = {
+    currentStep: 0,
+    totalSteps: 7,
+    isAnimating: false,
+    webhookComplete: false,
+    webhookSuccess: false,
+    webhookResult: null,
+    timeouts: []
+};
+
+// Progress step timings (milliseconds) - simulated based on typical workflow duration
+const progressStepDurations = [
+    1200,  // Reading requirements
+    1500,  // Planning structure
+    2000,  // Building design
+    1800,  // Mapping products
+    2500,  // Building PDF
+    1500,  // Sending email
+    800    // Done
+];
+
+// Reset progress timeline to initial state
+function resetProgressTimeline() {
+    progressState = {
+        currentStep: 0,
+        totalSteps: 7,
+        isAnimating: false,
+        webhookComplete: false,
+        webhookSuccess: false,
+        webhookResult: null,
+        timeouts: []
+    };
+    
+    const steps = document.querySelectorAll('#progressTimeline .progress-step');
+    steps.forEach(step => {
+        step.classList.remove('active', 'completed', 'error');
+    });
+}
+
+// Start the progress animation
+function startProgressAnimation() {
+    progressState.isAnimating = true;
+    advanceProgressStep(0);
+}
+
+// Advance to the next progress step
+function advanceProgressStep(stepIndex) {
+    if (!progressState.isAnimating) return;
+    
+    const steps = document.querySelectorAll('#progressTimeline .progress-step');
+    
+    // Mark previous step as completed
+    if (stepIndex > 0) {
+        steps[stepIndex - 1].classList.remove('active');
+        steps[stepIndex - 1].classList.add('completed');
+    }
+    
+    // If we've reached the last two steps (Sending email, Done), wait for webhook
+    if (stepIndex >= 5 && !progressState.webhookComplete) {
+        // Keep "Sending email" as active until webhook completes
+        steps[5].classList.add('active');
+        progressState.currentStep = 5;
+        return; // Will be resumed by webhook callback
+    }
+    
+    // If webhook is complete and failed, show error
+    if (progressState.webhookComplete && !progressState.webhookSuccess) {
+        steps[stepIndex].classList.add('error');
+        progressState.isAnimating = false;
+        return;
+    }
+    
+    // Mark current step as active
+    if (stepIndex < steps.length) {
+        steps[stepIndex].classList.add('active');
+        progressState.currentStep = stepIndex;
+        
+        // Schedule next step
+        if (stepIndex < steps.length - 1) {
+            const timeout = setTimeout(() => {
+                advanceProgressStep(stepIndex + 1);
+            }, progressStepDurations[stepIndex]);
+            progressState.timeouts.push(timeout);
+        } else {
+            // Final step (Done) - wait a moment then show result
+            const timeout = setTimeout(() => {
+                completeProgressAnimation();
+            }, 1000);
+            progressState.timeouts.push(timeout);
+        }
+    }
+}
+
+// Called when webhook completes - resume animation
+function onWebhookComplete(success, result) {
+    progressState.webhookComplete = true;
+    progressState.webhookSuccess = success;
+    progressState.webhookResult = result;
+    
+    if (!progressState.isAnimating) return;
+    
+    const steps = document.querySelectorAll('#progressTimeline .progress-step');
+    
+    if (success) {
+        // Complete the "Sending email" step and move to "Done"
+        steps[5].classList.remove('active');
+        steps[5].classList.add('completed');
+        
+        // Activate and complete "Done" step
+        steps[6].classList.add('active');
+        progressState.currentStep = 6;
+        
+        setTimeout(() => {
+            steps[6].classList.remove('active');
+            steps[6].classList.add('completed');
+            completeProgressAnimation();
+        }, 1000);
+    } else {
+        // Show error on current step
+        const currentIdx = progressState.currentStep;
+        steps[currentIdx].classList.remove('active');
+        steps[currentIdx].classList.add('error');
+        progressState.isAnimating = false;
+        
+        // Show error UI after a brief moment
+        setTimeout(() => {
+            document.getElementById('loadingStateRedesign').classList.add('hidden');
+            const errorMessage = result?.error || result?.message || 'The workflow encountered an error processing your quote.';
+            showQuoteError(errorMessage);
+        }, 1500);
+    }
+}
+
+// Complete the progress animation and show result
+function completeProgressAnimation() {
+    progressState.isAnimating = false;
+    
+    // Clear any remaining timeouts
+    progressState.timeouts.forEach(t => clearTimeout(t));
+    progressState.timeouts = [];
+    
+    // Hide loading state and show result
+    document.getElementById('loadingStateRedesign').classList.add('hidden');
+    
+    if (progressState.webhookSuccess) {
+        showQuoteResult(progressState.webhookResult);
+    }
+}
+
+// Stop progress animation (for errors)
+function stopProgressAnimation() {
+    progressState.isAnimating = false;
+    progressState.timeouts.forEach(t => clearTimeout(t));
+    progressState.timeouts = [];
+}
+
 // Product examples for suggestions
 const productExamples = {
     'patio': 'Indian sandstone patio 40 sqm',
@@ -687,9 +844,21 @@ async function submitQuote() {
         quoteData.aiDesign = aiDesignCheckbox.checked;
     }
     
-    // Hide form, show loading
+    // Hide form
     document.getElementById('step5').classList.add('hidden');
-    document.getElementById('loadingState').classList.remove('hidden');
+    
+    // Check if this is a full redesign to determine which loading state to show
+    const isFullRedesignMode = quoteData.quoteMode === 'full-redesign';
+    
+    if (isFullRedesignMode) {
+        // Show animated progress for full redesign
+        document.getElementById('loadingStateRedesign').classList.remove('hidden');
+        resetProgressTimeline();
+        startProgressAnimation();
+    } else {
+        // Show standard loading spinner for individual products
+        document.getElementById('loadingState').classList.remove('hidden');
+    }
     
     // ============================================================================
     // WEBHOOK INTEGRATION POINT - Ready for Make.com/n8n Connection
@@ -724,10 +893,17 @@ async function submitQuote() {
             console.log('Standard quotes: /webhook/premium-landscapes-quote');
             console.log('Full redesign: /webhook/premium-landscapes-full-redesign');
             
-            // Demo mode: Show quote after 2 seconds
-            setTimeout(() => {
-                showQuoteResult();
-            }, 2000);
+            // Demo mode: Simulate webhook completion after delay
+            if (isFullRedesignMode) {
+                // Let animation run then complete
+                setTimeout(() => {
+                    onWebhookComplete(true, { demo: true });
+                }, 8000); // Allow time for animation
+            } else {
+                setTimeout(() => {
+                    showQuoteResult();
+                }, 2000);
+            }
             return;
         }
         
@@ -788,13 +964,24 @@ async function submitQuote() {
                          result.status === 'error' ||
                          result.status === 'failed';
         
-        if (hasError) {
-            const errorMessage = result.error || result.message || 'The workflow encountered an error processing your quote.';
-            console.error('❌ Webhook returned error:', errorMessage);
-            showQuoteError(errorMessage);
+        if (isFullRedesignMode) {
+            // For full redesign, use the animated progress callback
+            if (hasError) {
+                const errorMessage = result.error || result.message || 'The workflow encountered an error processing your quote.';
+                console.error('❌ Webhook returned error:', errorMessage);
+                onWebhookComplete(false, { error: errorMessage });
+            } else {
+                onWebhookComplete(true, result);
+            }
         } else {
-            // Show success message
-            showQuoteResult(result);
+            // For individual products, show result directly
+            if (hasError) {
+                const errorMessage = result.error || result.message || 'The workflow encountered an error processing your quote.';
+                console.error('❌ Webhook returned error:', errorMessage);
+                showQuoteError(errorMessage);
+            } else {
+                showQuoteResult(result);
+            }
         }
         
     } catch (error) {
@@ -803,24 +990,24 @@ async function submitQuote() {
         console.error('Error message:', error.message);
         console.error('Error stack:', error.stack);
         
-        // Show detailed error message for debugging
-        let errorMessage = 'There was an error processing your quote.\n\n';
+        // Build user-friendly error message
+        let errorMessage = 'There was an error processing your quote.';
         
         if (error.message.includes('Webhook returned status')) {
-            errorMessage += 'The workflow is not responding correctly.\n';
-            errorMessage += 'Please ensure the n8n workflow is active and try again.\n\n';
+            errorMessage = 'The workflow is not responding correctly. Please ensure the n8n workflow is active and try again.';
         } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-            errorMessage += 'Unable to connect to the workflow.\n';
-            errorMessage += 'Please check your internet connection and try again.\n\n';
-        } else {
-            errorMessage += error.message + '\n\n';
+            errorMessage = 'Unable to connect to the workflow. Please check your internet connection and try again.';
         }
         
-        errorMessage += 'Contact us at 07444 887813 if this persists.';
-        
-        alert(errorMessage);
-        document.getElementById('loadingState').classList.add('hidden');
-        document.getElementById('step5').classList.remove('hidden');
+        if (isFullRedesignMode) {
+            // Stop animation and show error via progress callback
+            stopProgressAnimation();
+            onWebhookComplete(false, { error: errorMessage });
+        } else {
+            // Show error for individual products
+            document.getElementById('loadingState').classList.add('hidden');
+            showQuoteError(errorMessage);
+        }
     }
 }
 
