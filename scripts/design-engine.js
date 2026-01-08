@@ -4,6 +4,163 @@
 let currentStep = 1;
 const totalSteps = 4;
 
+// Progress animation state for AI design generation
+let designProgressState = {
+    currentStep: 0,
+    totalSteps: 7,
+    isAnimating: false,
+    webhookComplete: false,
+    webhookSuccess: false,
+    webhookResult: null,
+    timeouts: []
+};
+
+// Progress step timings (milliseconds) - ~45 seconds total to match AI generation
+const designProgressDurations = [
+    7000,  // Analysing your photo
+    7500,  // Understanding your style
+    9000,  // Generating AI concepts
+    8500,  // Rendering design visuals
+    8000,  // Applying finishing touches
+    5000,  // Sending to your inbox
+    1500   // Done
+];
+
+// Reset progress timeline to initial state
+function resetDesignProgress() {
+    designProgressState = {
+        currentStep: 0,
+        totalSteps: 7,
+        isAnimating: false,
+        webhookComplete: false,
+        webhookSuccess: false,
+        webhookResult: null,
+        timeouts: []
+    };
+    
+    const steps = document.querySelectorAll('#designProgressTimeline .progress-step');
+    steps.forEach(step => {
+        step.classList.remove('active', 'completed', 'error');
+    });
+}
+
+// Start the progress animation
+function startDesignProgress() {
+    designProgressState.isAnimating = true;
+    advanceDesignStep(0);
+}
+
+// Advance to the next progress step
+function advanceDesignStep(stepIndex) {
+    if (!designProgressState.isAnimating) return;
+    
+    const steps = document.querySelectorAll('#designProgressTimeline .progress-step');
+    
+    // Mark previous step as completed
+    if (stepIndex > 0) {
+        steps[stepIndex - 1].classList.remove('active');
+        steps[stepIndex - 1].classList.add('completed');
+    }
+    
+    // If we've reached the last two steps (Sending, Done), wait for webhook
+    if (stepIndex >= 5 && !designProgressState.webhookComplete) {
+        // Keep "Sending to your inbox" as active until webhook completes
+        steps[5].classList.add('active');
+        designProgressState.currentStep = 5;
+        return; // Will be resumed by webhook callback
+    }
+    
+    // If webhook is complete and failed, show error
+    if (designProgressState.webhookComplete && !designProgressState.webhookSuccess) {
+        steps[stepIndex].classList.add('error');
+        designProgressState.isAnimating = false;
+        return;
+    }
+    
+    // Mark current step as active
+    if (stepIndex < steps.length) {
+        steps[stepIndex].classList.add('active');
+        designProgressState.currentStep = stepIndex;
+        
+        // Schedule next step
+        if (stepIndex < steps.length - 1) {
+            const timeout = setTimeout(() => {
+                advanceDesignStep(stepIndex + 1);
+            }, designProgressDurations[stepIndex]);
+            designProgressState.timeouts.push(timeout);
+        } else {
+            // Final step (Done) - wait a moment then show result
+            const timeout = setTimeout(() => {
+                completeDesignProgress();
+            }, 1500);
+            designProgressState.timeouts.push(timeout);
+        }
+    }
+}
+
+// Called when webhook completes - resume animation
+function onDesignWebhookComplete(success, result) {
+    designProgressState.webhookComplete = true;
+    designProgressState.webhookSuccess = success;
+    designProgressState.webhookResult = result;
+    
+    if (!designProgressState.isAnimating) return;
+    
+    const steps = document.querySelectorAll('#designProgressTimeline .progress-step');
+    
+    if (success) {
+        // Complete the "Sending" step and move to "Done"
+        steps[5].classList.remove('active');
+        steps[5].classList.add('completed');
+        
+        // Activate and complete "Done" step
+        steps[6].classList.add('active');
+        designProgressState.currentStep = 6;
+        
+        setTimeout(() => {
+            steps[6].classList.remove('active');
+            steps[6].classList.add('completed');
+            completeDesignProgress();
+        }, 1500);
+    } else {
+        // Show error on current step
+        const currentIdx = designProgressState.currentStep;
+        steps[currentIdx].classList.remove('active');
+        steps[currentIdx].classList.add('error');
+        designProgressState.isAnimating = false;
+        
+        // Show error UI after a brief moment
+        setTimeout(() => {
+            document.getElementById('loadingState').classList.add('hidden');
+            const errorMessage = result?.error || result?.message || 'The AI design workflow encountered an error.';
+            showError(errorMessage);
+        }, 1500);
+    }
+}
+
+// Complete the progress animation and show result
+function completeDesignProgress() {
+    designProgressState.isAnimating = false;
+    
+    // Clear any remaining timeouts
+    designProgressState.timeouts.forEach(t => clearTimeout(t));
+    designProgressState.timeouts = [];
+    
+    // Hide loading state and show result
+    document.getElementById('loadingState').classList.add('hidden');
+    
+    if (designProgressState.webhookSuccess) {
+        showSuccess();
+    }
+}
+
+// Stop progress animation (for errors)
+function stopDesignProgress() {
+    designProgressState.isAnimating = false;
+    designProgressState.timeouts.forEach(t => clearTimeout(t));
+    designProgressState.timeouts = [];
+}
+
 const designData = {
     features: [],
     styleDescription: '',
@@ -322,9 +479,11 @@ async function submitDesign() {
     
     // Budget is already saved in designData via selectBudget function
     
-    // Hide form, show loading
+    // Hide form, show loading with animated progress
     document.getElementById('step4').classList.add('hidden');
     document.getElementById('loadingState').classList.remove('hidden');
+    resetDesignProgress();
+    startDesignProgress();
     
     // Prepare webhook payload
     const webhookPayload = {
@@ -381,9 +540,10 @@ async function sendToWebhook(payload) {
     
     if (!webhookUrl || webhookUrl.includes('your-n8n-webhook-url')) {
         console.warn('⚠️ Webhook URL not configured. Using demo mode.');
+        // Demo mode: Let animation run then complete
         setTimeout(() => {
-            showSuccess();
-        }, 2000);
+            onDesignWebhookComplete(true, { demo: true });
+        }, 40000); // Allow time for animation
         return;
     }
     
@@ -421,16 +581,15 @@ async function sendToWebhook(payload) {
         if (hasError) {
             const errorMessage = result.error || result.message || 'The workflow encountered an error generating your design.';
             console.error('❌ Webhook returned error:', errorMessage);
-            showError(errorMessage);
+            onDesignWebhookComplete(false, { error: errorMessage });
         } else {
-            showSuccess();
+            onDesignWebhookComplete(true, result);
         }
         
     } catch (error) {
         console.error('❌ Error submitting design request:', error);
-        alert('There was an error processing your request. Please try again or contact us at 07444887813');
-        document.getElementById('loadingState').classList.add('hidden');
-        document.getElementById('step4').classList.remove('hidden');
+        stopDesignProgress();
+        onDesignWebhookComplete(false, { error: 'There was an error processing your request. Please try again or contact us.' });
     }
 }
 
