@@ -1,0 +1,782 @@
+{
+  "name": "Premium Landscapes – Image Generation - Quote Trigger",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "premium-landscapes-quote-to-image",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ce5841dc-6b60-4c60-a106-ce3246740758",
+      "name": "Webhook – AI Garden Design",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -3360,
+        96
+      ],
+      "webhookId": "premium-landscapes-ai-design"
+    },
+    {
+      "parameters": {
+        "dataPropertyName": "image",
+        "options": {
+          "format": "png"
+        }
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        -2688,
+        96
+      ],
+      "id": "ccbb517c-716e-4fcd-8fc9-1a805a2aa228",
+      "name": "Edit Image (Force PNG)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get existing attempts from input data or default to 0\nconst inputItem = $input.first();\nconst attempts = (inputItem.json.attempts || 0) + 1;\n\nreturn {\n  json: {\n    ...inputItem.json,\n    attempts: attempts,\n    // Stop loop after 3 attempts\n    stopLoop: attempts > 2\n  },\n  // CRITICAL: Ensure the binary image data is passed through\n  binary: inputItem.binary \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1568,
+        96
+      ],
+      "id": "9cb5b616-9c2a-4355-b4e7-29ab9b99192e",
+      "name": "Loop Counter"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/edits",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-image-1"
+            },
+            {
+              "name": "prompt",
+              "value": "={{ $json.prompt }}"
+            },
+            {
+              "name": "size",
+              "value": "1536x1024"
+            },
+            {
+              "name": "n",
+              "value": "={{ 1 }}"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "image",
+              "inputDataFieldName": "image"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bbb73924-c864-43d5-a7a8-4206cbd128fe",
+      "name": "HTTP – GPT Image Edit",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2016,
+        96
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Smart Response Processor - WITH MEMORY FIX\n// This processes the OpenAI response and builds email content\n\n// 1) Get the OpenAI HTTP response JSON\nconst openaiResp = $input.first().json;\n\n// 2) Detect success + extract base64 / URL\nlet success = false;\nlet b64 = null;\nlet imageUrl = null;\n\nif (openaiResp.data && Array.isArray(openaiResp.data) && openaiResp.data.length > 0) {\n  const first = openaiResp.data[0];\n\n  if (first.b64_json) {\n    b64 = first.b64_json;\n    success = true;\n  } else if (first.url) {\n    imageUrl = first.url;\n    success = true;\n  }\n} else if (openaiResp.b64_json) {\n  b64 = openaiResp.b64_json;\n  success = true;\n}\n\n// 3) Pull original context (customer, design info, etc.) from Loop Counter\nconst baseCtx = $node[\"Loop Counter\"]?.json ?? {};\nconst customer = baseCtx.customer || {};\n\n// 4) Build email subject + HTML\nconst emailSubject = success\n  ? \"Your Premium Landscapes AI Garden Design is Ready\"\n  : \"We're having trouble generating your AI garden design\";\n\nlet emailHtml;\n\nif (success) {\n  emailHtml = `\n<p>Hi ${customer.name || \"there\"},</p>\n<p>Your AI garden design is now ready.</p>\n<p>We've attached the image to this email and stored it securely in your project.</p>\n<p>If you'd like any changes, just reply to this email with your feedback.</p>\n<p>Best regards,<br>Premium Landscapes</p>\n  `.trim();\n} else {\n  emailHtml = `\n<p>Hi ${customer.name || \"there\"},</p>\n<p>We tried generating your AI garden design but hit a technical issue.</p>\n<p>Our team will regenerate this manually and follow up with you.</p>\n<p>Best regards,<br>Premium Landscapes</p>\n  `.trim();\n}\n\n// 5) Build the item that will flow through the rest of the workflow\n// MEMORY FIX: Don't store the full openaiResp (contains duplicate base64)\nconst item = {\n  json: {\n    ...baseCtx,\n    success,\n    // FIXED: Store only metadata instead of full response\n    openaiResponseMeta: {\n      hasDataArray: Array.isArray(openaiResp?.data),\n      dataLength: openaiResp?.data?.length || 0,\n      success: !!openaiResp?.data\n    },\n    imageUrl,\n    emailSubject,\n    emailHtml,\n  },\n};\n\n// 6) If we got base64, attach it as a binary image for downstream nodes\nif (b64) {\n  item.binary = {\n    data: {\n      data: b64,\n      mimeType: \"image/png\",\n      fileName: baseCtx.fileName || \"design.png\",\n    },\n  };\n}\n\nreturn [item];"
+      },
+      "id": "9e9eeb7e-b785-4b0a-b541-9836905d83fd",
+      "name": "Smart Response Processor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1344,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check_success",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1120,
+        96
+      ],
+      "id": "bd997161-3016-4205-87b6-66d05c6e8158",
+      "name": "Image Generated Successfully?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7a097fef-ca70-4dce-854d-6a8d36af3870",
+              "name": "main_image",
+              "value": "data",
+              "type": "binary"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        0
+      ],
+      "id": "fe541392-c5a4-4754-af7c-2273405bf3a4",
+      "name": "Rename Generated Image"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c621832f-0bc6-4587-8cc2-9e8690b10b52",
+              "name": "watermark_layer",
+              "value": "data",
+              "type": "binary"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        192
+      ],
+      "id": "4b89c5de-439a-45d7-8dd4-08d2835bcb0c",
+      "name": "Rename Watermark"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -224,
+        96
+      ],
+      "id": "6061a7e3-fd8b-4e73-87f0-6095db47c9ac",
+      "name": "Merge Binaries"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -896,
+        96
+      ],
+      "id": "a4d8c78a-239c-479a-8dd4-c88a48b4f360",
+      "name": "Merge Image Data"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52f57448-15f5-45f9-8a02-f88a5adc6fa3",
+              "name": "data",
+              "value": "main_image",
+              "type": "binary"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        96
+      ],
+      "id": "3d127b7c-33e8-4739-9912-0a04738351f3",
+      "name": "Prepare Final Image"
+    },
+    {
+      "parameters": {
+        "url": "https://sswkpcnbyrbmnltczphx.supabase.co/storage/v1/object/public/garden-designs/Watermark/LOGO%20Updated,%20background%20removed%20.png",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -672,
+        192
+      ],
+      "id": "aebaa844-10a0-44ec-8aa7-978ecdee74f4",
+      "name": "Supabase Download Watermark"
+    },
+    {
+      "parameters": {
+        "operation": "resize",
+        "dataPropertyName": "watermark_layer",
+        "width": 300,
+        "height": 300,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        0,
+        96
+      ],
+      "id": "c6751ecc-ff69-4cc6-b123-b02361cda508",
+      "name": "Resize Image"
+    },
+    {
+      "parameters": {
+        "operation": "composite",
+        "dataPropertyName": "main_image",
+        "dataPropertyNameComposite": "watermark_layer",
+        "positionY": -30,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        224,
+        96
+      ],
+      "id": "f560cfcb-aed6-4fc0-a7a6-64a9e5dc525b",
+      "name": "Apply Watermark"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"imageUrl\": \"={{ $('Map Image URL').first().json.publicImageUrl }}\",\n  \"message\": \"Image generated successfully\",\n  \"quoteRef\": \"={{ $('Image Analysis').first().json.quoteRef }}\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "86963062-ff61-4ab0-b6b6-077d259f2446",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        896,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1GIlzFrvqkdYGYQotkKaOox4m6x2qrqvLk0X6xMYJg7s"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Quotes Log"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $node['Map Image URL'].json.designCreatedAt }}",
+            "Customer Name": "={{$node[\"Image Generation Logic Engine\"].json.customer.name || ''}}",
+            "Email": "={{$node[\"Image Generation Logic Engine\"].json.customer.email || ''}}",
+            "Phone": "={{$node[\"Image Generation Logic Engine\"].json.customer.phone || ''}}",
+            "AI Summary": "={{$node[\"Image Generation Logic Engine\"].json.aiSummary || 'AI summary not available'}}",
+            "Status": "Image Sent",
+            "Drive File URL": "={{$node[\"Map Image URL\"].json.finalImageUrl}}",
+            "Address": "={{$node[\"Image Generation Logic Engine\"].json.customer.address || 'Not collected'}}",
+            "Products": "={{$node[\"Image Generation Logic Engine\"].json.design.features?.join(', ') || ''}}",
+            "Quote Total (£)": "={{$node[\"Image Generation Logic Engine\"].json.pricing.grandTotal || 0}}",
+            "Image URL": "{{$node[\"Map Image URL\"].json.finalImageUrl || ''}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Products",
+              "displayName": "Products",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Summary",
+              "displayName": "AI Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quote Total (£)",
+              "displayName": "Quote Total (£)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Drive File URL",
+              "displayName": "Drive File URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Image URL",
+              "displayName": "Image URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "ae7d29c4-8614-4e26-8a4d-f6aa671be37e",
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        96
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "hR4LdQOOAXNVJApD",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/* === SIMPLIFIED LOGIC ENGINE FOR QUOTE-TO-IMAGE === */\n\nconst input = $input.first().json;\n\n// Data already processed by Extract Quote Context\n// Just pass it through with minimal processing\n\nconsole.log('=== Image Generation Logic (Quote Mode) ===');\n\nreturn [{\n  json: {\n    ...input,\n    \n    // Ensure these fields exist for downstream nodes\n    photoBase64: input.photoBase64 || input.image,\n    style: input.style || input.project?.stylePreference,\n    gardenSizeSqm: input.gardenSizeSqm || input.project?.totalArea_m2,\n    \n    // Design data\n    design: {\n      features: input.features || [],\n      style: input.style || 'contemporary'\n    }\n  }\n}];"
+      },
+      "id": "2ff8c7b1-1312-452e-a705-fd9aa955149b",
+      "name": "Image Generation Logic Engine",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2912,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "/* === ATTACH LLM PROMPT === */\n/* Combines the direct prompt with the image binary data */\n\nconst promptData = $input.first().json;\n\n// Get the prompt from Direct Prompt Builder\nconst finalPrompt = promptData.prompt;\nconst negativePrompt = promptData.negativePrompt || '';\n\n// Get the image binary from earlier in the workflow\nconst imageBinary = $input.first().binary;\n\nreturn [{\n  json: {\n    prompt: finalPrompt,\n    negativePrompt: negativePrompt,\n    promptLength: finalPrompt.length,\n    featuresIncluded: promptData.featuresIncluded || [],\n    budgetTier: promptData.budgetTier,\n    customer: promptData.customer\n  },\n  binary: imageBinary\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2240,
+        96
+      ],
+      "id": "c1b27723-d89e-48a7-9662-00fb82c6938e",
+      "name": "Attach LLM Prompt"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the item containing the refined prompt from the previous node.\nconst currentItem = $input.first();\n\n// Find the item that still holds the original image data (binary).\n// We look back to the node that created the binary file.\n// Based on your workflow structure, this is likely 'Edit Image (Force PNG)'\nconst binarySource = $node['Edit Image (Force PNG)'].binary; \n\n// Check if binary data exists and is named 'data' (the n8n standard)\nif (binarySource && binarySource.data) {\n  // Merge the binary data back into the current item\n  currentItem.binary = {\n    data: binarySource.data\n  };\n}\n\nreturn [currentItem];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1792,
+        96
+      ],
+      "id": "2367da43-16aa-4c8e-a321-4ec36112b0fa",
+      "name": "Preserve Image Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "/* === USE QUOTE-BASED PROMPT === */\n\nconst data = $input.first().json;\n\n// Use the prompt already built from quote context\nconst prompt = data.quoteBasedPrompt || data.finalPrompt;\n\nif (!prompt) {\n  throw new Error('No prompt found. Extract Quote Context may have failed.');\n}\n\nconsole.log('=== Using Quote-Based Prompt ===');\nconsole.log(prompt);\n\nreturn [{\n  json: {\n    ...data,\n    prompt: prompt,\n    finalPrompt: prompt\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2464,
+        96
+      ],
+      "id": "e9ce1886-4378-442a-bcaf-dace6105fbef",
+      "name": "Direct Prompt Builder"
+    },
+    {
+      "parameters": {
+        "jsCode": "/* === EXTRACT QUOTE CONTEXT === */\n/* For Quote-to-Image workflow - extracts data from quote workflow */\n\nconst input = $input.first().json;\n\nconsole.log('=== QUOTE-TO-IMAGE: Input Data ===');\nconsole.log(JSON.stringify(input, null, 2));\n\n// Extract quote data\nconst style = input.project?.stylePreference || 'contemporary';\nconst area = input.project?.totalArea_m2 || 50;\nconst narrative = input.aiNarrative || '';\nconst features = input.features || [];\nconst materials = input.materials || {};\nconst groupedItems = input.groupedItems || {};\n\n// Build detailed materials list\nlet materialsList = '';\nif (Object.keys(groupedItems).length > 0) {\n  materialsList = Object.entries(groupedItems)\n    .map(([category, items]) => {\n      const itemList = items.map(item => \n        `${item.item} (${item.qty} ${item.unit})`\n      ).join(', ');\n      return `${category}: ${itemList}`;\n    })\n    .join('\\n');\n} else {\n  materialsList = Object.entries(materials)\n    .filter(([key, value]) => value > 0)\n    .map(([key, value]) => {\n      const readable = key.replace(/_/g, ' ').replace(/m2/g, 'm²');\n      return `${readable}: ${value}`;\n    })\n    .join('\\n');\n}\n\n// Build comprehensive prompt for OpenAI\nconst detailedPrompt = `Transform this garden into a ${style} outdoor space based on this professional landscape design:\n\nDESIGN NARRATIVE:\n${narrative}\n\nKEY FEATURES TO VISUALIZE:\n${features.map((f, i) => `${i + 1}. ${f}`).join('\\n')}\n\nMATERIALS & ELEMENTS TO INCLUDE:\n${materialsList}\n\nGARDEN SPECIFICATIONS:\n- Total Area: ${area}m²\n- Design Style: ${style}\n- Atmosphere: Modern, clean, professional landscaping\n\nVISUAL REQUIREMENTS:\n- Show all materials specified above clearly in the design\n- Maintain the ${style} aesthetic throughout\n- Use natural, daylight photography style\n- Ensure clean lines and professional finish\n- Include realistic textures and depth\n- Make it look like a completed, professional installation\n\nCreate a photorealistic transformation that precisely matches this design specification.`;\n\nconsole.log('=== Generated Prompt ===');\nconsole.log(detailedPrompt);\n\n// Extract photo data - try multiple paths\nconst photoData = input.photo?.data || \n                  input.gardenImage?.data ||\n                  input.body?.photo?.data ||\n                  null;\n\nif (!photoData) {\n  throw new Error('No garden photo found in input. Required for image generation.');\n}\n\n// Return formatted data for next nodes\nreturn [{\n  json: {\n    // Pass through essential data\n    dealId: input.dealId,\n    quoteRef: input.quoteRef,\n    customer: input.customer,\n    project: input.project,\n    \n    // Photo data formatted for Edit Image node\n    photoBase64: photoData,\n    image: photoData, // Edit Image looks for this property\n    \n    // Prompt for OpenAI\n    quoteBasedPrompt: detailedPrompt,\n    finalPrompt: detailedPrompt,\n    \n    // Context for reference\n    quoteContext: {\n      style: style,\n      area: area,\n      narrative: narrative,\n      features: features,\n      materialsText: materialsList\n    },\n    \n    // Budget/style data for other nodes\n    style: style,\n    gardenSizeSqm: area,\n    budgetTier: 'premium' // Assume premium from quote\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3136,
+        96
+      ],
+      "id": "e8346693-462f-4180-b3ad-0c294089ba0d",
+      "name": "Image Analysis"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook – AI Garden Design": {
+      "main": [
+        [
+          {
+            "node": "Image Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image (Force PNG)": {
+      "main": [
+        [
+          {
+            "node": "Direct Prompt Builder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Counter": {
+      "main": [
+        [
+          {
+            "node": "Smart Response Processor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP – GPT Image Edit": {
+      "main": [
+        [
+          {
+            "node": "Preserve Image Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Smart Response Processor": {
+      "main": [
+        [
+          {
+            "node": "Image Generated Successfully?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Generated Successfully?": {
+      "main": [
+        [
+          {
+            "node": "Merge Image Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Rename Generated Image": {
+      "main": [
+        [
+          {
+            "node": "Merge Binaries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename Watermark": {
+      "main": [
+        [
+          {
+            "node": "Merge Binaries",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Binaries": {
+      "main": [
+        [
+          {
+            "node": "Resize Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Image Data": {
+      "main": [
+        [
+          {
+            "node": "Rename Generated Image",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Supabase Download Watermark",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Final Image": {
+      "main": [
+        [
+          {
+            "node": "Log to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Download Watermark": {
+      "main": [
+        [
+          {
+            "node": "Rename Watermark",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resize Image": {
+      "main": [
+        [
+          {
+            "node": "Apply Watermark",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Watermark": {
+      "main": [
+        [
+          {
+            "node": "Prepare Final Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Generation Logic Engine": {
+      "main": [
+        [
+          {
+            "node": "Edit Image (Force PNG)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach LLM Prompt": {
+      "main": [
+        [
+          {
+            "node": "HTTP – GPT Image Edit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preserve Image Data": {
+      "main": [
+        [
+          {
+            "node": "Loop Counter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Direct Prompt Builder": {
+      "main": [
+        [
+          {
+            "node": "Attach LLM Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Analysis": {
+      "main": [
+        [
+          {
+            "node": "Image Generation Logic Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e666c24c-2f60-4bf9-8cfd-a26536cccc3b",
+  "meta": {
+    "instanceId": "e1c866f51f89be40bb7a8fd6d598585ff0ef85e3ee97add539aaea059383a17d"
+  },
+  "id": "gBgTUkHNl509UyOB",
+  "tags": []
+}
