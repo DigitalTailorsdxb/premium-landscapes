@@ -1410,33 +1410,47 @@ async function sendToAIDesignWorkflow() {
     };
     
     try {
-        console.log('📤 Sending to AI Design workflow:', designWebhookUrl);
-        console.log('📦 Design payload:', {
-            customer: designPayload.customer,
-            design: designPayload.design,
-            hasPhoto: !!photoObject,
-            metadata: designPayload.metadata
-        });
+        console.log('========================================');
+        console.log('🚀 AI DESIGN WEBHOOK DEBUG - START');
+        console.log('========================================');
+        console.log('📤 Webhook URL:', designWebhookUrl);
+        console.log('📦 Full payload structure:', Object.keys(designPayload));
+        console.log('👤 Customer:', designPayload.customer);
+        console.log('🎨 Design:', designPayload.design);
+        console.log('📋 Metadata:', designPayload.metadata);
         
-        // Log photo details if present
+        // CRITICAL: Log photo status
+        console.log('========================================');
+        console.log('📸 PHOTO DEBUG:');
+        console.log('   - photoObject exists:', !!photoObject);
+        console.log('   - designPayload.photo exists:', !!designPayload.photo);
+        
         if (photoObject) {
-            console.log('📸 Photo details:', {
-                name: photoObject.name,
-                type: photoObject.type,
-                size: `${(photoObject.size / 1024).toFixed(2)} KB`,
-                dataPreview: photoObject.data.substring(0, 50) + '...'
-            });
+            console.log('   - Photo name:', photoObject.name);
+            console.log('   - Photo type:', photoObject.type);
+            console.log('   - Photo size:', `${(photoObject.size / 1024).toFixed(2)} KB`);
+            console.log('   - Photo data length:', photoObject.data?.length || 0);
+            console.log('   - Photo data starts with:', photoObject.data?.substring(0, 30) || 'N/A');
         } else {
-            console.log('📸 No photo uploaded - will use budget-based design');
+            console.log('   ⚠️ NO PHOTO IN PAYLOAD!');
+            console.log('   - aiDesignFiles length:', aiDesignFiles.length);
+            console.log('   - quoteData.files length:', quoteData.files.length);
         }
+        console.log('========================================');
+        
+        // Stringify and log size
+        const jsonPayload = JSON.stringify(designPayload);
+        console.log('📊 JSON payload size:', `${(jsonPayload.length / 1024).toFixed(2)} KB`);
         
         const response = await fetch(designWebhookUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(designPayload)
+            body: jsonPayload
         });
+        
+        console.log('📬 Response status:', response.status);
         
         if (!response.ok) {
             const errorText = await response.text();
