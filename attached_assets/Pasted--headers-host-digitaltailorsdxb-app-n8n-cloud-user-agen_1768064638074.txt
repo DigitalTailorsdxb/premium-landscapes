@@ -1,0 +1,100 @@
+[
+  {
+    "headers": {
+      "host": "digitaltailorsdxb.app.n8n.cloud",
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+      "content-length": "1297",
+      "accept": "*/*",
+      "accept-encoding": "gzip, br",
+      "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+      "cdn-loop": "cloudflare; loops=1; subreqs=1",
+      "cf-connecting-ip": "130.185.117.60",
+      "cf-ew-via": "15",
+      "cf-ipcountry": "GB",
+      "cf-ray": "9bbdbebd4729fbf4-LHR",
+      "cf-visitor": "{\"scheme\":\"https\"}",
+      "cf-worker": "n8n.cloud",
+      "content-type": "application/json",
+      "origin": "https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev",
+      "priority": "u=1, i",
+      "referer": "https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev/",
+      "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"macOS\"",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-site": "cross-site",
+      "x-forwarded-for": "130.185.117.60, 172.68.229.76",
+      "x-forwarded-host": "digitaltailorsdxb.app.n8n.cloud",
+      "x-forwarded-port": "443",
+      "x-forwarded-proto": "https",
+      "x-forwarded-server": "traefik-prod-users-gwc-98-5f74ff6676-9ppxk",
+      "x-is-trusted": "yes",
+      "x-real-ip": "130.185.117.60"
+    },
+    "params": {},
+    "query": {},
+    "body": {
+      "customer": {
+        "name": "Lewis Reid",
+        "email": "thedigitaltailorsdxb@gmail.com",
+        "phone": "07444887813",
+        "postcode": "LE3 3JU",
+        "city": "Leicester",
+        "street": "Kingcup Close",
+        "houseNumber": "5",
+        "address": "5, Kingcup Close, Leicester, LE3 3JU, UK"
+      },
+      "project": {
+        "title": "Complete Garden Redesign Installation",
+        "type": "full_garden_redesign",
+        "totalArea_m2": 70,
+        "totalBudget_gbp": 15000,
+        "layoutType": "standard",
+        "sunlight": "partial sun",
+        "stylePreference": "contemporary",
+        "maintenanceLevel": "low maintenance",
+        "siteConditions": {
+          "access": "standard access",
+          "soilType": "loam",
+          "drainage": "good"
+        },
+        "products": [
+          {
+            "type": "full-redesign",
+            "description": "full-redesign installation",
+            "material": "standard",
+            "unitType": "m2",
+            "area_m2": 70
+          }
+        ],
+        "extras": {
+          "pergola": {
+            "include": false
+          },
+          "firePit": {
+            "include": false
+          },
+          "waterFeature": {
+            "include": false
+          }
+        },
+        "notes": "Large composite decking area with real turf and pergola ",
+        "designPreferences": "Large composite decking area with real turf and pergola ",
+        "gardenDesign": {
+          "budgetBasedDesign": true,
+          "categories": {},
+          "designVision": "Large composite decking area with real turf and pergola "
+        }
+      },
+      "metadata": {
+        "source": "website_quote_form",
+        "timestamp": "2026-01-10T17:02:57.439Z",
+        "quoteType": "full_garden_redesign",
+        "webhookDestination": "https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-full-redesign"
+      }
+    },
+    "webhookUrl": "https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-full-redesign",
+    "executionMode": "production"
+  }
+]
