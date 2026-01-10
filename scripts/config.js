@@ -35,7 +35,7 @@ const brandConfig = {
         quote: "https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-quote",
         quoteFullRedesign: "https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-full-redesign",
         design: "https://digitaltailorsdxb.app.n8n.cloud/webhook-test/premium-landscapes-ai-design",
-        quoteDesign: "https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-quote-design",
+        quoteDesign: "https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-quote-to-image",
         email: "https://hook.eu2.make.com/your-email-webhook-url",
         contact: "https://hook.eu2.make.com/your-contact-webhook-url"
     },
