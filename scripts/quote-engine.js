@@ -842,6 +842,17 @@ async function submitQuote() {
         quoteData.aiDesign = aiDesignCheckbox.checked;
     }
     
+    // Validate: AI Design requires a photo upload
+    if (quoteData.aiDesign) {
+        const hasAIPhoto = aiDesignFiles.length > 0;
+        const hasQuotePhoto = quoteData.files.length > 0;
+        
+        if (!hasAIPhoto && !hasQuotePhoto) {
+            alert('Please upload a photo of your garden to generate an AI design. You can upload in the AI Design section below the checkbox, or in the Photos section on the previous step.');
+            return;
+        }
+    }
+    
     // Hide form
     document.getElementById('step5').classList.add('hidden');
     
