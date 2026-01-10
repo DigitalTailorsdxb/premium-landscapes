@@ -33,22 +33,27 @@ let progressState = {
     timeouts: []
 };
 
-// Progress step timings (milliseconds) - ~25 seconds for standard quote
-const progressStepDurations = [
+// Progress step timings (milliseconds) - ~25 seconds for standard quote (no AI design)
+// Without AI: 0-4 are processing, 5 waits for webhook, 6 is done
+const baseStepDurations = [
     4000,  // 0: Reading requirements
     4500,  // 1: Planning structure
     6000,  // 2: Building design
     5000,  // 3: Mapping products
-    5500,  // 4: Building PDF
-    0,     // 5: Sending email - waits for webhook
-    1500   // 6: Quote sent!
+    5500   // 4: Building PDF
 ];
 
-// Additional AI Design step timings (45 seconds total)
+// AI Design step timings (45 seconds total) - inserted between Building PDF and Sending email
 const aiDesignStepDurations = [
-    15000, // 7: Analyzing garden photo...
-    15000, // 8: Creating photorealistic designs...
-    0      // 9: AI designs ready! - waits for AI webhook
+    15000, // Analyzing garden photo...
+    15000, // Creating photorealistic designs...
+    15000  // AI designs ready!
+];
+
+// Final steps (always at the end)
+const finalStepDurations = [
+    0,     // Sending email - waits for webhook
+    1500   // Done!
 ];
 
 // Reset progress timeline to initial state
@@ -92,15 +97,44 @@ function startProgressAnimation() {
     advanceProgressStep(0);
 }
 
-// Get step duration for any step (standard or AI design)
+// Get step duration for any step based on AI design mode
 function getStepDuration(stepIndex) {
-    if (stepIndex < progressStepDurations.length) {
-        return progressStepDurations[stepIndex];
-    } else if (progressState.aiDesignEnabled) {
-        const aiStepIndex = stepIndex - progressStepDurations.length;
-        return aiDesignStepDurations[aiStepIndex] || 0;
+    const aiEnabled = progressState.aiDesignEnabled;
+    
+    // Base steps (0-4): Reading, Planning, Building design, Mapping, Building PDF
+    if (stepIndex < baseStepDurations.length) {
+        return baseStepDurations[stepIndex];
     }
+    
+    if (aiEnabled) {
+        // With AI Design: steps 5-7 are AI steps, 8-9 are final steps
+        const aiStepOffset = stepIndex - baseStepDurations.length;
+        if (aiStepOffset < aiDesignStepDurations.length) {
+            return aiDesignStepDurations[aiStepOffset];
+        }
+        const finalStepOffset = aiStepOffset - aiDesignStepDurations.length;
+        if (finalStepOffset < finalStepDurations.length) {
+            return finalStepDurations[finalStepOffset];
+        }
+    } else {
+        // Without AI Design: steps 5-6 are final steps
+        const finalStepOffset = stepIndex - baseStepDurations.length;
+        if (finalStepOffset < finalStepDurations.length) {
+            return finalStepDurations[finalStepOffset];
+        }
+    }
+    
     return 0;
+}
+
+// Get the index of the "Sending email" step (varies based on AI mode)
+function getSendingEmailStepIndex() {
+    return progressState.aiDesignEnabled ? 8 : 5;
+}
+
+// Get the index of the "Done" step (varies based on AI mode)
+function getDoneStepIndex() {
+    return progressState.aiDesignEnabled ? 9 : 6;
 }
 
 // Advance to the next progress step
@@ -109,6 +143,8 @@ function advanceProgressStep(stepIndex) {
     
     const steps = document.querySelectorAll('#progressTimeline .progress-step:not(.hidden)');
     const totalVisibleSteps = steps.length;
+    const sendingEmailStep = getSendingEmailStepIndex();
+    const doneStep = getDoneStepIndex();
     
     // Mark previous step as completed
     if (stepIndex > 0 && stepIndex <= totalVisibleSteps) {
@@ -116,11 +152,11 @@ function advanceProgressStep(stepIndex) {
         steps[stepIndex - 1].classList.add('completed');
     }
     
-    // Step 5 = "Sending email" - wait for main quote webhook
-    if (stepIndex >= 5 && stepIndex <= 5 && !progressState.webhookComplete) {
-        steps[5].classList.add('active');
-        progressState.currentStep = 5;
-        console.log('⏳ Waiting for main quote webhook...');
+    // "Sending email" step - wait for main quote webhook
+    if (stepIndex === sendingEmailStep && !progressState.webhookComplete) {
+        steps[stepIndex].classList.add('active');
+        progressState.currentStep = stepIndex;
+        console.log(`⏳ Waiting for main quote webhook at step ${stepIndex}...`);
         return;
     }
     
@@ -131,9 +167,6 @@ function advanceProgressStep(stepIndex) {
         return;
     }
     
-    // Determine final step based on AI design mode
-    const finalStepIndex = progressState.aiDesignEnabled ? 9 : 6;
-    
     // Mark current step as active
     if (stepIndex < totalVisibleSteps) {
         steps[stepIndex].classList.add('active');
@@ -141,25 +174,13 @@ function advanceProgressStep(stepIndex) {
         
         const stepDuration = getStepDuration(stepIndex);
         
-        // If this is the last AI step (9), wait for AI webhook or auto-complete after time
-        if (progressState.aiDesignEnabled && stepIndex === 9) {
-            // AI design step 9 - wait 15 seconds then complete
+        // If this is the final "Done" step, complete animation after a moment
+        if (stepIndex === doneStep) {
             const timeout = setTimeout(() => {
                 steps[stepIndex].classList.remove('active');
                 steps[stepIndex].classList.add('completed');
                 completeProgressAnimation();
-            }, 15000);
-            progressState.timeouts.push(timeout);
-            return;
-        }
-        
-        // If this is the final step (non-AI mode or end), complete animation
-        if (stepIndex === finalStepIndex && !progressState.aiDesignEnabled) {
-            const timeout = setTimeout(() => {
-                steps[stepIndex].classList.remove('active');
-                steps[stepIndex].classList.add('completed');
-                completeProgressAnimation();
-            }, 1000);
+            }, 1500);
             progressState.timeouts.push(timeout);
             return;
         }
@@ -183,28 +204,22 @@ function onWebhookComplete(success, result) {
     if (!progressState.isAnimating) return;
     
     const steps = document.querySelectorAll('#progressTimeline .progress-step:not(.hidden)');
+    const sendingEmailStep = getSendingEmailStepIndex();
+    const doneStep = getDoneStepIndex();
     
     if (success) {
-        // Complete the "Sending email" step (step 5)
-        steps[5].classList.remove('active');
-        steps[5].classList.add('completed');
+        // Complete the "Sending email" step
+        steps[sendingEmailStep].classList.remove('active');
+        steps[sendingEmailStep].classList.add('completed');
         
-        // Activate "Quote sent!" step (step 6)
-        steps[6].classList.add('active');
-        progressState.currentStep = 6;
+        // Activate "Done!" step
+        steps[doneStep].classList.add('active');
+        progressState.currentStep = doneStep;
         
         setTimeout(() => {
-            steps[6].classList.remove('active');
-            steps[6].classList.add('completed');
-            
-            // If AI design is enabled, continue to AI steps
-            if (progressState.aiDesignEnabled) {
-                console.log('🎨 Quote complete! Starting AI design generation steps (+45s)...');
-                advanceProgressStep(7);
-            } else {
-                // No AI design - complete animation
-                completeProgressAnimation();
-            }
+            steps[doneStep].classList.remove('active');
+            steps[doneStep].classList.add('completed');
+            completeProgressAnimation();
         }, 1500);
     } else {
         // Show error on current step
