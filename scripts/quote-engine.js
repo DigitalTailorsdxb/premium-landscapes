@@ -609,7 +609,16 @@ function nextStep() {
         return;
     }
     
-    // Step 3: Budget is now optional for Full Garden Redesign to allow creative freedom
+    // Step 3: Garden size (m²) is mandatory for Full Garden Redesign
+    if (currentStep === 3 && quoteData.quoteMode === 'full-redesign') {
+        const areaValue = parseInt(document.getElementById('areaSlider')?.value) || 0;
+        if (areaValue < 10) {
+            alert('Please set your garden size using the slider');
+            return;
+        }
+        // Store the area value
+        quoteData.area = areaValue;
+    }
     
     if (currentStep === 4) {
         const postcodeInput = document.getElementById('postcode');
