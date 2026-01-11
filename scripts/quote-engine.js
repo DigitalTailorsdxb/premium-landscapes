@@ -1324,26 +1324,50 @@ function prepareWebhookPayload() {
         };
         
         // Add photo for AI design if requested (single consolidated payload)
+        console.log('🔍 DEBUG - Checking AI Design photo inclusion:');
+        console.log('   - quoteData.aiDesign:', quoteData.aiDesign);
+        console.log('   - aiDesignFiles:', typeof aiDesignFiles !== 'undefined' ? aiDesignFiles : 'UNDEFINED');
+        console.log('   - aiDesignFiles.length:', typeof aiDesignFiles !== 'undefined' ? aiDesignFiles.length : 'N/A');
+        console.log('   - quoteData.files:', quoteData.files);
+        console.log('   - quoteData.files.length:', quoteData.files ? quoteData.files.length : 'N/A');
+        
         if (quoteData.aiDesign) {
+            console.log('✅ AI Design is checked - proceeding to add photo');
             // Priority: AI-specific photos (Step 5) > Step 4 photos
             const photoSource = aiDesignFiles.length > 0 ? aiDesignFiles : quoteData.files;
+            console.log('   - photoSource length:', photoSource.length);
+            console.log('   - photoSource:', photoSource);
             
             if (photoSource.length > 0) {
                 const file = photoSource[0];
-                // Convert file to base64 synchronously since we're already in a Promise chain
-                const photoData = await convertFileToBase64(file);
-                payload.photo = {
-                    name: file.name,
-                    type: file.type,
-                    size: file.size,
-                    data: photoData
-                };
-                console.log('📸 Photo included in main payload:', {
-                    name: file.name,
-                    type: file.type,
-                    size: `${(file.size / 1024).toFixed(2)} KB`
-                });
+                console.log('   - First file:', file);
+                console.log('   - File name:', file?.name);
+                console.log('   - File type:', file?.type);
+                console.log('   - File size:', file?.size);
+                
+                try {
+                    // Convert file to base64
+                    const photoData = await convertFileToBase64(file);
+                    payload.photo = {
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        data: photoData
+                    };
+                    console.log('📸 Photo SUCCESSFULLY included in main payload:', {
+                        name: file.name,
+                        type: file.type,
+                        size: `${(file.size / 1024).toFixed(2)} KB`,
+                        dataLength: photoData?.length || 0
+                    });
+                } catch (photoError) {
+                    console.error('❌ Error converting photo to base64:', photoError);
+                }
+            } else {
+                console.warn('⚠️ No photos found in photoSource!');
             }
+        } else {
+            console.log('ℹ️ AI Design not checked - skipping photo');
         }
         
         return payload;
