@@ -11,7 +11,7 @@
 ✅ **Simplified Full Redesign UI** - Removed material selection categories and "Design it for me" checkbox. Full redesign Step 2 now shows only a large textarea for customers to describe their vision and requirements. The workflow automatically creates a custom design proposal based on budget (Dec 30)
 ✅ **Dedicated Area Input Fields** - Each product now has a dedicated area/size input field for more accurate quotes
 ✅ **Clean Quote Submission** - No fake pricing shown on site; actual quote sent via email from n8n workflow
-✅ **Dual Webhook Routing** - Automatic routing to separate workflows on PRODUCTION endpoints: Standard quotes → `/webhook/premium-landscapes-quote`, Full redesigns → `/webhook/premium-landscapes-full-redesign`, AI Design → `/webhook/premium-landscapes-ai-design` (Nov 18)
+✅ **Single Consolidated Webhook** - All data (customer, project, photo, metadata) sent in ONE request to main workflow. Standard quotes → `/webhook/premium-landscapes-quote`, Full redesigns → `/webhook/premium-landscapes-full-redesign`. AI design photo included when `metadata.aiDesignRequested: true` (Jan 11)
 ✅ **Logo URL for PDFs** - https://dc75ac27-bacc-4020-bfea-3d95e4c635f0-00-3n5dcfbaxdmz3.sisko.replit.dev/static/logo.png
 ✅ **Fencing Data Structure Fixed** - Changed from `length_m` to `length` and `unitType: 'qty'` to `unitType: 'm'` (Nov 5)
 ✅ **Simple Manual Address Entry** - Clean 4-field form (house number, street, city, postcode) - 100% reliable, no API dependencies (Nov 5)
@@ -34,6 +34,7 @@
 ✅ **Mobile Navigation Fixes** - Homepage logo now clickable (links to index.html), "Home" link added to mobile hamburger menu on all pages (Dec 31)
 ✅ **iOS Safari Hero Fix** - Removed `background-attachment: fixed` on mobile to fix hero image not displaying on iOS Safari (Dec 31)
 ✅ **Animated Progress Timeline (Full Redesign)** - Full garden redesign quotes now show an animated step-by-step progress: Reading requirements → Planning structure → Building design → Mapping products → Building PDF → Sending email → Done! Each step animates with active/completed states. Animation syncs with actual webhook response (Jan 3)
+✅ **Consolidated Webhook Payload (Jan 11)** - Photo for AI design now included in MAIN webhook payload instead of separate request. Single webhook receives: customer, project, photo (base64), and metadata. n8n workflow handles routing internally. `metadata.aiDesignRequested` flag indicates when AI design is needed. Photo upload is REQUIRED when AI Design checkbox is checked.
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.

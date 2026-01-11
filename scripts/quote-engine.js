@@ -1014,6 +1014,15 @@ async function submitQuote() {
         console.log('  project.products:', webhookPayload.project.products.length, 'items');
         console.log('  project.totalArea_m2:', webhookPayload.project.totalArea_m2);
         console.log('  project.totalBudget_gbp:', webhookPayload.project.totalBudget_gbp);
+        console.log('  metadata.aiDesignRequested:', webhookPayload.metadata?.aiDesignRequested || false);
+        if (webhookPayload.photo) {
+            console.log('  📸 photo:', {
+                name: webhookPayload.photo.name,
+                type: webhookPayload.photo.type,
+                size: `${(webhookPayload.photo.size / 1024).toFixed(2)} KB`,
+                dataLength: webhookPayload.photo.data?.length || 0
+            });
+        }
         console.log('📦 FULL PAYLOAD:', JSON.stringify(webhookPayload, null, 2));
         
         const response = await fetch(webhookUrl, {
@@ -1122,7 +1131,7 @@ function prepareWebhookPayload() {
         });
     });
     
-    return Promise.all(filePromises).then(filesData => {
+    return Promise.all(filePromises).then(async (filesData) => {
         // Parse budget - handles both numeric input and legacy string format
         const parseBudget = (budget) => {
             if (!budget) return null;
@@ -1310,8 +1319,32 @@ function prepareWebhookPayload() {
             quoteType: isFullRedesign ? 'full_garden_redesign' : 'individual_products',
             webhookDestination: isFullRedesign 
                 ? window.brandConfig?.webhooks?.quoteFullRedesign || 'https://n8n.example.com/webhook/premium-landscapes-full-redesign'
-                : window.brandConfig?.webhooks?.quote || 'https://n8n.example.com/webhook/premium-landscapes-quote'
+                : window.brandConfig?.webhooks?.quote || 'https://n8n.example.com/webhook/premium-landscapes-quote',
+            aiDesignRequested: quoteData.aiDesign || false
         };
+        
+        // Add photo for AI design if requested (single consolidated payload)
+        if (quoteData.aiDesign) {
+            // Priority: AI-specific photos (Step 5) > Step 4 photos
+            const photoSource = aiDesignFiles.length > 0 ? aiDesignFiles : quoteData.files;
+            
+            if (photoSource.length > 0) {
+                const file = photoSource[0];
+                // Convert file to base64 synchronously since we're already in a Promise chain
+                const photoData = await convertFileToBase64(file);
+                payload.photo = {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    data: photoData
+                };
+                console.log('📸 Photo included in main payload:', {
+                    name: file.name,
+                    type: file.type,
+                    size: `${(file.size / 1024).toFixed(2)} KB`
+                });
+            }
+        }
         
         return payload;
     });
@@ -1329,38 +1362,22 @@ async function showQuoteResult(data) {
     console.log('✅ Quote request submitted successfully!');
     console.log('Customer will receive detailed PDF quote via email from n8n workflow');
     
-    // Check if AI design was requested
+    // If AI design was requested, it's now included in the main payload
+    // No separate webhook call needed - n8n main workflow handles routing
     if (quoteData.aiDesign) {
-        console.log('🎨 AI Design requested - sending to AI Design workflow...');
+        console.log('🎨 AI Design requested - photo included in main webhook payload');
+        console.log('📸 n8n will route to AI design generation within the workflow');
         
-        try {
-            await sendToAIDesignWorkflow();
-            
-            // Add AI design success message to confirmation
-            const nextStepsList = document.getElementById('nextStepsList');
-            if (nextStepsList) {
-                const aiDesignItem = document.createElement('li');
-                aiDesignItem.className = 'flex items-start';
-                aiDesignItem.innerHTML = `
-                    <i class="fas fa-check-circle text-accent mr-2 mt-1"></i>
-                    <span>You'll also receive your AI-generated garden design in a separate email</span>
-                `;
-                nextStepsList.appendChild(aiDesignItem);
-            }
-            
-        } catch (error) {
-            // Add AI design error message to confirmation
-            const nextStepsList = document.getElementById('nextStepsList');
-            if (nextStepsList) {
-                const aiDesignErrorItem = document.createElement('li');
-                aiDesignErrorItem.className = 'flex items-start';
-                aiDesignErrorItem.innerHTML = `
-                    <i class="fas fa-exclamation-triangle text-yellow-600 mr-2 mt-1"></i>
-                    <span class="text-sm">AI design generation unavailable at the moment. Your quote has been sent successfully.</span>
-                `;
-                nextStepsList.appendChild(aiDesignErrorItem);
-            }
-            console.error('AI Design workflow failed, but quote was successful');
+        // Add AI design message to confirmation
+        const nextStepsList = document.getElementById('nextStepsList');
+        if (nextStepsList) {
+            const aiDesignItem = document.createElement('li');
+            aiDesignItem.className = 'flex items-start';
+            aiDesignItem.innerHTML = `
+                <i class="fas fa-check-circle text-accent mr-2 mt-1"></i>
+                <span>You'll also receive your AI-generated garden design in a separate email</span>
+            `;
+            nextStepsList.appendChild(aiDesignItem);
         }
     }
     
