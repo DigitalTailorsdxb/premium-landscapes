@@ -1014,7 +1014,11 @@ async function submitQuote() {
         }
         
         // Send to n8n workflow
+        console.log('========================================');
+        console.log('🚀 SINGLE WEBHOOK CALL - NO DUPLICATES');
+        console.log('========================================');
         console.log('📤 SENDING TO N8N:', webhookUrl);
+        console.log('⏰ Timestamp:', new Date().toISOString());
         console.log('📦 PAYLOAD STRUCTURE:');
         console.log('  customer:', {
             name: webhookPayload.customer.name,
