@@ -20,6 +20,9 @@ let quoteData = {
     files: []
 };
 
+// Prevent double submission
+let isSubmittingQuote = false;
+
 // Progress animation state for full redesign quotes
 let progressState = {
     currentStep: 0,
@@ -891,6 +894,13 @@ function updateSummary() {
 
 // Submit quote
 async function submitQuote() {
+    // Prevent double submission
+    if (isSubmittingQuote) {
+        console.log('⚠️ Quote submission already in progress, ignoring duplicate click');
+        return;
+    }
+    isSubmittingQuote = true;
+    
     console.log('🚀 SUBMIT QUOTE FUNCTION CALLED - Version: 20251028-FINAL');
     console.log('Current quoteData:', quoteData);
     
@@ -899,6 +909,7 @@ async function submitQuote() {
     if (!nameInput.value.trim()) {
         alert('Please enter your name');
         nameInput.focus();
+        isSubmittingQuote = false;
         return;
     }
     
@@ -906,6 +917,7 @@ async function submitQuote() {
     if (!emailInput.value.trim() || !emailInput.value.includes('@')) {
         alert('Please enter a valid email address');
         emailInput.focus();
+        isSubmittingQuote = false;
         return;
     }
     
@@ -916,6 +928,7 @@ async function submitQuote() {
     if (!phoneInput.value.trim()) {
         alert('Please enter your phone number');
         phoneInput.focus();
+        isSubmittingQuote = false;
         return;
     }
     quoteData.phone = phoneInput.value.trim();
@@ -932,6 +945,7 @@ async function submitQuote() {
         
         if (!hasAIPhoto && !hasQuotePhoto) {
             alert('Please upload a photo of your garden to generate an AI design. You can upload in the AI Design section below the checkbox, or in the Photos section on the previous step.');
+            isSubmittingQuote = false;
             return;
         }
     }

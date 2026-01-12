@@ -4,6 +4,9 @@
 let currentStep = 1;
 const totalSteps = 4;
 
+// Prevent double submission
+let isSubmittingDesign = false;
+
 // Progress animation state for AI design generation
 let designProgressState = {
     currentStep: 0,
@@ -412,11 +415,19 @@ function updateSummary() {
 
 // Submit design request
 async function submitDesign() {
+    // Prevent double submission
+    if (isSubmittingDesign) {
+        console.log('⚠️ Design submission already in progress, ignoring duplicate click');
+        return;
+    }
+    isSubmittingDesign = true;
+    
     // Validation
     const nameInput = document.getElementById('name');
     if (!nameInput.value.trim()) {
         alert('Please enter your name');
         nameInput.focus();
+        isSubmittingDesign = false;
         return;
     }
     designData.name = nameInput.value.trim();
@@ -425,6 +436,7 @@ async function submitDesign() {
     if (!emailInput.value.trim() || !emailInput.value.includes('@')) {
         alert('Please enter a valid email address');
         emailInput.focus();
+        isSubmittingDesign = false;
         return;
     }
     designData.email = emailInput.value.trim();
@@ -433,6 +445,7 @@ async function submitDesign() {
     if (!phoneInput.value.trim()) {
         alert('Please enter your phone number');
         phoneInput.focus();
+        isSubmittingDesign = false;
         return;
     }
     designData.phone = phoneInput.value.trim();
@@ -442,6 +455,7 @@ async function submitDesign() {
     if (!streetInput.value.trim()) {
         alert('Please enter your street name');
         streetInput.focus();
+        isSubmittingDesign = false;
         return;
     }
     
@@ -449,6 +463,7 @@ async function submitDesign() {
     if (!cityInput.value.trim()) {
         alert('Please enter your city or town');
         cityInput.focus();
+        isSubmittingDesign = false;
         return;
     }
     
@@ -456,12 +471,14 @@ async function submitDesign() {
     if (!postcodeInput.value.trim()) {
         alert('Please enter your postcode');
         postcodeInput.focus();
+        isSubmittingDesign = false;
         return;
     }
     
     // Budget validation
     if (!designData.budget) {
         alert('Please select a budget range');
+        isSubmittingDesign = false;
         return;
     }
     
