@@ -1,0 +1,1413 @@
+{
+  "name": "Premium Landscapes – Full Garden Redesign",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "premium-landscapes-full-redesign",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c6d53ddc-d659-4b93-96c5-cfddf6b1ac03",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -2112,
+        64
+      ],
+      "webhookId": "61a61d0e-febc-47fe-bb92-4cd0327c3a35"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Quote processed successfully\",\n  \"dealId\": \"={{ $('Merge Deal Paths').first().json.dealId || $('Merge Deal Paths').first().json.id }}\",\n  \"quoteRef\": \"={{ $('Build PDF HTML').first().json.pdf.quoteRef }}\",\n  \"pdfUrl\": \"={{ $('Build PDF HTML').first().json.pdfUrl }}\"\n}",
+        "options": {}
+      },
+      "id": "148fef8c-94dc-409c-8a51-0fe6a0a4347b",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        5184,
+        -32
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "66898b9b-3106-44a9-bc6a-ee8f1af1fa22",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2112,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "Premiumlandscapesuk@gmail.com",
+        "toEmail": "thedigitaltailorsdxb@gmail.com",
+        "subject": "={{`⚠️ Full Redesign Workflow Error – ${$json.execution?.lastNodeExecuted || 'Unknown'}`}}",
+        "html": "<div><p><strong>Error:</strong> {{$json.error.message || 'Unknown error'}}</p><p>Execution ID: {{$json.execution.id}}</p></div>",
+        "options": {}
+      },
+      "id": "dd0ea85c-d089-4d14-a8de-6a0d4ed076e0",
+      "name": "Send Error Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -1888,
+        528
+      ],
+      "webhookId": "77d19835-6d51-4525-a29e-085d92a85636",
+      "credentials": {
+        "smtp": {
+          "id": "dLpXH6yljIeIoVw6",
+          "name": "SMTP account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Validate Input (Premium Landscapes) v1.7 ===\n// Accepts either {body:{...}} (webhook) or flat JSON (manual).\n// Normalizes payload for downstream nodes (pricing, PDF, email).\n// v1.7: PRESERVES PHOTO DATA for image generation workflow\n\nconst src = $json.body ?? $json ?? {};\nconst nowIso = new Date().toISOString();\n\n/* ---------------- Helpers ---------------- */\nconst toStr = (v, d = \"\") => (v == null ? d : String(v).trim());\nconst toNum = (v, d = 0) => {\n  const n = Number(v);\n  return Number.isFinite(n) ? n : d;\n};\nconst clamp = (n, lo, hi) => Math.min(Math.max(n, lo), hi);\nconst asArray = (v) => (Array.isArray(v) ? v : v == null ? [] : [v]);\nconst uniq = (arr) => Array.from(new Set(arr));\nconst normBool = (v) => {\n  if (typeof v === \"boolean\") return v;\n  const s = String(v ?? \"\").toLowerCase();\n  return [\"1\", \"true\", \"yes\", \"on\"].includes(s);\n};\nconst normPostcode = (pc) => toStr(pc).toUpperCase().replace(/\\s+/g, \" \").trim();\n\n/* ---------------- Pick roots ---------------- */\nconst customerIn = src.customer ?? {};\nconst projectIn  = src.project ?? {};\nconst extrasIn   = projectIn.extras ?? {};\nconst productsIn = Array.isArray(projectIn.products) ? projectIn.products : [];\nconst gdRaw      = projectIn.gardenDesign ?? {};\nconst metadataIn = src.metadata ?? {};\n\n/* ---------------- PHOTO EXTRACTION (NEW) ---------------- */\n// Extract photo from various possible locations in the webhook payload\nconst photoData = src.photo || src.body?.photo || projectIn.photo || null;\nconsole.log('✓ Photo data present:', !!photoData);\nif (photoData) {\n  console.log('✓ Photo data length:', photoData.data?.length || 0);\n}\n\n/* ---------------- Coerce numerics ---------------- */\nconst totalArea_m2    = clamp(toNum(projectIn.totalArea_m2, 0), 0, 10000);\nconst totalBudget_gbp = clamp(toNum(projectIn.totalBudget_gbp, 0), 0, 1_000_000);\n\n/* ---------------- Material selections (Step 2/5) ----------------\n   We accept either:\n   - gardenDesign.materials: [\"porcelain_tiles\", ...]\n   - gardenDesign.categories: { paving:[{material:\"porcelain_tiles\", ...}], ... }\n   We keep both the raw structure and a flat material key list for quick checks. */\nlet categories = {};\nif (gdRaw && typeof gdRaw === \"object\" && gdRaw.categories && !Array.isArray(gdRaw.categories)) {\n  categories = Object.fromEntries(\n    Object.entries(gdRaw.categories).map(([k, v]) => [k, (Array.isArray(v) ? v : []).filter(Boolean)])\n  );\n}\n\nlet materialsFlat = [];\nif (Array.isArray(gdRaw.materials) && gdRaw.materials.length) {\n  materialsFlat = gdRaw.materials;\n} else if (categories && Object.keys(categories).length) {\n  materialsFlat = Object.values(categories)\n    .flat()\n    .map((m) => (typeof m === \"string\" ? m : (m?.material || m?.type || m?.name || \"\")).trim())\n    .filter(Boolean);\n}\nmaterialsFlat = uniq(materialsFlat);\n\n/* ---------------- Budget-mode flag ----------------\n   \"Budget-based design\" is true if:\n   - explicit flag is true, OR\n   - a UI flag like form.budgetMode is true, OR\n   - there are NO specific selections but a positive budget exists. */\nconst explicitBudgetFlag =\n  gdRaw.budgetBasedDesign ?? src.form?.budgetMode ?? src.budgetMode ?? null;\n\nconst hasAnySelections =\n  materialsFlat.length > 0 ||\n  Object.values(categories).some(arr => Array.isArray(arr) && arr.length > 0);\n\nconst budgetBasedDesign =\n  explicitBudgetFlag !== null\n    ? normBool(explicitBudgetFlag)\n    : (!hasAnySelections && totalBudget_gbp > 0);\n\n/* ---------------- Normalize customer ---------------- */\nconst customer = {\n  name:        toStr(customerIn.name),\n  email:       toStr(customerIn.email).toLowerCase(),\n  phone:       toStr(customerIn.phone),\n  postcode:    normPostcode(customerIn.postcode),\n  city:        toStr(customerIn.city),\n  street:      toStr(customerIn.street),\n  houseNumber: toStr(customerIn.houseNumber),\n  address:     toStr(customerIn.address),\n  ...customerIn,\n};\n\n/* ---------------- Normalize project ---------------- */\n// Notes / Requirements handling:\n// - requirements is preferred (new UI field)\n// - if only notes exists, we mirror it into requirements so the AI MUST consider it\nconst notes = toStr(projectIn.notes);\nconst requirements = toStr(projectIn.requirements || projectIn.requirement || projectIn.customerRequirements || notes);\n\nconst project = {\n  type:              toStr(projectIn.type, \"full_garden_redesign\"),\n  title:             toStr(projectIn.title, \"Complete Garden Redesign\"),\n  totalArea_m2,\n  totalBudget_gbp,\n  layoutType:        toStr(projectIn.layoutType || \"standard\"),\n  sunlight:          toStr(projectIn.sunlight || \"\"),\n  stylePreference:   toStr(projectIn.stylePreference || \"\"),\n  maintenanceLevel:  toStr(projectIn.maintenanceLevel || \"\"),\n  siteConditions: {\n    access:   toStr(projectIn.siteConditions?.access),\n    soilType: toStr(projectIn.siteConditions?.soilType),\n    drainage: toStr(projectIn.siteConditions?.drainage),\n    ...projectIn.siteConditions,\n  },\n  // IMPORTANT: pass through raw selections for pricing logic\n  products: productsIn,\n  extras:   (extrasIn && typeof extrasIn === \"object\") ? extrasIn : {},\n\n  // Keep existing field\n  notes,\n\n  // New preferred field (used by LLM brief + downstream mapping)\n  requirements,\n\n  gardenDesign: {\n    ...gdRaw,\n    budgetBasedDesign,\n    categories,               // normalized object-of-arrays\n    materials: materialsFlat, // flat material keys\n    totalMaterialCount: materialsFlat.length\n  },\n};\n\n/* ---------------- Validations & mirrors ---------------- */\nconst errors = [];\nconst warnings = [];\n\nif (!customer.email && !customer.phone) {\n  warnings.push(\"Customer has no email or phone; follow-up may fail.\");\n}\nif (!project.totalArea_m2) {\n  warnings.push(\"Total area (m²) was not provided.\");\n}\nif (budgetBasedDesign && project.totalBudget_gbp === 0) {\n  // Budget = 0 means UNLIMITED - no validation needed\n  warnings.push(\"Budget set to £0 (unlimited) - no budget restrictions will apply.\");\n} else if (budgetBasedDesign && !project.totalBudget_gbp) {\n  errors.push(\"Budget-based design selected but no budget provided.\");\n}\nif (customer.email && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(customer.email)) {\n  warnings.push(\"Customer email looks invalid.\");\n}\n\nconst selectionSummary = Object.fromEntries(\n  Object.entries(categories).map(([k, v]) => [k, (Array.isArray(v) ? v.length : 0)])\n);\n\n/* ---------------- Final output (WITH PHOTO) ---------------- */\nconst output = {\n  json: {\n    meta: {\n      normalizedAt: nowIso,\n      source: toStr(metadataIn.source || src.source || \"website_quote_form\"),\n      timestamp: toStr(metadataIn.timestamp || new Date().toISOString()),\n      quoteType: toStr(metadataIn.quoteType || project.type),\n    },\n    customer,\n    project,\n    mirrors: {\n      budgetBasedDesign,\n      totalBudget_gbp: project.totalBudget_gbp,\n      totalArea_m2: project.totalArea_m2,\n      hasAnySelections,\n      selectionSummary\n    },\n    valid: errors.length === 0,\n    errors,\n    warnings,\n  }\n};\n\n// CRITICAL: Preserve photo data if present\nif (photoData) {\n  output.json.photo = photoData;\n  console.log('✓ Photo preserved in output');\n}\n\nreturn [output];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1888,
+        64
+      ],
+      "id": "4cd48314-1d35-4aed-8888-a675390f0cf6",
+      "name": "validate Input"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Premium Landscapes | Calculate Pricing v5.2 - PRICE SYNC + NO PHOTO ===\n// Complete product range with prices synced to Build LLM Brief v4.2\n\n// ---------- Tunables ----------\nconst CONTINGENCY_PCT = 0.05;\nconst VAT_PCT = 0.20;\nconst LIGHTING_MULTIPLIER = 1.5;\nconst GROUNDWORKS_RATE_PER_M2 = 40;\n\n// ---------- COMPREHENSIVE PRICE LIST ----------\nconst RATES = {\n  // NATURAL STONE PAVING\n  natural_stone_paving: {\n    indian_sandstone: 110,\n    limestone_paving: 135,\n    granite_paving: 150,\n    slate_paving: 140,\n    york_stone: 165,\n    travertine: 145,\n    quartzite: 155,\n  },\n  \n  // NATURAL STONE SETTS/COBBLES\n  natural_stone_setts: {\n    granite_setts: 95,\n    sandstone_setts: 85,\n    cobblestones: 75,\n  },\n  \n  // MANUFACTURED PAVING\n  manufactured_paving: {\n    porcelain_20mm: 130,\n    concrete_paving: 100,\n    block_paving: 90,\n    resin_bound: 160,\n  },\n  \n  // DECORATIVE AGGREGATES\n  aggregates: {\n    decorative_gravel: 55,\n    slate_chippings: 65,\n    pebbles_decorative: 70,\n    boulders_feature: 180,\n    rockery_stone: 85,\n  },\n  \n  // DECKING\n  decking: {\n    composite: 170,\n    softwood_treated: 110,\n    hardwood: 195,\n  },\n  \n  // TURF\n  turf: {\n    natural_rolled: 30,\n    artificial_35_40mm: 85,\n  },\n  \n  // NATURAL STONE STEPS\n  natural_stone_steps: {\n    sandstone_step: 180,\n    granite_step: 220,\n    limestone_step: 195, // FIXED: was 200\n  },\n  \n  // OTHER STEPS\n  steps: {\n    brick_steps: 150,\n    sleeper_steps: 120,\n  },\n  \n  // PATHWAYS\n  pathways: {\n    gravel_path_edged: 66,\n    bark_path: 35,\n    stepping_stones: 80,\n  },\n  \n  // RAMPS\n  ramps: {\n    non_slip_ramp: 216,\n  },\n  \n  // FENCING\n  fencing: {\n    closeboard_featheredge: 65,\n    panel_fencing: 65,\n    composite_fencing: 100,\n    trellis_panels: 75,\n    concrete_posts_boards: 66,\n    timber_posts_boards: 50,\n  },\n  \n  // GATES\n  gates: {\n    timber_garden_gate: 350,\n    metal_garden_gate: 550,\n  },\n  \n  // WALLS (1.2m standard)\n  walls: {\n    brick_wall_1_2m: 290,\n    stone_wall_1_2m: 320,\n    rendered_block_wall_1_2m: 260,\n    sleeper_wall_0_6m: 90,\n    sleeper_wall_1_2m: 180,\n    sandstone_walling_1_2m: 280,\n    limestone_walling_1_2m: 320,\n    granite_walling_1_2m: 350,\n    dry_stone_walling: 240,\n  },\n  \n  // HEDGING\n  hedging: {\n    native_hedging: 45, // FIXED: was 30\n    instant_screening: 165,\n  },\n  \n  // PLANTERS/RAISED BEDS\n  planters: {\n    planting_beds: 15,\n    rendered_block_planter: 216,\n    raised_bed_sleepers: 180,\n  },\n  \n  // EDGING\n  edging: {\n    paving_edging_kerbs_setts: 60, // FIXED: was 40\n  },\n  \n  // DRAINAGE\n  drainage: {\n    linear_channel_drain: 55,\n    soakaway_crate: 780,\n    land_drain_pipe: 20,\n    french_drain: 45,\n  },\n  \n  // PONDS\n  ponds: {\n    small_pond: 960,\n    medium_pond: 1920,\n    large_pond: 3040,\n    wildlife_pond: 1600,\n    koi_pond: 3600,\n  },\n  \n  // WATER FEATURES\n  water_features: {\n    wall_mounted_feature: 800,\n    fountain_small: 650,\n    fountain_large: 1500,\n    water_rill: 280,\n    cascade_waterfall: 2200,\n    water_bowl_contemporary: 1800,\n    corten_steel_feature: 2800,\n    bespoke_water_feature: 1200, // Using water_feature price from LLM brief\n  },\n  \n  // POND EQUIPMENT\n  pond_equipment: {\n    pond_pump: 180,\n    pond_filter: 420, // FIXED: was 280\n    uv_clarifier: 220, // FIXED: was 150\n    pond_liner: 25,\n  },\n  \n  // STRUCTURES - PERGOLAS\n  structures_pergolas: {\n    timber_pergola_3x3: 1700,\n    pergola_attached: 1500,\n    gazebo: 2800,\n  },\n  \n  // STRUCTURES - ROOMS\n  structures_rooms: {\n    garden_room: 1450,\n    summer_house: 4200,\n    greenhouse_6x8: 1800,\n    greenhouse_8x10: 2600,\n  },\n  \n  // STORAGE\n  storage: {\n    timber_shed_6x4: 850,\n    timber_shed_8x6: 1250,\n    metal_shed_6x4: 950,\n  },\n  \n  // FEATURES - FIRE & SEATING\n  features_fire_seating: {\n    sunken_firepit: 1450,\n    seating_area: 2000,\n    seating_sunken: 3500,\n    seating_rendered: 2800,\n    seating_stone: 3200,\n    sunken_firepit_seating_package: 4500,\n  },\n  \n  // FEATURES - COOKING\n  features_cooking: {\n    outdoor_kitchen_starter: 3000,\n    outdoor_kitchen_standard: 6000,\n    outdoor_kitchen_premium: 12000,\n    bbq_area_module: 950,\n    built_in_bbq: 1500,\n  },\n  \n  // DECORATIVE SCREENS\n  decorative: {\n    decorative_screen: 300, // FIXED: was 800\n  },\n  \n  // PLANTING\n  planting: {\n    feature_tree: 300,\n    shrub_large: 45,\n    shrub_medium: 25,\n    topsoil_bulk: 45,\n    mulch_bark: 35,\n    membrane_weed_fabric: 8,\n  },\n  \n  // LIGHTING\n  lighting: {\n    default: 75,\n    transformer_each: 120,\n    cable_per_m: 5,\n  },\n};\n\n// ---------- Helpers ----------\nconst to2 = (n) => +((Number(n) || 0).toFixed(2));\nconst lc = (s) => (s || \"\").toLowerCase();\nconst num = (v) => (v == null || v === \"\" ? 0 : Number(v) || 0);\n\n// ---------- COMPREHENSIVE PRODUCT VARIANT MATCHER ----------\nfunction matchProduct(allocationKey) {\n  const key = lc(allocationKey);\n  \n  // ========== NATURAL STONE PAVING ==========\n  if (key.includes('indian_sandstone') || key.includes('sandstone_paving')) {\n    return { type: 'Indian Sandstone', cat: 'natural_stone_paving', var: 'indian_sandstone', unit: 'm²' };\n  }\n  if (key.includes('limestone_paving') || key.includes('limestone_patio')) {\n    return { type: 'Limestone Paving', cat: 'natural_stone_paving', var: 'limestone_paving', unit: 'm²' };\n  }\n  if (key.includes('granite_paving') || key.includes('granite_patio')) {\n    return { type: 'Granite Paving', cat: 'natural_stone_paving', var: 'granite_paving', unit: 'm²' };\n  }\n  if (key.includes('slate_paving') || key.includes('slate_patio')) {\n    return { type: 'Slate Paving', cat: 'natural_stone_paving', var: 'slate_paving', unit: 'm²' };\n  }\n  if (key.includes('york_stone') || key.includes('yorkstone')) {\n    return { type: 'York Stone', cat: 'natural_stone_paving', var: 'york_stone', unit: 'm²' };\n  }\n  if (key.includes('travertine')) {\n    return { type: 'Travertine Paving', cat: 'natural_stone_paving', var: 'travertine', unit: 'm²' };\n  }\n  if (key.includes('quartzite')) {\n    return { type: 'Quartzite Paving', cat: 'natural_stone_paving', var: 'quartzite', unit: 'm²' };\n  }\n  \n  // ========== NATURAL STONE SETTS/COBBLES ==========\n  if (key.includes('granite_setts') || key.includes('granite_cobbles')) {\n    return { type: 'Granite Setts', cat: 'natural_stone_setts', var: 'granite_setts', unit: 'm²' };\n  }\n  if (key.includes('sandstone_setts')) {\n    return { type: 'Sandstone Setts', cat: 'natural_stone_setts', var: 'sandstone_setts', unit: 'm²' };\n  }\n  if (key.includes('cobblestones') || key.includes('cobbles')) {\n    return { type: 'Cobblestones', cat: 'natural_stone_setts', var: 'cobblestones', unit: 'm²' };\n  }\n  \n  // ========== MANUFACTURED PAVING ==========\n  if (key.includes('porcelain') || key.includes('tiles') || key.includes('tile')) {\n    return { type: 'Porcelain Tiles', cat: 'manufactured_paving', var: 'porcelain_20mm', unit: 'm²' };\n  }\n  if (key.includes('concrete_paving') || key.includes('concrete_patio')) {\n    return { type: 'Concrete Paving', cat: 'manufactured_paving', var: 'concrete_paving', unit: 'm²' };\n  }\n  if (key.includes('block_paving') || key.includes('blocks')) {\n    return { type: 'Block Paving', cat: 'manufactured_paving', var: 'block_paving', unit: 'm²' };\n  }\n  if (key.includes('resin') || key.includes('resinbound')) {\n    return { type: 'Resin Bound', cat: 'manufactured_paving', var: 'resin_bound', unit: 'm²' };\n  }\n  \n  // Generic patio/paving fallback\n  if (key.includes('patio_m2') || key.includes('paving_m2') || key.includes('natural_stone_patio')) {\n    return { type: 'Indian Sandstone', cat: 'natural_stone_paving', var: 'indian_sandstone', unit: 'm²' };\n  }\n  \n  // ========== DECORATIVE AGGREGATES ==========\n  if (key.includes('decorative_gravel') || key.includes('gravel_area')) {\n    return { type: 'Decorative Gravel', cat: 'aggregates', var: 'decorative_gravel', unit: 'm²' };\n  }\n  if (key.includes('slate_chippings') || key.includes('slate_chips')) {\n    return { type: 'Slate Chippings', cat: 'aggregates', var: 'slate_chippings', unit: 'm²' };\n  }\n  if (key.includes('pebbles') || key.includes('decorative_pebbles')) {\n    return { type: 'Decorative Pebbles', cat: 'aggregates', var: 'pebbles_decorative', unit: 'm²' };\n  }\n  if (key.includes('boulders') || key.includes('feature_boulder')) {\n    return { type: 'Feature Boulder', cat: 'aggregates', var: 'boulders_feature', unit: 'each' };\n  }\n  if (key.includes('rockery')) {\n    return { type: 'Rockery Stone', cat: 'aggregates', var: 'rockery_stone', unit: 'tonne' };\n  }\n  \n  // ========== DECKING ==========\n  if (key.includes('composite_deck')) {\n    return { type: 'Decking', cat: 'decking', var: 'composite', unit: 'm²', material: 'composite' };\n  }\n  if (key.includes('softwood_deck') || key.includes('timber_deck') || key.includes('wood_deck')) {\n    return { type: 'Decking', cat: 'decking', var: 'softwood_treated', unit: 'm²', material: 'softwood_treated' };\n  }\n  if (key.includes('hardwood_deck')) {\n    return { type: 'Decking', cat: 'decking', var: 'hardwood', unit: 'm²', material: 'hardwood' };\n  }\n  if (key.includes('deck')) {\n    return { type: 'Decking', cat: 'decking', var: 'composite', unit: 'm²', material: 'composite' };\n  }\n  \n  // ========== TURF ==========\n  if (key.includes('artificial_turf') || key.includes('fake_grass') || key.includes('astro')) {\n    return { type: 'Artificial Turf', cat: 'turf', var: 'artificial_35_40mm', unit: 'm²' };\n  }\n  if (key.includes('natural_turf') || key.includes('natural_lawn') || key.includes('real_grass') || key === 'lawn_m2' || key === 'turf_m2') {\n    return { type: 'Natural Lawn', cat: 'turf', var: 'natural_rolled', unit: 'm²' };\n  }\n  \n  // ========== STEPS - NATURAL STONE ==========\n  if (key.includes('sandstone_step') || key.includes('sandstone_tread')) {\n    return { type: 'Sandstone Steps', cat: 'natural_stone_steps', var: 'sandstone_step', unit: 'step' };\n  }\n  if (key.includes('granite_step') || key.includes('granite_tread')) {\n    return { type: 'Granite Steps', cat: 'natural_stone_steps', var: 'granite_step', unit: 'step' };\n  }\n  if (key.includes('limestone_step') || key.includes('limestone_tread')) {\n    return { type: 'Limestone Steps', cat: 'natural_stone_steps', var: 'limestone_step', unit: 'step' };\n  }\n  \n  // ========== STEPS - OTHER ==========\n  if (key.includes('brick_step')) {\n    return { type: 'Brick Steps', cat: 'steps', var: 'brick_steps', unit: 'step' };\n  }\n  if (key.includes('sleeper_step')) {\n    return { type: 'Sleeper Steps', cat: 'steps', var: 'sleeper_steps', unit: 'step' };\n  }\n  if (key.includes('steps_qty') || key.includes('step_each')) {\n    return { type: 'Sandstone Steps', cat: 'natural_stone_steps', var: 'sandstone_step', unit: 'step' };\n  }\n  \n  // ========== PATHWAYS ==========\n  if (key.includes('gravel_path') || key.includes('gravel_pathway')) {\n    return { type: 'Gravel Path', cat: 'pathways', var: 'gravel_path_edged', unit: 'm²' };\n  }\n  if (key.includes('bark_path') || key.includes('bark_pathway')) {\n    return { type: 'Bark Path', cat: 'pathways', var: 'bark_path', unit: 'm²' };\n  }\n  if (key.includes('stepping_stone')) {\n    return { type: 'Stepping Stones', cat: 'pathways', var: 'stepping_stones', unit: 'lm' };\n  }\n  \n  // ========== RAMPS ==========\n  if (key.includes('ramp') || key.includes('non_slip')) {\n    return { type: 'Non-Slip Ramp', cat: 'ramps', var: 'non_slip_ramp', unit: 'each' };\n  }\n  \n  // ========== FENCING ==========\n  if (key.includes('closeboard') || key.includes('featheredge')) {\n    return { type: 'Closeboard Fencing', cat: 'fencing', var: 'closeboard_featheredge', unit: 'lm' };\n  }\n  if (key.includes('composite_fencing')) {\n    return { type: 'Composite Fencing', cat: 'fencing', var: 'composite_fencing', unit: 'lm' };\n  }\n  if (key.includes('panel_fencing') || key.includes('fence_panel')) {\n    return { type: 'Panel Fencing', cat: 'fencing', var: 'panel_fencing', unit: 'lm' };\n  }\n  if (key.includes('trellis')) {\n    return { type: 'Trellis Panels', cat: 'fencing', var: 'trellis_panels', unit: 'lm' };\n  }\n  if (key.includes('concrete_posts') || key.includes('concrete_gravel_boards')) {\n    return { type: 'Concrete Posts & Gravel Boards', cat: 'fencing', var: 'concrete_posts_boards', unit: 'bay' };\n  }\n  if (key.includes('timber_posts') || key.includes('wooden_posts')) {\n    return { type: 'Timber Posts & Gravel Boards', cat: 'fencing', var: 'timber_posts_boards', unit: 'bay' };\n  }\n  if (key.includes('fencing_lm') || key.includes('fence_lm') || key.includes('fencing_m') || key === 'fencing') {\n    return { type: 'Panel Fencing', cat: 'fencing', var: 'panel_fencing', unit: 'lm' };\n  }\n  \n  // ========== GATES ==========\n  if (key.includes('timber_gate') || key.includes('wooden_gate') || key.includes('garden_gate')) {\n    return { type: 'Timber Garden Gate', cat: 'gates', var: 'timber_garden_gate', unit: 'each' };\n  }\n  if (key.includes('metal_gate')) {\n    return { type: 'Metal Garden Gate', cat: 'gates', var: 'metal_garden_gate', unit: 'each' };\n  }\n  \n  // ========== WALLS ==========\n  if (key.includes('brick_wall')) {\n    return { type: 'Brick Wall (1.2m)', cat: 'walls', var: 'brick_wall_1_2m', unit: 'lm' };\n  }\n  if (key.includes('stone_wall') && !key.includes('dry')) {\n    return { type: 'Stone Wall (1.2m)', cat: 'walls', var: 'stone_wall_1_2m', unit: 'lm' };\n  }\n  if (key.includes('rendered_wall') || key.includes('rendered_block')) {\n    return { type: 'Rendered Block Wall (1.2m)', cat: 'walls', var: 'rendered_block_wall_1_2m', unit: 'lm' };\n  }\n  if (key.includes('sleeper_wall_0_6') || key.includes('sleeper_retaining_low')) {\n    return { type: 'Sleeper Wall (0.6m)', cat: 'walls', var: 'sleeper_wall_0_6m', unit: 'lm' };\n  }\n  if (key.includes('sleeper_wall_1_2') || key.includes('sleeper_retaining') || key.includes('sleeper_wall')) {\n    return { type: 'Sleeper Wall (1.2m)', cat: 'walls', var: 'sleeper_wall_1_2m', unit: 'lm' };\n  }\n  if (key.includes('sandstone_walling') || key.includes('sandstone_wall')) {\n    return { type: 'Sandstone Walling (1.2m)', cat: 'walls', var: 'sandstone_walling_1_2m', unit: 'lm' };\n  }\n  if (key.includes('limestone_walling') || key.includes('limestone_wall')) {\n    return { type: 'Limestone Walling (1.2m)', cat: 'walls', var: 'limestone_walling_1_2m', unit: 'lm' };\n  }\n  if (key.includes('granite_walling') || key.includes('granite_wall')) {\n    return { type: 'Granite Walling (1.2m)', cat: 'walls', var: 'granite_walling_1_2m', unit: 'lm' };\n  }\n  if (key.includes('dry_stone') || key.includes('drystone')) {\n    return { type: 'Dry Stone Walling', cat: 'walls', var: 'dry_stone_walling', unit: 'lm' };\n  }\n  \n  // ========== HEDGING ==========\n  if (key.includes('native_hedging') || key.includes('native_hedge')) {\n    return { type: 'Native Hedging', cat: 'hedging', var: 'native_hedging', unit: 'lm' };\n  }\n  if (key.includes('instant_screening') || key.includes('instant_hedge')) {\n    return { type: 'Instant Screening', cat: 'hedging', var: 'instant_screening', unit: 'lm' };\n  }\n  if (key.includes('hedging_lm') || key.includes('hedge_lm')) {\n    return { type: 'Native Hedging', cat: 'hedging', var: 'native_hedging', unit: 'lm' };\n  }\n  \n  // ========== PLANTERS/RAISED BEDS ==========\n  if (key.includes('planting_beds') || key.includes('planting_bed') || key.includes('bed_m2')) {\n    return { type: 'Planting Beds', cat: 'planters', var: 'planting_beds', unit: 'm²' };\n  }\n  if (key.includes('rendered_planter') || key.includes('planter_m2')) {\n    return { type: 'Planter', cat: 'planters', var: 'rendered_block_planter', unit: 'm²' };\n  }\n  if (key.includes('raised_bed') || key.includes('sleeper_bed')) {\n    return { type: 'Raised Bed', cat: 'planters', var: 'raised_bed_sleepers', unit: 'm²' };\n  }\n  \n  // ========== EDGING ==========\n  if (key.includes('edging') || key.includes('kerb') || key.includes('border')) {\n    return { type: 'Paving Edging / Kerbs / Setts', cat: 'edging', var: 'paving_edging_kerbs_setts', unit: 'lm' };\n  }\n  \n  // ========== DRAINAGE ==========\n  if (key.includes('channel_drain') || key.includes('aco_drain') || key.includes('linear_drain')) {\n    return { type: 'Linear Channel Drain', cat: 'drainage', var: 'linear_channel_drain', unit: 'lm' };\n  }\n  if (key.includes('soakaway')) {\n    return { type: 'Soakaway Crate System', cat: 'drainage', var: 'soakaway_crate', unit: 'each' };\n  }\n  if (key.includes('land_drain')) {\n    return { type: 'Land Drain Pipe', cat: 'drainage', var: 'land_drain_pipe', unit: 'lm' };\n  }\n  if (key.includes('french_drain')) {\n    return { type: 'French Drain', cat: 'drainage', var: 'french_drain', unit: 'lm' };\n  }\n  \n  // ========== PONDS ==========\n  if (key.includes('small_pond') || key.includes('pond_small')) {\n    return { type: 'Small Garden Pond', cat: 'ponds', var: 'small_pond', unit: 'each' };\n  }\n  if (key.includes('medium_pond') || key.includes('pond_medium')) {\n    return { type: 'Medium Garden Pond', cat: 'ponds', var: 'medium_pond', unit: 'each' };\n  }\n  if (key.includes('large_pond') || key.includes('pond_large')) {\n    return { type: 'Large Garden Pond', cat: 'ponds', var: 'large_pond', unit: 'each' };\n  }\n  if (key.includes('wildlife_pond')) {\n    return { type: 'Wildlife Pond', cat: 'ponds', var: 'wildlife_pond', unit: 'each' };\n  }\n  if (key.includes('koi_pond')) {\n    return { type: 'Koi Pond', cat: 'ponds', var: 'koi_pond', unit: 'each' };\n  }\n  \n  // CRITICAL: Check pond_liner_m2 FIRST before generic pond matching\n  if (key === 'pond_liner_m2' || key.includes('pond_liner_m2')) {\n    return { type: 'Pond Liner', cat: 'pond_equipment', var: 'pond_liner', unit: 'm²' };\n  }\n  \n  // pond_4m2 specifically - the 4 is the SIZE not quantity!\n  if (key === 'pond_4m2' || key.includes('pond_4m2')) {\n    return { type: 'Garden Pond (4m²)', cat: 'ponds', var: 'medium_pond', unit: 'each', forceQty: 1 };\n  }\n  \n  // pond_6m2 specifically\n  if (key === 'pond_6m2' || key.includes('pond_6m2')) {\n    return { type: 'Garden Pond (6m²)', cat: 'ponds', var: 'large_pond', unit: 'each', forceQty: 1 };\n  }\n  \n  // pond_2m2 specifically\n  if (key === 'pond_2m2' || key.includes('pond_2m2')) {\n    return { type: 'Garden Pond (2m²)', cat: 'ponds', var: 'small_pond', unit: 'each', forceQty: 1 };\n  }\n  \n  // Generic pond allocations\n  if (key.includes('pond_m2') || key.includes('pond_each') || key === 'pond') {\n    return { type: 'Garden Pond', cat: 'ponds', var: 'small_pond', unit: 'each' };\n  }\n  \n  // ========== WATER FEATURES ==========\n  if (key.includes('wall_mounted') || key.includes('wall_water')) {\n    return { type: 'Wall-Mounted Water Feature', cat: 'water_features', var: 'wall_mounted_feature', unit: 'each' };\n  }\n  if (key.includes('fountain_small') || key.includes('small_fountain')) {\n    return { type: 'Small Fountain', cat: 'water_features', var: 'fountain_small', unit: 'each' };\n  }\n  if (key.includes('fountain_large') || key.includes('large_fountain')) {\n    return { type: 'Large Fountain', cat: 'water_features', var: 'fountain_large', unit: 'each' };\n  }\n  if (key.includes('fountain')) {\n    return { type: 'Small Fountain', cat: 'water_features', var: 'fountain_small', unit: 'each' };\n  }\n  if (key.includes('rill') || key.includes('water_channel')) {\n    return { type: 'Water Rill', cat: 'water_features', var: 'water_rill', unit: 'lm' };\n  }\n  if (key.includes('cascade') || key.includes('waterfall')) {\n    return { type: 'Cascade/Waterfall', cat: 'water_features', var: 'cascade_waterfall', unit: 'each' };\n  }\n  if (key.includes('water_bowl') || key.includes('contemporary_bowl')) {\n    return { type: 'Contemporary Water Bowl', cat: 'water_features', var: 'water_bowl_contemporary', unit: 'each' };\n  }\n  if (key.includes('corten') || key.includes('steel_feature')) {\n    return { type: 'Corten Steel Feature', cat: 'water_features', var: 'corten_steel_feature', unit: 'each' };\n  }\n  if (key.includes('water_feature') || key.includes('bespoke_water')) {\n    return { type: 'Water Feature', cat: 'water_features', var: 'bespoke_water_feature', unit: 'each' };\n  }\n  \n  // ========== POND EQUIPMENT ==========\n  if (key.includes('pond_pump')) {\n    return { type: 'Pond Pump', cat: 'pond_equipment', var: 'pond_pump', unit: 'each' };\n  }\n  if (key.includes('pond_filter')) {\n    return { type: 'Pond Filter System', cat: 'pond_equipment', var: 'pond_filter', unit: 'each' };\n  }\n  if (key.includes('uv_clarifier') || key.includes('uv_filter')) {\n    return { type: 'UV Clarifier', cat: 'pond_equipment', var: 'uv_clarifier', unit: 'each' };\n  }\n  \n  // ========== STRUCTURES - PERGOLAS ==========\n  if (key.includes('pergola_3x3') || key === 'pergola_each') {\n    return { type: 'Pergola 3x3', cat: 'structures_pergolas', var: 'timber_pergola_3x3', unit: 'each' };\n  }\n  if (key.includes('pergola_attached')) {\n    return { type: 'Pergola Attached', cat: 'structures_pergolas', var: 'pergola_attached', unit: 'each' };\n  }\n  if (key.includes('gazebo')) {\n    return { type: 'Gazebo', cat: 'structures_pergolas', var: 'gazebo', unit: 'each' };\n  }\n  \n  // ========== STRUCTURES - ROOMS ==========\n  if (key.includes('garden_room')) {\n    return { type: 'Garden Room', cat: 'structures_rooms', var: 'garden_room', unit: 'm²' };\n  }\n  if (key.includes('summer_house') || key.includes('summerhouse')) {\n    return { type: 'Summer House', cat: 'structures_rooms', var: 'summer_house', unit: 'each' };\n  }\n  if (key.includes('greenhouse_6x8') || key.includes('greenhouse_small')) {\n    return { type: 'Greenhouse (6x8)', cat: 'structures_rooms', var: 'greenhouse_6x8', unit: 'each' };\n  }\n  if (key.includes('greenhouse_8x10') || key.includes('greenhouse_large')) {\n    return { type: 'Greenhouse (8x10)', cat: 'structures_rooms', var: 'greenhouse_8x10', unit: 'each' };\n  }\n  if (key.includes('greenhouse')) {\n    return { type: 'Greenhouse (6x8)', cat: 'structures_rooms', var: 'greenhouse_6x8', unit: 'each' };\n  }\n  \n  // ========== STORAGE ==========\n  if (key.includes('timber_shed_6x4') || key.includes('shed_6x4') || key.includes('shed_small')) {\n    return { type: 'Timber Shed (6x4)', cat: 'storage', var: 'timber_shed_6x4', unit: 'each' };\n  }\n  if (key.includes('timber_shed_8x6') || key.includes('shed_8x6') || key.includes('shed_large')) {\n    return { type: 'Timber Shed (8x6)', cat: 'storage', var: 'timber_shed_8x6', unit: 'each' };\n  }\n  if (key.includes('metal_shed')) {\n    return { type: 'Metal Shed (6x4)', cat: 'storage', var: 'metal_shed_6x4', unit: 'each' };\n  }\n  if (key.includes('shed')) {\n    return { type: 'Timber Shed (6x4)', cat: 'storage', var: 'timber_shed_6x4', unit: 'each' };\n  }\n  \n  // ========== FEATURES - FIRE & SEATING ==========\n  if (key.includes('firepit_seating_package') || key.includes('sunken_package')) {\n    return { type: 'Sunken Fire Pit & Seating Package', cat: 'features_fire_seating', var: 'sunken_firepit_seating_package', unit: 'each' };\n  }\n  \n  if (key.includes('firepit') || key.includes('fire_pit') || key.includes('sunken_fire')) {\n    return { type: 'Fire Pit', cat: 'features_fire_seating', var: 'sunken_firepit', unit: 'each' };\n  }\n  \n  if (key.includes('seating_sunken') || key.includes('sunken_seating')) {\n    return { type: 'Sunken Seating Area', cat: 'features_fire_seating', var: 'seating_sunken', unit: 'each' };\n  }\n  if (key.includes('seating_rendered') || key.includes('rendered_seating')) {\n    return { type: 'Rendered Seating', cat: 'features_fire_seating', var: 'seating_rendered', unit: 'each' };\n  }\n  if (key.includes('seating_stone') || key.includes('stone_seating') || key.includes('stone_bench')) {\n    return { type: 'Stone Seating', cat: 'features_fire_seating', var: 'seating_stone', unit: 'each' };\n  }\n  if (key.includes('seating') || key.includes('bench')) {\n    return { type: 'Seating Area', cat: 'features_fire_seating', var: 'seating_area', unit: 'each' };\n  }\n  \n  // ========== FEATURES - COOKING ==========\n  if (key.includes('outdoor_kitchen_starter') || key.includes('kitchen_starter')) {\n    console.log(`  ✅ Matched outdoor_kitchen_starter: ${key}`);\n    return { type: 'Outdoor Kitchen (Starter)', cat: 'features_cooking', var: 'outdoor_kitchen_starter', unit: 'each' };\n  }\n  if (key.includes('outdoor_kitchen_standard') || key.includes('kitchen_standard')) {\n    console.log(`  ✅ Matched outdoor_kitchen_standard: ${key}`);\n    return { type: 'Outdoor Kitchen (Standard)', cat: 'features_cooking', var: 'outdoor_kitchen_standard', unit: 'each' };\n  }\n  if (key.includes('outdoor_kitchen_premium') || key.includes('kitchen_premium') || key.includes('kitchen_luxury')) {\n    console.log(`  ✅ Matched outdoor_kitchen_premium: ${key}`);\n    return { type: 'Outdoor Kitchen (Premium)', cat: 'features_cooking', var: 'outdoor_kitchen_premium', unit: 'each' };\n  }\n  if (key.includes('outdoor_kitchen')) {\n    console.log(`  ✅ Matched generic outdoor_kitchen (will use standard): ${key}`);\n    return { type: 'Outdoor Kitchen (Standard)', cat: 'features_cooking', var: 'outdoor_kitchen_standard', unit: 'each' };\n  }\n  if (key.includes('bbq_area') || key.includes('bbq_module')) {\n    return { type: 'BBQ Area Module', cat: 'features_cooking', var: 'bbq_area_module', unit: 'each' };\n  }\n  if (key.includes('built_in_bbq') || key.includes('builtin_bbq') || key.includes('bbq_each')) {\n    return { type: 'Built-in BBQ', cat: 'features_cooking', var: 'built_in_bbq', unit: 'each' };\n  }\n  \n  // ========== DECORATIVE SCREENS ==========\n  if (key.includes('decorative_screen') || key.includes('privacy_screen') || key.includes('screen')) {\n    return { type: 'Decorative Screen', cat: 'decorative', var: 'decorative_screen', unit: 'each' };\n  }\n  \n  // ========== PLANTING ==========\n  if (key.includes('feature_tree') || key.includes('tree_each')) {\n    return { type: 'Feature Tree', cat: 'planting', var: 'feature_tree', unit: 'each' };\n  }\n  if (key.includes('shrub_large') || key.includes('large_shrub')) {\n    return { type: 'Large Shrub', cat: 'planting', var: 'shrub_large', unit: 'each' };\n  }\n  if (key.includes('shrub_medium') || key.includes('medium_shrub')) {\n    return { type: 'Medium Shrub', cat: 'planting', var: 'shrub_medium', unit: 'each' };\n  }\n  if (key.includes('shrub')) {\n    return { type: 'Medium Shrub', cat: 'planting', var: 'shrub_medium', unit: 'each' };\n  }\n  if (key.includes('topsoil')) {\n    return { type: 'Topsoil (Bulk)', cat: 'planting', var: 'topsoil_bulk', unit: 'm³' };\n  }\n  if (key.includes('mulch') || key.includes('bark')) {\n    return { type: 'Mulch/Bark', cat: 'planting', var: 'mulch_bark', unit: 'm³' };\n  }\n  if (key.includes('membrane') || key.includes('weed_fabric')) {\n    return { type: 'Weed Membrane', cat: 'planting', var: 'membrane_weed_fabric', unit: 'm²' };\n  }\n  \n  // ========== LIGHTING ==========\n  if (key.includes('lighting_fittings') || key.includes('lights') || key.includes('fitting')) {\n    return { type: 'Lighting fittings', cat: 'lighting', var: 'default', unit: 'qty', material: 'spike' };\n  }\n  if (key.includes('transformer')) {\n    return { type: 'Lighting transformer', cat: 'lighting', var: 'transformer_each', unit: 'each', material: 'transformer' };\n  }\n  if (key.includes('cable')) {\n    return { type: 'Lighting cable', cat: 'lighting', var: 'cable_per_m', unit: 'lm', material: 'cable' };\n  }\n  \n  return null;\n}\n\n// ---------- Classification ----------\nfunction classify(item) {\n  const t = lc(item.type);\n  const cat = item.category || '';\n  \n  if (cat && RATES[cat] && RATES[cat][item.variant]) {\n    return { cat: cat, var: item.variant, base: item.unit || 'm²' };\n  }\n  \n  if (t.includes('groundworks')) return { cat: null, var: null, base: 'm²' };\n  \n  return { cat: null, var: null, base: item.unitType || '' };\n}\n\n// ---------- Rate lookup ----------\nfunction rateFor(item) {\n  if (item.unitRate != null && !isNaN(Number(item.unitRate))) {\n    return Number(item.unitRate);\n  }\n  \n  const cat = item.category;\n  const variant = item.variant;\n  \n  if (!cat || !variant || !RATES[cat] || RATES[cat][variant] == null) return 0;\n  \n  const base = RATES[cat][variant];\n  return cat === 'lighting' ? +(base * LIGHTING_MULTIPLIER).toFixed(2) : base;\n}\n\n// ---------- Quantity / Unit detection ----------\nfunction getQtyUnit(item) {\n  const ut = lc(item.unitType || item.unit || '');\n  \n  if (['m2', 'm²', 'sqm'].includes(ut)) return { qty: num(item.area_m2 || item.qty), unit: 'm²' };\n  if (ut === 'lm' || ut === 'm') return { qty: num(item.length_m || item.qty), unit: 'lm' };\n  if (ut === 'qty') return { qty: num(item.fittings ?? item.qty), unit: 'qty' };\n  if (ut === 'each') return { qty: num(item.qty) || 1, unit: 'each' };\n  if (ut === 'step') return { qty: num(item.steps ?? item.qty), unit: 'step' };\n  if (ut === 'bay') return { qty: num(item.bays ?? item.qty), unit: 'bay' };\n  if (ut === 'm³' || ut === 'tonne') return { qty: num(item.qty), unit: ut };\n  \n  return { qty: num(item.qty) || 1, unit: 'each' };\n}\n\n// ---------- Convert product → line ----------\nfunction lineFrom(item) {\n  const { qty, unit } = getQtyUnit(item);\n  const q = Number(qty) || 0;\n  const unitRate = Number(rateFor(item)) || 0;\n  const line = q * unitRate;\n  \n  if (q <= 0 || unitRate <= 0) return null;\n  \n  const allocationKey = item.allocationKey || '';\n  const isMandatory = mandatoryAllocations[allocationKey] === true;\n  \n  return {\n    item: item.type || '',\n    category: item.category || '',\n    variant: item.variant || '',\n    description: item.description || item.type || '',\n    qty: to2(q),\n    unit,\n    unitCost: to2(unitRate),\n    lineTotal: to2(line),\n    mandatory: isMandatory,\n  };\n}\n\n// ========== MAIN ==========\nconst d = $json;\nconst project = d.project || {};\nconst totalArea = num(project.totalArea_m2);\nconst budget = num($node['validate Input']?.json?.project?.totalBudget_gbp ?? project.totalBudget_gbp);\n\nconsole.log(`=== CALCULATE PRICING v5.2 - PRICE SYNC ===`);\nconsole.log(`Area: ${totalArea}m² | Budget: £${budget}`);\n\nconst llmAllocations = d.output?.concept?.allocations || d.selectedConcept?.allocations || d.allocations || null;\nconst mandatoryAllocations = d.output?.concept?.mandatoryAllocations || d.selectedConcept?.mandatoryAllocations || {};\nconsole.log(`📋 Mandatory allocations: ${JSON.stringify(Object.keys(mandatoryAllocations))}`);\n\nlet breakdown = [];\n\nif (llmAllocations) {\n  console.log('🤖 Using LLM allocations with comprehensive product catalog');\n  \n  const products = [];\n  let matchedCount = 0;\n  let unmatchedCount = 0;\n  \n  for (const [key, value] of Object.entries(llmAllocations)) {\n    let qty = num(value);\n    if (qty <= 0) continue;\n    \n    const match = matchProduct(key);\n    if (!match) {\n      console.log(`⚠️ No match for: ${key} = ${qty}`);\n      unmatchedCount++;\n      continue;\n    }\n    \n    if (match.forceQty !== undefined) {\n      console.log(`  🔧 Forcing qty to ${match.forceQty} for ${key} (was ${qty})`);\n      qty = match.forceQty;\n    }\n    \n    const product = {\n      type: match.type,\n      unitType: match.unit,\n      unit: match.unit,\n      category: match.cat,\n      variant: match.var,\n      allocationKey: key\n    };\n    \n    if (match.unit === 'm²') {\n      product.area_m2 = qty;\n    } else if (match.unit === 'lm' || match.unit === 'm') {\n      product.length_m = qty;\n    } else if (match.unit === 'qty') {\n      product.fittings = qty;\n    } else if (match.unit === 'step') {\n      product.steps = qty;\n    } else if (match.unit === 'bay') {\n      product.bays = qty;\n    } else {\n      product.qty = qty;\n    }\n    \n    if (match.material) {\n      product.material = match.material;\n    }\n    \n    products.push(product);\n    matchedCount++;\n    console.log(`  ✅ ${key}: ${qty}${match.unit} → ${match.type}`);\n  }\n  \n  console.log(`\\n📊 Allocation matching: ${matchedCount} matched, ${unmatchedCount} unmatched`);\n  \n  // GROUNDWORKS\n  if (totalArea > 0) {\n    products.push({\n      type: 'Groundworks: dig-out, machinery & waste removal',\n      unitType: 'm2',\n      unit: 'm²',\n      area_m2: totalArea,\n      unitRate: GROUNDWORKS_RATE_PER_M2,\n    });\n  }\n  \n  for (const p of products) {\n    const r = lineFrom(p);\n    if (r) breakdown.push(r);\n  }\n  \n  console.log(`Generated ${breakdown.length} line items`);\n  \n} else {\n  console.log('⚠️ No LLM allocations - using budget defaults');\n  \n  const products = [];\n  \n  if (totalArea > 0) {\n    products.push({ type: 'Porcelain Tiles', unitType: 'm2', unit: 'm²', area_m2: Math.round(totalArea * 0.5), category: 'manufactured_paving', variant: 'porcelain_20mm' });\n    products.push({ type: 'Artificial Turf', unitType: 'm2', unit: 'm²', area_m2: Math.round(totalArea * 0.3), category: 'turf', variant: 'artificial_35_40mm' });\n    products.push({ type: 'Decking', unitType: 'm2', unit: 'm²', area_m2: Math.round(totalArea * 0.2), material: 'composite', category: 'decking', variant: 'composite' });\n    \n    products.push({\n      type: 'Groundworks: dig-out, machinery & waste removal',\n      unitType: 'm2',\n      unit: 'm²',\n      area_m2: totalArea,\n      unitRate: GROUNDWORKS_RATE_PER_M2,\n    });\n    \n    products.push({ type: 'Seating Area', unitType: 'each', unit: 'each', qty: 1, category: 'features_fire_seating', variant: 'seating_area' });\n    products.push({ type: 'Fire Pit', unitType: 'each', unit: 'each', qty: 1, category: 'features_fire_seating', variant: 'sunken_firepit' });\n  }\n  \n  for (const p of products) {\n    const r = lineFrom(p);\n    if (r) breakdown.push(r);\n  }\n}\n\n// De-dupe\nconst merged = new Map();\nfor (const r of breakdown) {\n  const key = [r.category, r.variant, r.unitCost, r.unit].join('|');\n  if (!merged.has(key)) {\n    merged.set(key, { ...r });\n  } else {\n    const m = merged.get(key);\n    m.qty = to2(Number(m.qty) + Number(r.qty));\n    m.lineTotal = to2(Number(m.lineTotal) + Number(r.lineTotal));\n    merged.set(key, m);\n  }\n}\nbreakdown = Array.from(merged.values());\n\n// Totals\nconst subtotal = to2(breakdown.reduce((a, b) => a + Number(b.lineTotal || 0), 0));\nconst contingency = to2(subtotal * CONTINGENCY_PCT);\nconst preVat = to2(subtotal + contingency);\nconst vat = to2(preVat * VAT_PCT);\nconst total = to2(preVat + vat);\n\nconsole.log(`\\nSubtotal: £${subtotal} | Total: £${total}`);\nconsole.log(total > budget ? `❌ OVER by £${(total - budget).toFixed(0)}` : `✅ UNDER by £${(budget - total).toFixed(0)}`);\n\n// ❌ NO PHOTO PASS-THROUGH\nreturn [{\n  json: {\n    ...d,\n    pricing: {\n      breakdown,\n      subtotal,\n      contingency,\n      vat,\n      total,\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        64
+      ],
+      "id": "2826db61-02bb-4fc1-8dcc-0ce105e2c0e4",
+      "name": "Calculate pricing"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Premium Landscapes | AI Summary for PDF (v3.2) ===\n// Enhanced formatting with better structure and customer focus\n// NOW READS MATERIALS FROM ACTUAL PRICING BREAKDOWN (not concept)\n\nconst j = $json;\nconst name = j.customer?.name || \"Client\";\nconst concept = j.output?.concept || j.selectedConcept || {};\nconst items = Array.isArray(j.pricing?.breakdown) ? j.pricing.breakdown : [];\n\n// Extract design name and narrative FROM PRICING (not concept)\nconst designName = concept.name || \"Custom Garden Design\";\nconst narrative = concept.narrative || \"\";\n\n// Extract customer-requested features (mandatoryItems)\nconst mandatoryItems = concept.mandatoryItems || [];\nconst customerFeatures = mandatoryItems.map(item => {\n  const mapping = {\n    'outdoor_kitchen': 'Outdoor Kitchen',\n    'pergola': 'Pergola',\n    'fire_pit': 'Fire Pit',\n    'sunken_seating': 'Sunken Seating Area',\n    'sunken_firepit_seating_package': 'Sunken Fire Pit & Seating Package',\n    'pond': 'Garden Pond',\n    'fencing': 'Boundary Fencing',\n    'water_feature': 'Water Feature'\n  };\n  return mapping[item] || item;\n});\n\nconsole.log('=== AI SUMMARY v3.2 ===');\nconsole.log(`Items in pricing breakdown: ${items.length}`);\nconsole.log('Materials found:', items.filter(r => r.unit === \"m²\").map(r => r.item).join(', '));\n\n// Extract surfaces (paving, decking, turf) - FROM ACTUAL PRICING\nconst surf = items\n  .filter(r => r.unit === \"m²\" && [\"natural_stone_paving\",\"manufactured_paving\",\"decking\",\"turf\",\"pathways\",\"aggregates\",\"planters\"].includes(r.category))\n  .map(r => `• ${r.item} – ${r.qty}m²`);\n\n// Extract features (structures, water features, fencing, etc) - FROM ACTUAL PRICING\nconst features = items\n  .filter(r => [\"structures_pergolas\",\"structures_rooms\",\"features_fire_seating\",\"features_cooking\",\"water_features\",\"ponds\",\"pond_equipment\",\"fencing\",\"walls\",\"hedging\",\"drainage\",\"edging\",\"decorative\",\"storage\",\"gates\"].includes(r.category))\n  .map(r => {\n    const qty = r.unit === \"each\" ? `${r.qty} ×` :\n                r.unit === \"lm\"   ? `${r.qty}m` :\n                r.unit === \"m²\"   ? `${r.qty}m²` : \n                r.unit === \"step\" ? `${r.qty} steps` :\n                `${r.qty} ${r.unit}`;\n    return `• ${r.item} – ${qty}`;\n  });\n\n// Extract planting - FROM ACTUAL PRICING\nconst planting = items\n  .filter(r => r.category === \"planting\")\n  .map(r => `• ${r.item} – ${r.qty}${r.unit}`);\n\n// Extract lighting - FROM ACTUAL PRICING\nconst lighting = items\n  .filter(r => r.category === \"lighting\")\n  .map(r => `• ${r.item} – ${r.qty}${r.unit}`);\n\nconst totals = j.pricing || {};\n\nconsole.log(`Surfaces: ${surf.length}, Features: ${features.length}, Planting: ${planting.length}, Lighting: ${lighting.length}`);\n\n// Build enhanced email body\nconst body = `Hi ${name},\n\nThank you for your enquiry. We're excited to present your bespoke garden design:\n\n\"${designName}\"\n\n${narrative}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nYOUR REQUESTED FEATURES:\n${customerFeatures.length ? customerFeatures.map(f => `✓ ${f}`).join('\\n') : '• Design tailored to your space and budget'}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nSURFACE LAYOUT:\n${surf.length ? surf.join(\"\\n\") : \"• Surfacing split will be finalised after site survey\"}\n\nADDITIONAL FEATURES & EXTRAS:\n${features.length ? features.join(\"\\n\") : \"• Optional features to be confirmed during design workshop\"}\n\n${lighting.length ? `LIGHTING:\\n${lighting.join(\"\\n\")}\\n` : \"\"}\n${planting.length ? `PLANTING PALETTE:\\n${planting.join(\"\\n\")}\\n` : \"\"}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nINVESTMENT SUMMARY:\n\nSubtotal: £${Number(totals.subtotal||0).toLocaleString(\"en-GB\")}\nContingency (5%): £${Number(totals.contingency||0).toLocaleString(\"en-GB\")}\nVAT (20%): £${Number(totals.vat||0).toLocaleString(\"en-GB\")}\n\nTOTAL ESTIMATE (inc. VAT): £${Number(totals.total||0).toLocaleString(\"en-GB\")}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nNEXT STEPS:\n\n1. Review the detailed proposal attached as PDF\n2. Book a free site consultation to discuss the design\n3. We'll confirm material choices and finalize measurements\n4. Receive your final quote and project timeline\n\nPlease note: This estimate is based on the area and budget you provided. Final pricing will be confirmed after our site survey.\n\nWe look forward to transforming your garden!\n\nBest regards,\nPremium Landscapes Team`;\n\n// ❌ NO PHOTO PASS-THROUGH\nreturn [{\n  json: {\n    customer: j.customer,\n    project: j.project,\n    mirrors: j.mirrors,\n    llm: j.llm,\n    prompt: j.prompt,\n    output: j.output,\n    selectedConcept: j.selectedConcept,\n    allocations: j.allocations,\n    hallucinationCleaning: j.hallucinationCleaning,\n    pricing: j.pricing,\n    correction: j.correction,\n    aiSummary: body\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        64
+      ],
+      "id": "0063c242-d9d0-41fc-ba4a-4a92f7a24d26",
+      "name": "AI Summary1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Build LLM Brief (Premium Landscapes) v4.2 - PRICE SYNC + NO PHOTO ===\n// Synced with Calculate Pricing v5.1 - all rates match exactly\n\nconst j = $json || {};\n\nconst customer = j.customer || {};\nconst project  = j.project  || {};\nconst mirrors  = j.mirrors || {};\n\nconst toStr = (v, d = \"\") => (v == null ? d : String(v).trim());\nconst money = (n) => {\n  const x = Number(n);\n  return Number.isFinite(x)\n    ? `£${x.toLocaleString(\"en-GB\", { maximumFractionDigits: 0 })}`\n    : \"\";\n};\n\nconst requirementsRaw = toStr(project.requirements || project.notes || \"\");\nconst stylePrefRaw    = toStr(project.stylePreference || \"\");\nconst maintenance     = toStr(project.maintenanceLevel || \"\");\nconst sunlight        = toStr(project.sunlight || \"\");\nconst area            = Number(project.totalArea_m2 ?? mirrors.totalArea_m2 ?? 0) || 0;\nconst budgetRaw       = Number(project.totalBudget_gbp ?? mirrors.totalBudget_gbp ?? 0) || 0;\n\n// ✅ Budget = 0 means UNLIMITED (treat as £500k - ultra high-end luxury design)\nconst budget = budgetRaw === 0 ? 500000 : budgetRaw;\nconst isUnlimited = budgetRaw === 0;\n\nconst styleLower = stylePrefRaw.toLowerCase();\nconst reqLower   = requirementsRaw.toLowerCase();\n\nconst hasAny = (s, arr) => arr.some(k => s.includes(k));\nconst wantsFencing = hasAny(reqLower, [\"fence\", \"fencing\", \"boundary\", \"screen\", \"screening\", \"privacy\"]);\nconst wantsPond    = hasAny(reqLower, [\"pond\", \"koi\"]);\nconst wantsKitchen = hasAny(reqLower, [\"outdoor kitchen\", \"bbq\", \"barbecue\", \"built in bbq\", \"built-in bbq\"]);\nconst wantsPergola = hasAny(reqLower, [\"pergola\", \"gazebo\"]);\nconst wantsFirePit = hasAny(reqLower, [\"fire pit\", \"firepit\"]);\nconst wantsWater   = hasAny(reqLower, [\"water feature\", \"fountain\", \"rill\", \"waterfall\", \"cascade\"]);\nconst wantsSunkenSeating = hasAny(reqLower, [\"sunken seating\", \"sunken seat\"]);\n\n// Smart package detection\nconst wantsSunkenPackage = wantsFirePit && wantsSunkenSeating;\n\nconst mandatoryItems = [];\nif (wantsFencing) mandatoryItems.push(\"fencing\");\nif (wantsPond) mandatoryItems.push(\"pond\");\nif (wantsKitchen) mandatoryItems.push(\"outdoor_kitchen\");\nif (wantsPergola) mandatoryItems.push(\"pergola\");\nif (wantsSunkenPackage) {\n  mandatoryItems.push(\"sunken_firepit_seating_package\");\n} else {\n  if (wantsFirePit) mandatoryItems.push(\"fire_pit\");\n  if (wantsSunkenSeating) mandatoryItems.push(\"sunken_seating\");\n}\nif (wantsWater) mandatoryItems.push(\"water_feature\");\n\nconst isContemporary = hasAny(styleLower, [\"contemporary\", \"modern\"]);\nconst isTraditional  = hasAny(styleLower, [\"traditional\", \"cottage\", \"classic\"]);\n\nconst targetSubtotal = budget ? Math.round(budget * 0.75) : 0;\nconst targetBudgetUse = budget ? Math.round(budget * 0.95) : 0;\nconst primarySurfaceTarget = Math.round(area * 0.90);\n\n// ---------------- SYSTEM ----------------\nconst system = `\nYou are a senior UK residential garden designer for Premium Landscapes.\n\n**DESIGN PHILOSOPHY:**\nThe customer's requirements are ABSOLUTE PRIORITY. Your job is to:\n1. FIRST: Allocate ALL customer-requested features\n2. SECOND: Calculate remaining budget and space\n3. THIRD: Fill remaining space with appropriate surfaces\n4. FOURTH: Add planting and finishing touches\n\n**⭐ UNLIMITED BUDGET MODE (Budget = £0):**\nWhen budget is marked as \"UNLIMITED\", this is NOT a low budget - it's the OPPOSITE.\nThink of this as designing for a luxury magazine feature or high-end show garden.\n\nYou should:\n- Use ONLY THE BEST materials: porcelain tiles, composite decking, artificial turf\n- Include EXTENSIVE planting: feature trees (2-3), large shrubs (10-15), medium shrubs (20-30), topsoil, mulch\n- Add COMPREHENSIVE edging: edge all surfaces professionally (40-60lm for 70m² garden)\n- Install PREMIUM lighting: 15-20 fittings with transformer and 50-80m cable\n- Include LUXURY water features: modern water features, fountains, or rills\n- Add ARCHITECTURAL elements: pergolas, rendered planters, decorative screens\n- Design SOPHISTICATED planting schemes: layers of texture, year-round interest\n- Create a COMPLETE, PROFESSIONAL design that would impress any client\n- Write an ASPIRATIONAL narrative celebrating the luxury and quality\n- NEVER mention \"£0 budget\", \"no costed works\", or \"concept only\" in your notes\n\nThis is a premium, no-compromise design - be bold, creative, and luxurious!\n\nReturn ONLY valid JSON matching the exact schema provided. No markdown. No extra keys.\n\nHARD CONSTRAINTS:\n1) **CUSTOMER REQUIREMENTS FIRST:** You MUST allocate every item in mandatoryItems BEFORE allocating any other features\n2) AREA: All *_m2 surface allocations must sum to EXACTLY totalArea_m2\n3) STYLE MATERIALS:\n   - Contemporary/modern → porcelain_patio_m2 + artificial_turf_m2 (NOT sandstone/natural)\n   - Traditional/cottage/classic → indian_sandstone_m2 + natural_turf_m2\n4) FENCING: If not requested, ALL fencing allocations = 0\n5) TRACEABILITY: Every feature mentioned must have non-zero allocation\n6) BUILDABLE: Realistic UK garden design within constraints\n\n**MANDATORY ITEMS ENFORCEMENT:**\nThe mandatoryItems list contains CUSTOMER REQUESTS. These are NON-NEGOTIABLE.\n- If mandatoryItems contains \"outdoor_kitchen\" → outdoor_kitchen_each MUST be ≥ 1\n- If mandatoryItems contains \"pergola\" → pergola_3x3_each MUST be ≥ 1\n- If mandatoryItems contains \"fire_pit\" → sunken_firepit_each MUST be ≥ 1\n- If mandatoryItems contains \"sunken_seating\" → seating_sunken_each MUST be ≥ 1\n- If mandatoryItems contains \"sunken_firepit_seating_package\" → sunken_firepit_seating_package_each MUST be ≥ 1\n- If mandatoryItems contains \"pond\" → medium_pond_each MUST be ≥ 1\n- If mandatoryItems contains \"fencing\" → panel_fencing_lm MUST be ≥ 10\n\n**ALLOCATION SEQUENCE (FOLLOW THIS ORDER):**\nSTEP 1: Allocate ALL mandatoryItems features (30-40% of budget typically)\nSTEP 2: Calculate remaining budget\nSTEP 3: Allocate primary surfaces to fill space (~60% of remaining budget for paving, ~30% for turf)\nSTEP 4: Add planting and finishing (~10% of remaining budget)\n`.trim();\n\n// ---------------- USER PROMPT ----------------\nconst user = `\n## PROJECT\n\nGarden: ${area}m² | Budget: ${isUnlimited ? '£500,000 UNLIMITED (LUXURY/NO RESTRICTIONS)' : money(budget)} | Style: \"${stylePrefRaw}\"\n\n**Customer Requirements (ABSOLUTE PRIORITY):**\n\"${requirementsRaw}\"\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⚠️⚠️⚠️ CUSTOMER REQUESTED FEATURES - ALLOCATE THESE FIRST ⚠️⚠️⚠️\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n${mandatoryItems.length > 0 ? mandatoryItems.map(item => {\n  if (item === \"outdoor_kitchen\") return \"✓ OUTDOOR KITCHEN: outdoor_kitchen_each = 1 (£6,000) - CUSTOMER REQUESTED\";\n  if (item === \"pergola\") return \"✓ PERGOLA: pergola_3x3_each = 1 (£1,700) - CUSTOMER REQUESTED\";\n  if (item === \"fire_pit\") return \"✓ FIRE PIT: sunken_firepit_each = 1 (£1,450) - CUSTOMER REQUESTED\";\n  if (item === \"sunken_seating\") return \"✓ SUNKEN SEATING: seating_sunken_each = 1 (£3,500) - CUSTOMER REQUESTED\";\n  if (item === \"sunken_firepit_seating_package\") return \"✓ FIRE PIT + SEATING PACKAGE: sunken_firepit_seating_package_each = 1 (£4,500 - SAVES £450)\";\n  if (item === \"pond\") return \"✓ POND: medium_pond_each = 1 (£1,920) - CUSTOMER REQUESTED\";\n  if (item === \"fencing\") return \"✓ FENCING: panel_fencing_lm = 20 (£1,300) - CUSTOMER REQUESTED\";\n  if (item === \"water_feature\") return \"✓ WATER FEATURE: water_feature_each = 1 (£1,200) - CUSTOMER REQUESTED\";\n  return `✓ ${item.toUpperCase()} - CUSTOMER REQUESTED`;\n}).join('\\n') : \"No mandatory customer requests\"}\n\n${isUnlimited\n  ? `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⭐⭐⭐ UNLIMITED LUXURY BUDGET - MAXIMUM CREATIVITY MODE ⭐⭐⭐\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nThis is a HIGH-END, NO-COMPROMISE design brief. Think luxury show garden.\n\nMANDATORY ADDITIONS (include ALL of these):\n✓ Premium materials: Porcelain tiles £130/m², Composite decking £170/m², Artificial turf £85/m²\n✓ Extensive planting: 2-3 feature trees, 10-15 large shrubs, 20-30 medium shrubs, topsoil, mulch\n✓ Professional edging: 40-60lm (edge ALL surfaces - paving, turf, decking, beds) @ £60/lm\n✓ Luxury lighting: 15-20 fittings + transformer + 50-80m cable (illuminate paths, features, planting)\n✓ Water feature: Include a modern water feature (£1,200-£2,200)\n✓ Architectural features: Pergola (£1,700) or rendered planters or decorative screens\n✓ Premium groundworks: Full site preparation with proper drainage\n\nDESIGN GOALS:\n- Full area coverage: ${area}m² with premium surfaces\n- Rich planting layers: Create depth, texture, year-round interest\n- Night-time ambience: Comprehensive lighting scheme\n- Focal points: Water feature + feature trees + architectural elements\n- Professional finish: Edge everything, include all the details\n\nWrite a CONFIDENT, ASPIRATIONAL narrative celebrating the luxury and sophistication.\nThis is a complete, professional design - own it!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`\n  : `AFTER allocating customer features above, you have:\n- Remaining budget for surfaces & planting: ${money(budget - (wantsKitchen ? 6000 : 0) - (wantsPergola ? 1700 : 0) - (wantsSunkenPackage ? 4500 : (wantsFirePit ? 1450 : 0) + (wantsSunkenSeating ? 3500 : 0)) - (wantsPond ? 1920 : 0) - (wantsFencing ? 1300 : 0) - (wantsWater ? 1200 : 0))}\n- Full area to cover: ${area}m²`\n}\n\nNOW build the rest of the garden around these customer requirements.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nAdditional Constraints:\n- fencingRequested: ${wantsFencing}\n- sunkenPackageRecommended: ${wantsSunkenPackage}\n- primarySurfaceTarget: ${primarySurfaceTarget}m² (~90% of area)\n${isUnlimited\n  ? `- Budget: £500,000 UNLIMITED - This is a LUXURY design brief\n- Target: Create the MOST IMPRESSIVE, COMPLETE, HIGH-END garden possible\n- Materials: Use ONLY premium options (porcelain, composite, artificial turf)\n- Features: Include lighting (15-20 fittings), water features, extensive planting, edging (40-60lm @ £60/lm)\n- Narrative: Write an ASPIRATIONAL description celebrating the luxury and quality\n- DO NOT mention: \"£0 budget\", \"no costed works\", \"concept only\", or any budget limitations`\n  : `- targetBudgetUse: ${money(targetBudgetUse)} (~95% of total budget)\n- targetSubtotal: ${money(targetSubtotal)} (leaves room for VAT/contingency)`\n}\n\n## MATERIAL COSTS (EXACT PRICING - MATCH CALCULATE PRICING)\n\nPaving/m²: York stone 165 | Quartzite 155 | Granite 150 | Travertine 145 | Slate 140 | Limestone 135 | Porcelain 130 | Sandstone 110 | Concrete 100 | Block 90 | Setts 95 | Cobbles 75 | Resin 160\nDecking/m²: Hardwood 195 | Composite 170 | Softwood 110\nTurf/m²: Artificial 85 | Natural 30\nAggregates/m²: Gravel path 66 | Decorative gravel 55 | Slate chips 65 | Pebbles 70 | Bark 35 | Steps 80/lm\nPlanting areas/m²: Beds 15 | Rendered planter 216 | Raised bed 180\nPonds: Small (≤2m²) 960 | Medium (2-4m²) 1920 | Large (4-6m²) 3040 | Wildlife 1600 | Koi 3600 | Liner 25/m² | Pump 180 | Filter 420 | UV 220\nWater: Feature 1200 | Wall-mounted 800 | Small fountain 650 | Large fountain 1500 | Rill 280/lm | Cascade 2200 | Bowl 1800 | Corten 2800\nFencing/lm: Composite 100 | Panel 65 | Closeboard 65 | Trellis 75\nWalls/lm: Granite 350 | Stone 320 | Limestone 320 | Sandstone 280 | Brick 290 | Rendered 260 | Dry stone 240 | Sleeper 90-180\nHedging/lm: Native 45 | Instant 165\nStructures: Pergola 3x3 1700 | Attached 1500 | Gazebo 2800 | Shed 850-1250 | Summer house 4200 | Greenhouse 1800-2600 | Garden room 1450/m² | Screen 300\nSeating: Basic 2000 | Sunken 3500 | Rendered 2800 | Stone 3200\nFire & Seating: Fire pit 1450 | Sunken seating 3500 | **PACKAGE: Fire + Sunken seating together 4500 (saves £450)**\nFeatures: Kitchen starter 3000 | Kitchen standard 6000 | Kitchen premium 12000 | BBQ 950 | Built-in BBQ 1500\nSteps: Sandstone 180 | Granite 220 | Limestone 195 | Brick 150 | Sleeper 120\nDrainage: Channel 55/lm | French 45/lm | Soakaway 780\nLighting: Fitting 75 | Transformer 120 | Cable 5/m | Kit (10) 1500\nPlanting: Tree 300 | Large shrub 45 | Medium shrub 25 | Topsoil 45/m³ | Mulch 35/m³\nAlways: Groundworks 40/m² | Edging 60/lm\n\n## OUTPUT\n\nReturn ONLY this JSON (no markdown). Note that mandatoryItems and certain allocations are PRE-FILLED based on customer requirements - DO NOT change these to 0:\n\n\\`\\`\\`json\n{\n  \"concept\": {\n    \"name\": \"Design title reflecting ${stylePrefRaw} style\",\n    \"narrative\": \"Write 4-6 compelling sentences describing this ${area}m² ${stylePrefRaw} garden design. Structure: (1) Opening sentence - the overall concept and atmosphere, (2) Describe the main surfaces and how they create flow/zones, (3-4) Highlight the customer-requested features (outdoor kitchen, pergola, fire pit, etc.) and their purpose/benefits, (5) Mention planting or finishing touches, (6) Close with the transformation/lifestyle benefit. Use specific material names (porcelain, artificial turf, etc.) and make it vivid and client-focused.\",\n    \"mandatoryItems\": ${JSON.stringify(mandatoryItems)},\n    \"allocations\": {\n      \"porcelain_patio_m2\": ${ (stylePrefRaw === 'contemporary' || stylePrefRaw === 'modern') ? '[CALCULATE_M2]' : '0'}, \n      \"indian_sandstone_m2\": ${ (stylePrefRaw === 'traditional' || stylePrefRaw === 'cottage' || stylePrefRaw === 'classic') ? '[CALCULATE_M2]' : '0'}, \n      \"limestone_paving_m2\": 0, \"granite_paving_m2\": 0, \"slate_paving_m2\": 0, \"york_stone_m2\": 0, \"travertine_m2\": 0, \"quartzite_m2\": 0, \"granite_setts_m2\": 0, \"sandstone_setts_m2\": 0, \"cobblestones_m2\": 0, \"block_paving_m2\": 0, \"resin_bound_m2\": 0, \"concrete_paving_m2\": 0,\n      \"composite_deck_m2\": 0, \"softwood_deck_m2\": 0, \"hardwood_deck_m2\": 0,\n      \"artificial_turf_m2\": ${ (stylePrefRaw === 'contemporary' || stylePrefRaw === 'modern') ? '[CALCULATE_M2]' : '0'}, \n      \"natural_turf_m2\": ${ (stylePrefRaw === 'traditional' || stylePrefRaw === 'cottage' || stylePrefRaw === 'classic') ? '[CALCULATE_M2]' : '0'},\n      \"gravel_path_m2\": 0, \"bark_path_m2\": 0, \"stepping_stones_lm\": 0, \"decorative_gravel_m2\": 0, \"slate_chippings_m2\": 0, \"pebbles_decorative_m2\": 0, \"boulders_feature_each\": 0, \"non_slip_ramp_each\": 0,\n      \"planting_beds_m2\": 0, \"rendered_planter_m2\": 0, \"raised_bed_m2\": 0,\n      \"seating_area_each\": 0, \n      \"seating_sunken_each\": ${ (wantsSunkenSeating && !wantsSunkenPackage) ? '1' : '0'}, \n      \"seating_rendered_each\": 0, \n      \"seating_stone_each\": 0,\n      \"pergola_3x3_each\": ${ wantsPergola ? '1' : '0'}, \n      \"pergola_attached_each\": 0, \n      \"gazebo_each\": 0,\n      \"small_pond_each\": 0, \n      \"medium_pond_each\": ${ wantsPond ? '1' : '0'}, \n      \"large_pond_each\": 0, \"wildlife_pond_each\": 0, \"koi_pond_each\": 0, \"pond_liner_m2\": 0, \"pond_pump_each\": 0, \"pond_filter_each\": 0, \"uv_clarifier_each\": 0,\n      \"water_feature_each\": ${ wantsWater ? '1' : '0'}, \n      \"wall_mounted_feature_each\": 0, \"fountain_small_each\": 0, \"fountain_large_each\": 0, \"water_rill_lm\": 0, \"cascade_waterfall_each\": 0, \"water_bowl_each\": 0, \"corten_steel_feature_each\": 0,\n      \"panel_fencing_lm\": ${ wantsFencing ? '20' : '0'}, \n      \"closeboard_fencing_lm\": 0, \"composite_fencing_lm\": 0, \"trellis_panels_lm\": 0,\n      \"brick_wall_lm\": 0, \"stone_wall_lm\": 0, \"rendered_wall_lm\": 0, \"sleeper_wall_lm\": 0, \"sandstone_wall_lm\": 0, \"limestone_wall_lm\": 0, \"granite_wall_lm\": 0, \"dry_stone_wall_lm\": 0,\n      \"native_hedging_lm\": 0, \"instant_screening_lm\": 0,\n      \"timber_gate_each\": 0, \"metal_gate_each\": 0,\n      \"sunken_firepit_each\": ${ (wantsFirePit && !wantsSunkenPackage) ? '1' : '0'},\n      \"sunken_firepit_seating_package_each\": ${ wantsSunkenPackage ? '1' : '0'},\n      \"outdoor_kitchen_each\": ${ wantsKitchen ? '1' : '0'}, \n      \"bbq_area_each\": 0, \n      \"built_in_bbq_each\": 0,\n      \"shed_each\": 0, \"summer_house_each\": 0, \"greenhouse_each\": 0, \"garden_room_m2\": 0,\n      \"decorative_screen_each\": 0,\n      \"lighting_fittings_qty\": 0, \"lighting_transformers\": 0, \"lighting_cable_m\": 0,\n      \"sandstone_step_each\": 0, \"granite_step_each\": 0, \"limestone_step_each\": 0, \"brick_step_each\": 0, \"sleeper_step_each\": 0,\n      \"channel_drain_lm\": 0, \"french_drain_lm\": 0, \"soakaway_each\": 0,\n      \"feature_tree_each\": 0, \"shrub_large_each\": 0, \"shrub_medium_each\": 0, \"topsoil_m3\": 0, \"mulch_bark_m3\": 0,\n      \"edging_lm\": 0\n    },\n    \"features\": [\"List the design features using CORRECT materials for ${stylePrefRaw} style\"],\n    \"notes\": \"Budget breakdown + material specs + assumptions\",\n    \"risk_checks\": [\"Key site considerations\"]\n  }\n}\n\\`\\`\\`\n\\`\\`\\`\n\nValidate before responding:\n✓ **CUSTOMER REQUIREMENTS CHECK:**\n${mandatoryItems.map(item => {\n  if (item === \"outdoor_kitchen\") return \"  - outdoor_kitchen_each > 0? (REQUIRED)\";\n  if (item === \"pergola\") return \"  - pergola_3x3_each > 0? (REQUIRED)\";\n  if (item === \"fire_pit\") return \"  - sunken_firepit_each > 0? (REQUIRED)\";\n  if (item === \"sunken_seating\") return \"  - seating_sunken_each > 0? (REQUIRED)\";\n  if (item === \"sunken_firepit_seating_package\") return \"  - sunken_firepit_seating_package_each > 0? (SAVES £450)\";\n  if (item === \"pond\") return \"  - medium_pond_each > 0? (REQUIRED)\";\n  if (item === \"fencing\") return \"  - panel_fencing_lm > 0? (REQUIRED)\";\n  return `  - ${item} allocated?`;\n}).join('\\n')}\n✓ Style \"${stylePrefRaw}\" → correct materials? (contemporary=porcelain+artificial, traditional=sandstone+natural)\n✓ Fencing ${wantsFencing ? \"REQUESTED\" : \"NOT requested\"} → ${wantsFencing ? \"MUST have fencing_lm > 0\" : \"all fencing = 0\"}\n✓ All *_m2 surfaces = ${area}m² exactly?\n✓ Budget used ≈ ${money(targetBudgetUse)} (95% target)?\n✓ Every feature in narrative has allocation > 0?\n`.trim();\n\n// ---------------- ATTACH ----------------\nj.llm = {\n  system,\n  user,\n  messages: [\n    { role: \"system\", content: system },\n    { role: \"user\", content: user }\n  ]\n};\n\nj.prompt = user;\n\n// ❌ NO PHOTO PASS-THROUGH\nreturn [{ json: j }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1664,
+        192
+      ],
+      "id": "9d9c0178-dae6-45af-988c-ca6bb9ae47b9",
+      "name": "Build LLM Brief"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.llm.messages[1].content }}\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "={{$json.llm.messages[0].content}}"
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "={{$json.llm.messages[1].content}}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -1440,
+        192
+      ],
+      "id": "ddedde90-edaa-4a30-9069-76abfb7391f4",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "options": {
+          "responseFormat": "json_object",
+          "timeout": 60000,
+          "maxRetries": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1376,
+        416
+      ],
+      "id": "d6109c61-93b4-417e-9df0-865c3f630dd6",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "eELTpqDo2P3x6OJF",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -864,
+        64
+      ],
+      "id": "1309588e-2abf-4252-9f84-f760a3990a63",
+      "name": "Merge",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Map LLM Concept → Products (Premium Landscapes) v3.2 - NO PHOTO ===\n// Purpose: Select the best available concept (supports output.concept or output.concepts[])\n// and map allocations into project.products[] for pricing.\n//\n// Works with your current workflow path:\n// Webhook Trigger → validate Input → Build LLM Brief → Basic LLM Chain → Merge → Map LLM Concept → Products → Map Allocations to Products → Calculate pricing\n//\n// Key changes vs v3.1:\n// - ❌ REMOVED: Photo pass-through (massive performance improvement)\n// - Supports BOTH schema shapes: {output:{concept:{...}}} and {output:{concepts:[...]}}\n// - Deterministic selection when multiple concepts exist (requirements-aware + stable variety)\n// - Does NOT override project/products unless we have a valid concept\n\nconst src = $json || {};\nconst proj = src.project || {};\nconst requirementsText = String(proj.requirements || proj.notes || \"\").toLowerCase();\n\n// ---------- Helpers ----------\nconst safeArr = (v) => Array.isArray(v) ? v : [];\nconst toNum = (v) => {\n  const n = Number(v);\n  return Number.isFinite(n) ? n : 0;\n};\nconst add = (products, type, material, measure, quantity) => {\n  const q = toNum(quantity);\n  if (q <= 0) return;\n  const item = { type };\n  if (material) item.material = material;\n  item[measure] = q;\n  products.push(item);\n};\nconst hash32 = (s) => {\n  let h = 2166136261;\n  for (let i = 0; i < s.length; i++) {\n    h ^= s.charCodeAt(i);\n    h = Math.imul(h, 16777619);\n  }\n  return h >>> 0;\n};\n\n// Extract candidate concept(s) from all the places your Merge may produce\nconst output = src.output || src.llm?.output || src.parsed || {};\nconst singleConcept =\n  output.concept ||\n  src.concept ||\n  src.selectedConcept ||\n  null;\n\nconst conceptList =\n  safeArr(output.concepts) ||\n  safeArr(src.concepts) ||\n  [];\n\n// Normalize to an array of concepts (even if only one)\nconst concepts = conceptList.length ? conceptList : (singleConcept ? [singleConcept] : []);\n\n// ---------- Deterministic selection (only matters if concepts.length > 1) ----------\nconst scoreConcept = (c) => {\n  if (!c || typeof c !== \"object\") return -1;\n\n  const name = String(c.name || \"\").toLowerCase();\n  const narrative = String(c.narrative || \"\").toLowerCase();\n  const notes = String(c.notes || \"\").toLowerCase();\n  const featText = safeArr(c.features).join(\" \").toLowerCase();\n\n  const blob = `${name} ${narrative} ${notes} ${featText}`;\n\n  // Requirement keyword scoring (lightweight + safe)\n  const keywords = [\n    \"lighting\", \"lights\",\n    \"pergola\",\n    \"water\", \"pond\", \"water feature\",\n    \"fire pit\", \"firepit\",\n    \"outdoor kitchen\", \"kitchen\",\n    \"composite\",\n    \"porcelain\",\n    \"artificial turf\", \"fake grass\",\n    \"low maintenance\", \"easy maintenance\",\n    \"no grass\", \"no turf\"\n  ];\n\n  let score = 0;\n\n  // Reward concepts that explicitly talk about things the customer asked for\n  if (requirementsText) {\n    for (const k of keywords) {\n      if (requirementsText.includes(k) && blob.includes(k)) score += 3;\n      if (requirementsText.includes(k) && !blob.includes(k)) score -= 2;\n    }\n  }\n\n  // Small positive bias if concept has allocations object\n  if (c.allocations && typeof c.allocations === \"object\") score += 2;\n\n  // Prefer concepts that include any lighting allocation when requirements mention it\n  if (requirementsText.includes(\"lighting\")) {\n    const a = c.allocations || {};\n    const hasLighting =\n      toNum(a.lighting_fittings_qty) > 0 ||\n      toNum(a.lighting_cable_m) > 0 ||\n      toNum(a.lighting_transformers) > 0;\n    if (hasLighting) score += 2;\n  }\n\n  return score;\n};\n\n// Choose best concept by score, tie-break with stable hash rotation\nlet chosenIndex = 0;\nif (concepts.length > 1) {\n  const seed = String(src.meta?.timestamp || src.meta?.normalizedAt || src.customer?.email || Date.now());\n  const seedHash = hash32(seed);\n\n  let bestScore = -Infinity;\n  let bestIdxs = [];\n\n  for (let i = 0; i < concepts.length; i++) {\n    const s = scoreConcept(concepts[i]);\n    if (s > bestScore) {\n      bestScore = s;\n      bestIdxs = [i];\n    } else if (s === bestScore) {\n      bestIdxs.push(i);\n    }\n  }\n\n  // If tie: rotate deterministically so you don't always get the same one\n  chosenIndex = bestIdxs[seedHash % bestIdxs.length];\n}\n\nconst concept = concepts[chosenIndex] || null;\n\n// ---------- Fallback if no concept ----------\nif (!concept) {\n  return [{\n    json: {\n      customer: src.customer,\n      project: {\n        ...(src.project || {}),\n        products: Array.isArray(src.project?.products) ? src.project.products : []\n      },\n      mirrors: src.mirrors,\n      llm: src.llm,\n      prompt: src.prompt,\n      output: src.output,\n      selectedConcept: null,\n      allocations: {},\n      hallucinationCleaning: src.hallucinationCleaning,\n      // ❌ NO PHOTO\n    }\n  }];\n}\n\n// ---------- Metadata ----------\nconst selectedConcept = {\n  id: concept.id || [\"A\",\"B\",\"C\"][chosenIndex] || null,\n  name: concept.name || \"Concept\",\n  narrative: concept.narrative || \"\",\n  features: concept.features || [],\n  notes: concept.notes || \"\",\n  risk_checks: concept.risk_checks || []\n};\n\n// ---------- Allocations → Products ----------\nconst a = concept.allocations || {};\nconst products = [];\n\n// HARD SURFACES\nadd(products, \"patio\", \"porcelain\", \"area_m2\", a.porcelain_patio_m2);\nadd(products, \"paving\", \"block\", \"area_m2\", a.block_paving_m2);\nadd(products, \"surfacing\", \"resin_bound\", \"area_m2\", a.resin_bound_m2);\n\nadd(products, \"deck\", \"composite\", \"area_m2\", a.composite_deck_m2);\nadd(products, \"deck\", \"softwood\", \"area_m2\", a.softwood_deck_m2);\nadd(products, \"deck\", \"hardwood\", \"area_m2\", a.hardwood_deck_m2);\n\nadd(products, \"turf\", \"artificial\", \"area_m2\", a.artificial_turf_m2);\nadd(products, \"turf\", \"natural\", \"area_m2\", a.natural_turf_m2);\n\nadd(products, \"path\", \"gravel\", \"area_m2\", a.gravel_path_m2);\nadd(products, \"edging\", \"stone\", \"length_m\", a.edging_lm);\nadd(products, \"drainage\", \"aco_channel\", \"length_m\", a.aco_drain_lm);\n\n// FENCING\nadd(products, \"fencing\", \"closeboard\", \"length_m\", a.fencing_closeboard_lm);\nadd(products, \"fencing\", \"venetian\", \"length_m\", a.fencing_venetian_lm);\nadd(products, \"fencing\", \"trellis\", \"qty\", a.trellis_panels);\nadd(products, \"fencing\", \"gate\", \"qty\", a.gates_each);\n\n// WALLS / STRUCTURES\nadd(products, \"wall\", \"sleeper\", \"area_m2\", a.sleeper_wall_m2);\nadd(products, \"wall\", \"brick\", \"area_m2\", a.brick_wall_m2);\nadd(products, \"planter\", \"rendered\", \"area_m2\", a.rendered_planter_m2);\nadd(products, \"cladding\", \"stone\", \"area_m2\", a.stone_cladding_m2);\nadd(products, \"step\", \"standard\", \"qty\", a.steps_count);\nadd(products, \"step\", \"bullnose\", \"qty\", a.bullnose_each);\n\n// DRAINAGE\nadd(products, \"drainage\", \"soakaway\", \"qty\", a.soakaway_each);\nadd(products, \"drainage\", \"manhole_upgrade\", \"qty\", a.manhole_each);\n\n// STRUCTURES\nadd(products, \"pergola\", \"freestanding\", \"qty\", a.pergola_3x3_each);\nadd(products, \"pergola\", \"attached\", \"qty\", a.pergola_attached_each);\n\n// WATER FEATURES\nadd(products, \"pond\", \"liner\", \"area_m2\", a.pond_liner_m2);\nadd(products, \"pond\", \"wildlife\", \"area_m2\", a.wildlife_pond_m2);\nadd(products, \"stone\", \"decorative\", \"tonnes\", a.decorative_stone_tonnes);\n\n// LIGHTING\nadd(products, \"lighting\", \"fitting\", \"qty\", a.lighting_fittings_qty);\nadd(products, \"lighting\", \"transformer\", \"qty\", a.lighting_transformers);\nadd(products, \"lighting\", \"cable\", \"length_m\", a.lighting_cable_m);\n\n// FIRE FEATURES\nadd(products, \"firepit\", \"sunken_gas\", \"qty\", a.sunken_firepit_each);\n\n// ---------- Return enriched payload WITHOUT PHOTO ----------\nreturn [{\n  json: {\n    customer: src.customer,\n    project: {\n      ...(src.project || {}),\n      products\n    },\n    mirrors: src.mirrors,\n    llm: src.llm,\n    prompt: src.prompt,\n    output: src.output,\n    selectedConcept,\n    allocations: a,\n    hallucinationCleaning: src.hallucinationCleaning,\n    // ❌ NO PHOTO\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        64
+      ],
+      "id": "527c2e45-5f9c-47d5-b888-5cb3bef9a5c9",
+      "name": "Map LLM Concept → Products"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Map Allocations to Products - NO PHOTO ===\n// Map parsed concept allocations into project.products[] for pricing\n\nconst src = $json || {};\nconst alloc = (src.output?.concepts?.[0]?.allocations) || src.allocations || {};\nconst products = [];\n\n// helpers\nconst n = v => Number(v) || 0;\nconst add = (cond, item) => { if (n(cond) > 0) products.push(item); };\n\n// --- patios / paving (m²)\nadd(alloc.porcelain_patio_m2, { type: 'patio', material: 'porcelain', area_m2: n(alloc.porcelain_patio_m2) });\nadd(alloc.block_paving_m2, { type: 'block paving', area_m2: n(alloc.block_paving_m2) });\nadd(alloc.resin_bound_m2, { type: 'resin bound', area_m2: n(alloc.resin_bound_m2) });\n\n// --- decking (m²)\nadd(alloc.composite_deck_m2, { type: 'deck', material: 'composite', area_m2: n(alloc.composite_deck_m2) });\nadd(alloc.softwood_deck_m2, { type: 'deck', material: 'softwood', area_m2: n(alloc.softwood_deck_m2) });\nadd(alloc.hardwood_deck_m2, { type: 'deck', material: 'hardwood', area_m2: n(alloc.hardwood_deck_m2) });\n\n// --- turf & lawns (m²)\nadd(alloc.artificial_turf_m2, { type: 'turf', material: 'artificial', area_m2: n(alloc.artificial_turf_m2) });\nadd(alloc.natural_turf_m2, { type: 'turf', material: 'natural', area_m2: n(alloc.natural_turf_m2) });\n\n// --- paths / edging / drainage (linear m)\nadd(alloc.gravel_path_m2, { type: 'gravel path', area_m2: n(alloc.gravel_path_m2) });\nadd(alloc.edging_lm, { type: 'edging', length_m: n(alloc.edging_lm) });\nadd(alloc.aco_drain_lm, { type: 'aco channel', length_m: n(alloc.aco_drain_lm) });\n\n// --- boundaries (lm / panels / each)\nadd(alloc.fencing_closeboard_lm, { type: 'fencing', material: 'closeboard', length_m: n(alloc.fencing_closeboard_lm) });\nadd(alloc.fencing_venetian_lm, { type: 'fencing', material: 'venetian', length_m: n(alloc.fencing_venetian_lm) });\nadd(alloc.trellis_panels, { type: 'trellis', panels: n(alloc.trellis_panels) });\nadd(alloc.gates_each, { type: 'gate', qty: n(alloc.gates_each) });\n\n// --- walls / planters / cladding (m²)\nadd(alloc.sleeper_wall_m2, { type: 'sleeper wall', area_m2: n(alloc.sleeper_wall_m2) });\nadd(alloc.brick_wall_m2, { type: 'brick wall', area_m2: n(alloc.brick_wall_m2) });\nadd(alloc.rendered_planter_m2, { type: 'rendered planter', area_m2: n(alloc.rendered_planter_m2) });\nadd(alloc.stone_cladding_m2, { type: 'stone cladding', area_m2: n(alloc.stone_cladding_m2) });\n\n// --- access / levels\nadd(alloc.steps_count, { type: 'steps', steps: n(alloc.steps_count) });\nadd(alloc.bullnose_each, { type: 'bullnose step tread', qty: n(alloc.bullnose_each) });\n\n// --- drainage items (each)\nadd(alloc.soakaway_each, { type: 'soakaway', qty: n(alloc.soakaway_each) });\nadd(alloc.manhole_each, { type: 'recessed manhole cover', qty: n(alloc.manhole_each) });\n\n// --- structures / water / aggregates\nadd(alloc.pergola_3x3_each, { type: 'pergola 3x3', qty: n(alloc.pergola_3x3_each) });\nadd(alloc.pergola_attached_each, { type: 'pergola attached', qty: n(alloc.pergola_attached_each) });\nadd(alloc.pond_liner_m2, { type: 'pond liner', area_m2: n(alloc.pond_liner_m2) });\nadd(alloc.wildlife_pond_m2, { type: 'wildlife pond', area_m2: n(alloc.wildlife_pond_m2) });\nadd(alloc.decorative_stone_tonnes, { type: 'decorative stone', tonnes: n(alloc.decorative_stone_tonnes) });\n\n// --- lighting (qty / lm)\nadd(alloc.lighting_fittings_qty, { type: 'lighting', material: 'spike', fittings: n(alloc.lighting_fittings_qty) });\nadd(alloc.lighting_transformers, { type: 'lighting', material: 'transformer', qty: n(alloc.lighting_transformers) });\nadd(alloc.lighting_cable_m, { type: 'lighting', material: 'cable', length_m: n(alloc.lighting_cable_m) });\n\n// --- hero feature\nadd(alloc.sunken_firepit_each, { type: 'firepit', qty: n(alloc.sunken_firepit_each) });\n\n// ❌ CRITICAL: Build output WITHOUT photo\nreturn [{\n  json: {\n    customer: src.customer,\n    project: {\n      ...(src.project || {}),\n      products\n    },\n    mirrors: src.mirrors,\n    llm: src.llm,\n    prompt: src.prompt,\n    output: src.output,\n    selectedConcept: src.selectedConcept,\n    hallucinationCleaning: src.hallucinationCleaning,\n    // DO NOT include photo\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        64
+      ],
+      "id": "091f7645-d58f-4648-ad22-372baefa6aad",
+      "name": "Map Allocations to Products"
+    },
+    {
+      "parameters": {
+        "fromEmail": "premiumlandscapesuk@gmail.com",
+        "toEmail": "={{$node[\"validate Input\"].json.customer.email}}",
+        "subject": "={{$node[\"validate Input\"].json.customer.name || \"Client\"}} – {{$node[\"validate Input\"].json.project.title || \"Garden Redesign\"}}\n",
+        "html": "=<!-- Preheader -->\n<span style=\"display:none!important\">Your tailored quote is attached as a PDF.</span>\n<div style=\"font-family:Inter,Arial,sans-serif;line-height:1.5;color:#0b2e4c;\">\n  <p>Hi {{ $json.email.customerName }},</p>\n  \n  <p>Thanks for the details — your tailored quote for\n    <strong>{{ $json.email.projectTitle }}</strong> is ready.</p>\n  \n  <p style=\"margin:.8em 0\">\n    <strong>Estimate (incl. VAT):</strong>\n    {{ $json.email.pricingTotal }}\n  </p>\n  \n  <p style=\"margin:.8em 0\">\n    Your bespoke garden design includes your requested features and is tailored to your budget and style preferences. Full details are in the attached proposal.\n  </p>\n  \n  <p><strong>Book a quick call</strong> to discuss:</p>\n  <a href=\"https://calendly.com/premiumlandscapesuk/15min\"\n     style=\"display:inline-block;background:#27ae60;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;margin:10px 0\">Schedule Call</a>\n  \n  <p>We always try to get every quote as accurate as possible, but please note it is always reflective of the budget and area size provided.</p>\n  \n  <p>Best regards,<br/>\n     <strong>Premium Landscapes</strong><br/>\n     <a href=\"mailto:hello@premium-landscapes.co.uk\">hello@premium-landscapes.co.uk</a><br/>\n     07444 887813</p>\n</div>",
+        "options": {
+          "attachments": "={{ $binary }}"
+        }
+      },
+      "id": "ab388cf7-034d-4f16-a4c0-60e1d2b03817",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [
+        2272,
+        64
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "ab3e512a-7b66-44ee-9210-d627ca379a3d",
+      "credentials": {
+        "smtp": {
+          "id": "dLpXH6yljIeIoVw6",
+          "name": "SMTP account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1GIlzFrvqkdYGYQotkKaOox4m6x2qrqvLk0X6xMYJg7s",
+          "mode": "list",
+          "cachedResultName": "Premium Landscapes Quotes Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GIlzFrvqkdYGYQotkKaOox4m6x2qrqvLk0X6xMYJg7s/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Quotes Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GIlzFrvqkdYGYQotkKaOox4m6x2qrqvLk0X6xMYJg7s/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{$now}}",
+            "Customer Name": "={{ $('Build PDF HTML').item.json.customer.name }}",
+            "Email": "={{ $('Build PDF HTML').item.json.customer.email }}",
+            "Products": "={{ $('Build PDF HTML').item.json.pricing.breakdown.map(i => i.item).join(', ') }}",
+            "AI Summary": "={{ $('Build PDF HTML').item.json.aiSummary }}",
+            "Quote Total (£)": "={{ $('Build PDF HTML').item.json.pricing.total }}\n",
+            "Status": "\"Sent\"",
+            "Phone": "={{ $('Build PDF HTML').item.json.customer.phone }}",
+            "Drive File URL": "''",
+            "Address": "{{ $('Build PDF HTML').item.json.customer.address }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Products",
+              "displayName": "Products",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Summary",
+              "displayName": "AI Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quote Total (£)",
+              "displayName": "Quote Total (£)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Drive File URL",
+              "displayName": "Drive File URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Image URL",
+              "displayName": "Image URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "146a3c8d-2f0e-4193-9e05-9fb3d1fae514",
+      "name": "Log Quote to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        3616,
+        160
+      ],
+      "typeVersion": 4.7,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "hR4LdQOOAXNVJApD",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst binaryData = item.binary?.data;\n\nif (!binaryData) {\n  throw new Error(\"No binary data found\");\n}\n\n// Get customer name and quote ref\nconst customerName = item.json?.customer?.name || 'Unknown Customer';\nconst quoteRef = item.json?.pdf?.quoteRef || `quote-${Date.now()}`;\n\n// Clean customer name (remove special chars, replace spaces with hyphens)\nconst cleanName = customerName\n  .replace(/[^a-zA-Z0-9\\s-]/g, '') // Remove special characters\n  .replace(/\\s+/g, '-')             // Replace spaces with hyphens\n  .substring(0, 30);                // Limit length\n\n// Format: {CustomerName}-{QuoteRef}.pdf\n// Example: John-Smith-PL-260108-152210.pdf\nconst filename = `${cleanName}-${quoteRef}.pdf`;\n\n// Rename binary key to \"data\" and update filename\nitem.binary.data = {\n  ...binaryData,\n  fileName: filename\n};\n\n// Remove old key if different\nconst firstKey = Object.keys(item.binary)[0];\nif (firstKey !== 'data') {\n  delete item.binary[firstKey];\n}\n\nreturn item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        64
+      ],
+      "id": "bda3e231-19f7-493c-8da9-7d3fe7a7ad54",
+      "name": "Rename PDF Binary"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log Quote — robust totals for Google Sheets\n\nconst data     = $json ?? {};\nconst customer = data.customer ?? {};\nconst project  = data.project  ?? {};\nconst here     = data.pricing  ?? {};\n\n// Helper: get node.json if it exists (try several names)\nfunction getNodeJson(names = []) {\n  try {\n    const bag = $item(0).$node || {};\n    for (const n of names) if (bag[n]?.json) return bag[n].json;\n  } catch (_) {}\n  return null;\n}\n\n// Helper: numeric coercion (strips £, commas, whitespace/newlines)\nconst toNum = (v) => {\n  if (v == null) return 0;\n  const s = String(v).replace(/[£, \\t\\r\\n]/g, '');\n  const n = Number(s);\n  return Number.isFinite(n) ? n : 0;\n};\n\n// Try all likely places the pricing could be\nconst fromCalc   = getNodeJson([\"Calculate pricing\", \"Calculate Pricing\"]);\nconst fromAI     = getNodeJson([\"AI Summary1\", \"AI Summary\"]);\nconst fromBuild1 = getNodeJson([\"Build PDF HTML1\", \"Build PDF HTML\"]);\n\nconst pricing =\n  here?.total ? here :\n  fromCalc?.pricing ? fromCalc.pricing :\n  fromAI?.pricing ? fromAI.pricing :\n  fromBuild1?.pricing ? fromBuild1.pricing :\n  { subtotal: 0, contingency: 0, vat: 0, total: 0 };\n\n// Coerce to pure numbers for Sheets\nconst subtotal    = toNum(pricing.subtotal);\nconst contingency = toNum(pricing.contingency);\nconst vat         = toNum(pricing.vat);\nconst total       = toNum(pricing.total);\n\n// AI summary fallback\nconst summary = (data.aiSummary || project.notes || \"\").toString().trim();\n\n// Optional quick items preview\nconst lines = Array.isArray(pricing.breakdown) ? pricing.breakdown : [];\nconst itemsPreview = lines\n  .map(l => (l.item || l.description || \"\").toString())\n  .filter(Boolean)\n  .slice(0, 6)\n  .join(\", \");\n\nreturn [{\n  json: {\n    Timestamp: new Date().toISOString(),\n    \"Customer Name\": customer.name || \"Client\",\n    Email: customer.email || \"\",\n    Phone: customer.phone || \"\",\n    Postcode: customer.postcode || \"\",\n    \"AI Summary\": summary,\n\n    // ← send *numbers* to Sheets (format the column as Currency in Sheets)\n    \"Quote Total (£)\": total,\n    \"Subtotal (£)\": subtotal,\n    \"Contingency (£)\": contingency,\n    \"VAT (£)\": vat,\n\n    Status: \"Sent\",\n    \"Drive File URL\": data.fileUrl || \"\",\n    \"Items Preview\": itemsPreview,\n    \"Project Title\": project.title || \"\"\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3392,
+        160
+      ],
+      "id": "06c19553-a0c0-4e91-8069-cfd2ec53d0ca",
+      "name": "Log Quote"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Build PDF HTML v3.5 - PERFECT LAYOUT (Page breaks + No cutoffs) ===\n\nconst src = $json || {};\n\nconst logoUrl =\n  \"https://sswkpcnbyrbmnltczphx.supabase.co/storage/v1/object/public/garden-designs/watermark/LOGO%20Updated,%20background%20removed%20.png\";\n\nconst customer = src.customer || {};\nconst project  = src.project  || {};\nconst pricing  = src.pricing  || {};\n\n// ✅ DEFENSIVE: Ensure pricing has all required fields with defaults\nconst safePricing = {\n  subtotal: Number(pricing.subtotal) || 0,\n  contingency: Number(pricing.contingency) || 0,\n  vat: Number(pricing.vat) || 0,\n  total: Number(pricing.total) || 0,\n  pdf: pricing.pdf || {}\n};\n\n// ✅ ALWAYS use the real LLM concept first\nconst concept =\n  src.concept ||\n  src.selectedConcept ||\n  src.output?.concept ||\n  {};\n\n// ✅ Ensure top-level pdf meta exists\nconst pdf = (src.pdf && typeof src.pdf === \"object\") ? { ...src.pdf } : {};\n\nconst toStr = (v, d = \"\") => (v == null ? d : String(v));\nconst money = (v) => {\n  const n = Number(v);\n  return Number.isFinite(n)\n    ? `£${n.toLocaleString(\"en-GB\", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`\n    : \"£0.00\";\n};\n\nconst pad2 = (n) => String(n).padStart(2, \"0\");\n\n// Create a stable quoteRef if missing\nif (!pdf.quoteRef) {\n  const d = new Date();\n  const yy = String(d.getFullYear()).slice(-2);\n  pdf.quoteRef = `PL-${yy}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}-${pad2(d.getHours())}${pad2(d.getMinutes())}${pad2(d.getSeconds())}`;\n}\n\n// Create quoteDate if missing\nif (!pdf.quoteDate) {\n  pdf.quoteDate = new Date().toLocaleDateString(\"en-GB\");\n}\n\n// ✅ Get REAL features from the LLM concept\nconst safeArr = (v) => (Array.isArray(v) ? v : []);\nconst featureLines = safeArr(concept.features)\n  .map((f) => {\n    if (f == null) return \"\";\n    if (typeof f === \"string\") return f.trim();\n    if (typeof f === \"object\") return toStr(f.detail || f.name || f.type || \"\");\n    return \"\";\n  })\n  .filter(Boolean);\n\n// ✅ Get REAL narrative from the LLM concept\nconst narrative =\n  toStr(concept.narrative).trim() ||\n  \"A bespoke garden design tailored to your requirements and budget.\";\n\n// ✅ Pricing breakdown source\nconst groupedItems =\n  safePricing.pdf?.groupedItems ||\n  pdf?.groupedItems ||\n  {};\n\n// Build pricing tables\nconst pricingHTML =\n  Object.keys(groupedItems).length > 0\n    ? Object.entries(groupedItems)\n        .map(([category, items]) => {\n          const safeItems = Array.isArray(items) ? items : [];\n          const rows = safeItems\n            .map((item) => {\n              return `\n        <tr>\n          <td>${toStr(item.item)}</td>\n          <td style=\"text-align:center\">${toStr(item.qty)}</td>\n          <td style=\"text-align:center\">${toStr(item.unit)}</td>\n          <td style=\"text-align:right\">${money(item.unitCost)}</td>\n          <td style=\"text-align:right\"><strong>${money(item.total)}</strong></td>\n        </tr>\n      `;\n            })\n            .join(\"\");\n\n          const categoryTotal = safeItems.reduce(\n            (sum, item) => sum + (Number(item.total) || 0),\n            0\n          );\n\n          return `\n        <div class=\"category-section\">\n          <h3>${toStr(category)}</h3>\n          <table class=\"pricing-table\">\n            <thead>\n              <tr>\n                <th>Item</th>\n                <th style=\"text-align:center\">Qty</th>\n                <th style=\"text-align:center\">Unit</th>\n                <th style=\"text-align:right\">Unit Cost</th>\n                <th style=\"text-align:right\">Total</th>\n              </tr>\n            </thead>\n            <tbody>\n              ${rows}\n            </tbody>\n          </table>\n          <div class=\"category-subtotal\">\n            <span>Subtotal (${toStr(category)})</span>\n            <span>${money(categoryTotal)}</span>\n          </div>\n        </div>\n      `;\n        })\n        .join(\"\")\n    : '<div class=\"muted\">Pricing breakdown not available</div>';\n\nconst html = `\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\" />\n<style>\n  @page { \n    margin: 20mm 15mm 30mm 15mm; \n    size: A4;\n  }\n  \n  body { \n    font-family: Arial, Helvetica, sans-serif; \n    color:#222; \n    font-size:11px; \n    line-height:1.5; \n    margin:0; \n    padding:0; \n  }\n  \n  .content { \n    padding-bottom: 20mm; \n  }\n\n  .header { \n    margin-bottom: 20px; \n    display: flex; \n    justify-content: space-between; \n    align-items: flex-start; \n  }\n  \n  .logo { \n    width:140px; \n    height:auto; \n  }\n  \n  .header-right { \n    text-align: right; \n  }\n\n  h1 { \n    font-size:20px; \n    margin:0 0 4px 0; \n    color:#1e3a8a; \n  }\n  \n  h2 { \n    font-size:15px; \n    margin:18px 0 10px 0; \n    color:#1e3a8a; \n    border-bottom: 2px solid #1e3a8a; \n    padding-bottom: 4px;\n    page-break-after: avoid;\n  }\n  \n  h3 { \n    font-size:12px; \n    margin:10px 0 6px 0; \n    color:#1e3a8a; \n    background:#f3f4f6; \n    padding:6px 8px; \n    border-left:3px solid #1e3a8a;\n    page-break-after: avoid;\n  }\n\n  .muted { \n    color:#666; \n    font-size:10px; \n  }\n  \n  .section { \n    margin-bottom: 14px;\n    page-break-inside: avoid;\n  }\n  \n  .card { \n    border:1px solid #e5e7eb; \n    border-radius:6px; \n    padding:12px; \n    background:#f9fafb; \n    line-height:1.6;\n    page-break-inside: avoid;\n  }\n\n  .info-grid { \n    display:grid; \n    grid-template-columns: 1fr 1fr; \n    gap:12px; \n    margin-bottom:16px;\n    page-break-inside: avoid;\n  }\n  \n  .info-box { \n    background:#fff; \n    border:1px solid #e5e7eb; \n    border-radius:6px; \n    padding:10px; \n  }\n  \n  .info-label { \n    font-size:9px; \n    text-transform:uppercase; \n    color:#666; \n    margin-bottom:4px; \n    font-weight:600; \n  }\n  \n  .info-value { \n    font-size:12px; \n    font-weight:600; \n    color:#1e3a8a; \n  }\n\n  ul { \n    padding-left:18px; \n    margin:6px 0; \n  }\n  \n  li { \n    margin-bottom:7px; \n    font-size:11px; \n    line-height:1.5; \n  }\n\n  /* ===  PAGE BREAK CONTROL === */\n  .pricing-section-wrapper {\n    page-break-before: always;\n  }\n\n  .category-section { \n    margin-bottom:14px; \n    page-break-inside: avoid;\n    break-inside: avoid;\n  }\n\n  .pricing-table { \n    width:100%; \n    border-collapse:collapse; \n    margin-top:6px; \n    background:#fff; \n    table-layout:fixed;\n    page-break-inside: auto;\n  }\n  \n  .pricing-table th { \n    background:#f8fafc; \n    padding:5px 4px; \n    text-align:left; \n    font-size:9px; \n    border-bottom:2px solid #cbd5e1; \n    font-weight:600; \n  }\n  \n  .pricing-table td { \n    padding:4px 3px; \n    border-bottom:1px solid #f1f5f9; \n    font-size:9px; \n    word-wrap:break-word; \n    overflow-wrap:break-word; \n    line-height:1.4; \n  }\n  \n  .pricing-table td:nth-child(1) { width:42%; }\n  .pricing-table td:nth-child(2) { width:13%; }\n  .pricing-table td:nth-child(3) { width:13%; }\n  .pricing-table td:nth-child(4) { width:16%; }\n  .pricing-table td:nth-child(5) { width:16%; }\n  \n  .pricing-table tbody tr { \n    page-break-inside: avoid;\n    break-inside: avoid;\n  }\n  \n  .pricing-table tbody tr:last-child td { \n    border-bottom:none; \n  }\n\n  .category-subtotal { \n    display:flex; \n    justify-content:space-between; \n    padding:7px 8px; \n    background:#f8fafc; \n    border-top:2px solid #cbd5e1; \n    font-weight:600; \n    font-size:11px; \n    margin-top:2px;\n    page-break-inside: avoid;\n  }\n\n  .totals-box { \n    width:280px; \n    margin:16px 0 0 auto; \n    border:1px solid #cbd5e1; \n    border-radius:6px; \n    overflow:hidden; \n    background:#fff;\n    page-break-inside: avoid;\n  }\n  \n  .totals-table { \n    width:100%; \n  }\n  \n  .totals-table td { \n    padding:8px 12px; \n    border-bottom:1px solid #f1f5f9; \n    font-size:11px; \n  }\n  \n  .totals-table tr:last-child td { \n    background:#f8fafc; \n    border-bottom:none; \n    font-weight:700; \n    font-size:13px; \n    color:#1e3a8a; \n  }\n  \n  .totals-table td:last-child { \n    text-align:right; \n  }\n\n  .footer {\n    position: fixed;\n    bottom: 8mm;\n    left: 0;\n    right: 0;\n    text-align: center;\n    font-size: 9px;\n    color: #666;\n    border-top: 1px solid #e5e7eb;\n    padding: 8px 0;\n    background: #fff;\n  }\n  \n  .footer-logo { \n    width:90px; \n    height:auto; \n    margin:0 auto 4px auto; \n    display:block; \n  }\n</style>\n</head>\n\n<body>\n<div class=\"content\">\n\n  <div class=\"header\">\n    <img src=\"${logoUrl}\" class=\"logo\" alt=\"Premium Landscapes Logo\" />\n    <div class=\"header-right\">\n      <h1>Garden Design Proposal</h1>\n      <div class=\"muted\">\n        Ref: ${toStr(pdf.quoteRef)}<br/>\n        Date: ${toStr(pdf.quoteDate)}\n      </div>\n    </div>\n  </div>\n\n  <div class=\"info-grid\">\n    <div class=\"info-box\">\n      <div class=\"info-label\">Client</div>\n      <div class=\"info-value\">${toStr(customer.name, \"Client\")}</div>\n      <div class=\"muted\" style=\"margin-top:4px;\">\n        ${toStr(customer.address, \"Address TBC\")}<br/>\n        ${toStr(customer.email, \"email@example.com\")}<br/>\n        ${toStr(customer.phone, \"Phone TBC\")}\n      </div>\n    </div>\n    <div class=\"info-box\">\n      <div class=\"info-label\">Project Details</div>\n      <div class=\"info-value\">${toStr(project.title, \"Complete Garden Redesign\")}</div>\n      <div class=\"muted\" style=\"margin-top:4px;\">\n        Area: ${toStr(project.totalArea_m2, \"TBC\")} m²<br/>\n        Budget: ${money(project.totalBudget_gbp)}<br/>\n        Style: ${toStr(project.stylePreference, \"Contemporary\")}\n      </div>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>Project Summary</h2>\n    <div class=\"card\">\n      ${narrative}\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>Key Design Features</h2>\n    <div class=\"card\">\n      ${\n        featureLines.length > 0\n          ? `<ul>${featureLines.map((t) => `<li>${toStr(t)}</li>`).join(\"\")}</ul>`\n          : '<div class=\"muted\">Design features will be confirmed during consultation.</div>'\n      }\n    </div>\n  </div>\n\n  <!-- FORCE PAGE BREAK BEFORE PRICING -->\n  <div class=\"pricing-section-wrapper\">\n    <h2>Pricing Breakdown</h2>\n    ${pricingHTML}\n\n    <div class=\"totals-box\">\n      <table class=\"totals-table\">\n        <tr><td>Subtotal</td><td>${money(safePricing.subtotal)}</td></tr>\n        <tr><td>Contingency (5%)</td><td>${money(safePricing.contingency)}</td></tr>\n        <tr><td>VAT (20%)</td><td>${money(safePricing.vat)}</td></tr>\n        <tr><td>Total</td><td>${money(safePricing.total)}</td></tr>\n      </table>\n    </div>\n\n    <div class=\"muted\" style=\"margin-top:14px;\">\n      All quotes subject to final site survey, material confirmation, and availability.\n    </div>\n  </div>\n\n</div>\n\n<div class=\"footer\">\n  <img src=\"${logoUrl}\" class=\"footer-logo\" alt=\"Premium Landscapes\" />\n  <div>hello@premium-landscapes.co.uk · 07444 887813 · premium-landscapes.co.uk</div>\n</div>\n\n</body>\n</html>\n`;\n\n// ✅ DEFENSIVE: Ensure pdf object has all required fields before returning\nconst finalPdf = {\n  quoteRef: pdf.quoteRef || \"QUOTE-REF-TBC\",\n  quoteDate: pdf.quoteDate || new Date().toLocaleDateString(\"en-GB\"),\n  ...pdf\n};\n\n// ✅ DEFENSIVE: Ensure pricing object has all required fields\nconst finalPricing = {\n  subtotal: safePricing.subtotal,\n  contingency: safePricing.contingency,\n  vat: safePricing.vat,\n  total: safePricing.total,\n  pdf: safePricing.pdf\n};\n\n// ✅ Put pdf meta back onto the top-level json so HubSpot nodes can read it\nreturn [{ \n  json: { \n    ...src, \n    pdf: finalPdf, \n    pricing: finalPricing,\n    html \n  } \n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        64
+      ],
+      "id": "6f890443-2a1c-4db3-a4e7-5007a3ea4f7e",
+      "name": "Build PDF HTML"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.pdfshift.io/v3/convert/pdf",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "sk_509095298a6e4faaf264e0e151ea233640b66eff"
+            },
+            {
+              "name": "Content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "source",
+              "value": "={{ $json.html }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1152,
+        64
+      ],
+      "id": "de9472d1-a78c-4c6d-b197-6fe07aac2b91",
+      "name": "HTML - PDF"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Budget Validation & Correction v5.5 - NO PHOTO ===\n// Prevents removal of customer-requested items (pond, fencing, etc.)\n// NOW SUPPORTS: item.mandatory flag from Requirements Enforcer\n\nconst j = $json;\nconst pricing = j.pricing || {};\nconst breakdown = pricing.breakdown || [];\nconst subtotal = pricing.subtotal || 0;\n\n// Get project data\nconst validatedInput = $('validate Input').first().json;\nconst budget = validatedInput.project.totalBudget_gbp || 0;\nconst area = validatedInput.project.totalArea_m2 || 0;\nconst requirements = (validatedInput.project.requirements || '').toLowerCase();\n\nconsole.log(`=== BUDGET VALIDATION v5.5 ===`);\nconsole.log(`Budget: £${budget}`);\n\n// === BYPASS: If budget = 0, treat as limitless (skip validation) ===\nif (budget === 0) {\n  console.log('✅ Budget = 0 → Treating as LIMITLESS (no validation)');\n  console.log(`Final total: £${(subtotal * 1.25).toFixed(0)}`);\n  return [{\n    json: {\n      customer: j.customer,\n      project: j.project,\n      mirrors: j.mirrors,\n      llm: j.llm,\n      prompt: j.prompt,\n      output: j.output,\n      selectedConcept: j.selectedConcept,\n      allocations: j.allocations,\n      hallucinationCleaning: j.hallucinationCleaning,\n      pricing: j.pricing,\n      correction: j.correction\n    }\n  }];\n}\n\nconst perM2 = budget / area;\n\n// Calculate targets\nconst minTarget = budget * 0.90;\nconst hardCap = budget * 1.0;\n\nconst projectedTotal = subtotal * 1.25;\nconst wouldExceedBudget = projectedTotal > budget;\n\nconsole.log(`Budget: £${budget} (${perM2.toFixed(0)}/m²)`);\nconsole.log(`Current subtotal: £${subtotal} (${((subtotal/budget)*100).toFixed(1)}%)`);\nconsole.log(`Projected total: £${projectedTotal.toFixed(0)}`);\nconsole.log(`Would exceed budget: ${wouldExceedBudget}`);\nconsole.log(`Requirements: \"${requirements}\"`);\n\n// ========== IDENTIFY MANDATORY ITEMS ==========\nfunction isMandatoryItem(item) {\n  // NEW: Check if item has mandatory flag (from Requirements Enforcer)\n  if (item.mandatory === true) {\n    console.log(`  🔒 PROTECTED (tagged): ${item.description}`);\n    return 'mandatory';\n  }\n  \n  // FALLBACK: Text matching for backwards compatibility\n  const desc = item.description.toLowerCase();\n  \n  // Check if this item type was explicitly requested\n  if (requirements.includes('pond') && (desc.includes('pond') || desc.includes('liner'))) {\n    console.log(`  🔒 PROTECTED (text): ${item.description}`);\n    return 'mandatory';\n  }\n  \n  if (requirements.includes('fenc') && desc.includes('fenc')) {\n    console.log(`  🔒 PROTECTED (text): ${item.description}`);\n    return 'mandatory';\n  }\n  \n  if (requirements.includes('pergola') && desc.includes('pergola')) {\n    console.log(`  🔒 PROTECTED (text): ${item.description}`);\n    return 'mandatory';\n  }\n  \n  if (requirements.includes('fire pit') && desc.includes('fire')) {\n    console.log(`  🔒 PROTECTED (text): ${item.description}`);\n    return 'mandatory';\n  }\n  \n  if (requirements.includes('seating') && desc.includes('seating')) {\n    console.log(`  🔒 PROTECTED (text): ${item.description}`);\n    return 'mandatory';\n  }\n  \n  if (requirements.includes('outdoor kitchen') && desc.includes('kitchen')) {\n    console.log(`  🔒 PROTECTED (text): ${item.description}`);\n    return 'mandatory';\n  }\n  \n  if (requirements.includes('lighting') && desc.includes('lighting')) {\n    console.log(`  🔒 PROTECTED (text): ${item.description}`);\n    return 'mandatory';\n  }\n  \n  if (requirements.includes('deck') && desc.includes('deck')) {\n    console.log(`  🔒 PROTECTED (text): ${item.description}`);\n    return 'mandatory';\n  }\n  \n  if (requirements.includes('patio') && (desc.includes('patio') || desc.includes('paving'))) {\n    console.log(`  🔒 PROTECTED (text): ${item.description}`);\n    return 'mandatory';\n  }\n  \n  if (requirements.includes('turf') && desc.includes('turf')) {\n    console.log(`  🔒 PROTECTED (text): ${item.description}`);\n    return 'mandatory';\n  }\n  \n  return false;\n}\n\n// Helper to classify items\nfunction classifyItem(item) {\n  const desc = item.description.toLowerCase();\n  \n  // Check if mandatory FIRST\n  if (isMandatoryItem(item)) {\n    return 'mandatory'; // Highest priority, never removed\n  }\n  \n  if (desc.includes('groundwork')) return 'essential';\n  // Edging is now LUXURY (removable) - not essential\n  // if (desc.includes('edging') || desc.includes('kerb')) return 'essential';\n  \n  if (desc.includes('paving') || desc.includes('patio') || desc.includes('stone') || desc.includes('tiles')) return 'surfacing';\n  if (desc.includes('turf') || desc.includes('lawn')) return 'surfacing';\n  if (desc.includes('deck')) return 'surfacing';\n  if (desc.includes('setts') || desc.includes('cobbles')) return 'surfacing';\n  \n  if (desc.includes('gravel') || desc.includes('decorative stone') || desc.includes('chippings') || desc.includes('pebbles')) return 'budget_fill';\n  \n  if (desc.includes('fenc') || desc.includes('wall') || desc.includes('hedge') || desc.includes('gate')) return 'boundary';\n  \n  if (desc.includes('pergola') || desc.includes('gazebo')) return 'signature';\n  if (desc.includes('fire')) return 'signature';\n  \n  if (desc.includes('seating')) return 'luxury';\n  if (desc.includes('lighting')) return 'luxury';\n  if (desc.includes('water feature') || desc.includes('pond') || desc.includes('fountain')) return 'luxury';\n  if (desc.includes('planter') || desc.includes('raised bed')) return 'luxury';\n  if (desc.includes('outdoor kitchen') || desc.includes('bbq')) return 'luxury';\n  if (desc.includes('shed') || desc.includes('summer house') || desc.includes('greenhouse')) return 'luxury';\n  \n  // Planting and edging are removable to save costs\n  if (desc.includes('planting') || desc.includes('shrub') || desc.includes('tree') || desc.includes('topsoil') || desc.includes('mulch')) return 'luxury';\n  if (desc.includes('edging') || desc.includes('kerb')) return 'luxury';\n  \n  return 'other';\n}\n\n// === CASE 1: OVER BUDGET ===\nif (wouldExceedBudget) {\n  console.log('⚠️ OVER BUDGET - Corrections starting...');\n  \n  let newBreakdown = [...breakdown];\n  let newSubtotal = subtotal;\n  const changes = {\n    downgrades: [],\n    reductions: [],\n    backfills: [],\n    removals: []\n  };\n  \n  // STEP 1: Remove luxury items ONE AT A TIME (cheapest first = planting/edging before water features)\n  let newProjectedTotal = newSubtotal * 1.25;\n  \n  if (newProjectedTotal > hardCap) {\n    console.log('STEP 1: Removing non-mandatory luxury items (cheapest first)...');\n    \n    const luxuryItems = newBreakdown\n      .filter(item => classifyItem(item) === 'luxury')\n      .sort((a, b) => a.lineTotal - b.lineTotal); // ASCENDING = cheapest first\n    \n    for (const item of luxuryItems) {\n      if (newProjectedTotal <= hardCap) break; // Stop when within budget\n      \n      newBreakdown = newBreakdown.filter(it => it !== item);\n      newSubtotal -= item.lineTotal;\n      newProjectedTotal = newSubtotal * 1.25;\n      \n      changes.removals.push({ \n        item: item.description, \n        savings: item.lineTotal \n      });\n      console.log(`  ✂️ ${item.description} (£${item.lineTotal.toFixed(0)}) → New: £${newProjectedTotal.toFixed(0)}`);\n    }\n  }\n  \n  // STEP 2: Downgrade materials\n  if (newProjectedTotal > hardCap) {\n    console.log('STEP 2: Downgrading materials...');\n    \n    const materialDowngrades = {\n      'york stone': { to: 'quartzite', newCost: 155, searchTerms: ['york stone', 'yorkstone'] },\n      'quartzite': { to: 'granite paving', newCost: 150, searchTerms: ['quartzite'] },\n      'granite paving': { to: 'travertine', newCost: 145, searchTerms: ['granite paving', 'granite patio'] },\n      'travertine': { to: 'slate paving', newCost: 140, searchTerms: ['travertine'] },\n      'slate paving': { to: 'limestone paving', newCost: 135, searchTerms: ['slate paving', 'slate patio'] },\n      'limestone paving': { to: 'indian sandstone', newCost: 110, searchTerms: ['limestone paving', 'limestone patio'] },\n      'porcelain': { to: 'indian sandstone', newCost: 110, searchTerms: ['porcelain'] },\n      'resin bound': { to: 'concrete paving', newCost: 100, searchTerms: ['resin bound', 'resin'] },\n      'concrete paving': { to: 'block paving', newCost: 90, searchTerms: ['concrete paving'] },\n      'granite setts': { to: 'sandstone setts', newCost: 85, searchTerms: ['granite setts'] },\n      'sandstone setts': { to: 'cobblestones', newCost: 75, searchTerms: ['sandstone setts'] },\n      'hardwood': { to: 'composite decking', newCost: 170, searchTerms: ['hardwood deck'] },\n      'composite': { to: 'softwood decking', newCost: 110, searchTerms: ['composite deck', 'composite'] },\n      'artificial turf': { to: 'natural turf', newCost: 30, searchTerms: ['artificial turf', 'artificial grass'] },\n      'pebbles': { to: 'slate chippings', newCost: 65, searchTerms: ['pebbles', 'decorative pebbles'] },\n      'slate chippings': { to: 'gravel', newCost: 55, searchTerms: ['slate chippings', 'slate chips'] },\n    };\n    \n    for (let i = 0; i < newBreakdown.length; i++) {\n      const item = newBreakdown[i];\n      const desc = item.description.toLowerCase();\n      \n      for (const [material, rule] of Object.entries(materialDowngrades)) {\n        const matches = rule.searchTerms.some(term => desc.includes(term));\n        \n        if (matches) {\n          const savings = item.lineTotal - (item.qty * rule.newCost);\n          const newName = rule.to.charAt(0).toUpperCase() + rule.to.slice(1);\n          \n          newBreakdown[i] = {\n            ...item,\n            item: newName,\n            description: newName,\n            unitCost: rule.newCost,\n            lineTotal: item.qty * rule.newCost\n          };\n          \n          changes.downgrades.push({\n            from: item.description,\n            to: newName,\n            savings: savings,\n            material: material\n          });\n          \n          newSubtotal -= savings;\n          newProjectedTotal = newSubtotal * 1.25;\n          \n          console.log(`  📉 ${item.description} → ${newName} (£${savings.toFixed(0)})`);\n          break;\n        }\n      }\n    }\n    \n    console.log(`  📊 New: £${newProjectedTotal.toFixed(0)}`);\n  }\n  \n  // STEP 3: Remove signature items (but NOT mandatory ones)\n  if (newProjectedTotal > hardCap) {\n    console.log('STEP 3: Removing non-mandatory signature items...');\n    \n    const signature = newBreakdown\n      .filter(item => classifyItem(item) === 'signature')\n      .sort((a, b) => b.lineTotal - a.lineTotal);\n    \n    for (const item of signature) {\n      if (newProjectedTotal <= hardCap) break;\n      \n      newBreakdown = newBreakdown.filter(it => it !== item);\n      newSubtotal -= item.lineTotal;\n      newProjectedTotal = newSubtotal * 1.25;\n      \n      changes.removals.push({ item: item.description, savings: item.lineTotal });\n      console.log(`  ✂️ ${item.description} (£${item.lineTotal.toFixed(0)})`);\n    }\n    \n    console.log(`  📊 New: £${newProjectedTotal.toFixed(0)}`);\n  }\n  \n  // STEP 4: Reduce surfaces + gravel backfill\n  if (newProjectedTotal > hardCap) {\n    console.log('STEP 4: Reducing surfaces...');\n    \n    const surfacing = newBreakdown\n      .map((item, idx) => ({ item, idx }))\n      .filter(({ item }) => classifyItem(item) === 'surfacing')\n      .sort((a, b) => b.item.unitCost - a.item.unitCost);\n    \n    let totalGravelArea = 0;\n    \n    for (const { item, idx } of surfacing) {\n      if (newProjectedTotal <= hardCap) break;\n      \n      if (item.unitCost >= 100) {\n        const reductionPct = 0.30;\n        const originalQty = item.qty;\n        const newQty = Math.round(originalQty * (1 - reductionPct));\n        const reducedArea = originalQty - newQty;\n        \n        if (reducedArea >= 2) {\n          const savings = (originalQty - newQty) * item.unitCost;\n          \n          newBreakdown[idx] = {\n            ...item,\n            qty: newQty,\n            lineTotal: newQty * item.unitCost\n          };\n          \n          totalGravelArea += reducedArea;\n          const gravelCost = reducedArea * 55;\n          const netSavings = savings - gravelCost;\n          \n          newSubtotal -= netSavings;\n          newProjectedTotal = newSubtotal * 1.25;\n          \n          changes.reductions.push({\n            item: item.description,\n            from: originalQty,\n            to: newQty,\n            savings: netSavings\n          });\n          changes.backfills.push({ area: reducedArea, cost: gravelCost });\n          \n          console.log(`  📐 ${item.description} ${originalQty}→${newQty}m² (£${netSavings.toFixed(0)})`);\n        }\n      }\n    }\n    \n    if (totalGravelArea > 0) {\n      newBreakdown.push({\n        item: 'Decorative Gravel',\n        description: 'Decorative Gravel',\n        category: 'aggregates',\n        variant: 'decorative_gravel',\n        qty: totalGravelArea,\n        unit: 'm²',\n        unitCost: 55,\n        lineTotal: totalGravelArea * 55\n      });\n      \n      newSubtotal += totalGravelArea * 55;\n      newProjectedTotal = newSubtotal * 1.25;\n      \n      console.log(`  🪨 Added ${totalGravelArea}m² gravel (£${(totalGravelArea * 55).toFixed(0)})`);\n    }\n    \n    console.log(`  📊 Final: £${newProjectedTotal.toFixed(0)}`);\n  }\n  \n  // STEP 5: Merge duplicate gravel lines\n  const gravelItems = newBreakdown.filter(item => {\n    const desc = item.description.toLowerCase();\n    return desc.includes('gravel') || desc.includes('chippings') || desc.includes('pebbles');\n  });\n  \n  if (gravelItems.length > 1) {\n    const totalGravel = gravelItems.reduce((sum, item) => sum + item.qty, 0);\n    const totalGravelCost = gravelItems.reduce((sum, item) => sum + item.lineTotal, 0);\n    \n    newBreakdown = newBreakdown.filter(item => !gravelItems.includes(item));\n    \n    newBreakdown.push({\n      item: 'Decorative Gravel',\n      description: 'Decorative Gravel',\n      category: 'aggregates',\n      variant: 'decorative_gravel',\n      qty: totalGravel,\n      unit: 'm²',\n      unitCost: 55,\n      lineTotal: totalGravelCost\n    });\n    \n    console.log(`  🔗 Merged ${gravelItems.length} gravel lines → ${totalGravel}m²`);\n  }\n  \n  // STEP 6: AGGRESSIVE NARRATIVE CLEANING\n  console.log('STEP 6: Cleaning narrative...');\n  \n  let updatedConcept = { ...j.output?.concept || j.selectedConcept || {} };\n  let narrative = updatedConcept.narrative || '';\n  \n  // Get list of what's actually in the final pricing\n  const itemsInPricing = newBreakdown.map(item => item.description.toLowerCase());\n  \n  console.log(`Items in final pricing: ${itemsInPricing.join(', ')}`);\n  \n  // List of terms to check and remove if NOT in pricing\n  const featureTerms = [\n    { term: 'pond', variations: ['pond', 'water feature with liner', 'naturalistic pond'] },\n    { term: 'fencing', variations: ['fencing', 'fence', 'panel fencing', 'horizontal panel'] },\n    { term: 'lighting', variations: ['lighting', 'led', 'light fitting', 'transformer', 'cable'] },\n    { term: 'planter', variations: ['planter', 'planting bed', 'rendered planter'] },\n    { term: 'seating', variations: ['seating area', 'seating', 'bench'] },\n    { term: 'pergola', variations: ['pergola', 'gazebo', 'canopy'] },\n    { term: 'fire pit', variations: ['fire pit', 'firepit', 'fire feature'] },\n    { term: 'water feature', variations: ['water feature', 'fountain', 'waterfall', 'cascade'] },\n    { term: 'outdoor kitchen', variations: ['outdoor kitchen', 'bbq', 'cooking area'] },\n    { term: 'shed', variations: ['shed', 'storage', 'summer house'] },\n  ];\n  \n  const termsToRemove = [];\n  \n  // Check each term - if it's not in pricing, mark for removal\n  for (const { term, variations } of featureTerms) {\n    const isInPricing = itemsInPricing.some(item => \n      variations.some(v => item.includes(v))\n    );\n    \n    if (!isInPricing) {\n      termsToRemove.push(...variations);\n      console.log(`  ❌ Removing: ${term} (not in pricing)`);\n    }\n  }\n  \n  // Split narrative into sentences\n  const sentences = narrative.match(/[^.!?]+[.!?]+/g) || [];\n  \n  // Filter out sentences that mention removed terms\n  const cleanedSentences = sentences.filter(sentence => {\n    const lower = sentence.toLowerCase();\n    \n    // Check if sentence primarily discusses a removed term\n    for (const term of termsToRemove) {\n      if (lower.includes(term)) {\n        // Count how many times the term appears\n        const count = (lower.match(new RegExp(term, 'g')) || []).length;\n        if (count >= 1) {\n          console.log(`  🗑️ Removing sentence: \"${sentence.trim().substring(0, 60)}...\"`);\n          return false;\n        }\n      }\n    }\n    \n    return true;\n  });\n  \n  narrative = cleanedSentences.join(' ').trim();\n  \n  // Add gravel mention if backfilled\n  if (changes.backfills.length > 0) {\n    const totalGravelArea = changes.backfills.reduce((sum, b) => sum + b.area, 0);\n    \n    if (!narrative.toLowerCase().includes('gravel')) {\n      narrative = narrative.trim() + ` Areas are complemented by ${totalGravelArea}m² of decorative gravel for low-maintenance ground cover.`;\n      console.log(`  ➕ Added gravel mention`);\n    }\n  }\n  \n  // Apply downgrades to narrative\n  changes.downgrades.forEach(d => {\n    const materialReplacements = {\n      'york stone': /york stone|yorkstone/gi,\n      'quartzite': /quartzite/gi,\n      'granite paving': /granite paving|granite patio/gi,\n      'travertine': /travertine/gi,\n      'slate paving': /slate paving|slate patio/gi,\n      'limestone paving': /limestone paving|limestone patio/gi,\n      'porcelain': /porcelain/gi,\n      'resin bound': /resin bound|resin/gi,\n      'hardwood': /hardwood/gi,\n      'composite': /composite/gi,\n      'artificial turf': /artificial turf|artificial grass/gi,\n    };\n    \n    const regex = materialReplacements[d.material];\n    if (regex) {\n      const replacement = d.to.toLowerCase();\n      narrative = narrative.replace(regex, replacement);\n      console.log(`  🔄 Replaced: ${d.material} → ${d.to}`);\n    }\n  });\n  \n  // Clean up spacing\n  narrative = narrative.replace(/\\s+/g, ' ').trim();\n  \n  // If narrative too short, generate new one from actual breakdown\n  if (narrative.length < 100) {\n    const style = validatedInput.project?.stylePreference || 'contemporary';\n    const surfaceItems = newBreakdown\n      .filter(b => classifyItem(b) === 'surfacing')\n      .map(b => b.description.toLowerCase())\n      .slice(0, 3)\n      .join(', ');\n    \n    narrative = `A ${style} garden design for this ${area}m² space, featuring ${surfaceItems}, optimized to your budget with quality materials and professional installation.`;\n    console.log(`  🔄 Generated fallback narrative`);\n  }\n  \n  // REGENERATE features list from actual breakdown\n  const newFeatures = [];\n  \n  for (const item of newBreakdown) {\n    const desc = item.description;\n    const lowerDesc = desc.toLowerCase();\n    \n    // Skip groundworks and edging (they're always there)\n    if (lowerDesc.includes('groundwork') || lowerDesc.includes('edging')) continue;\n    \n    // Add meaningful features\n    if (lowerDesc.includes('deck')) {\n      newFeatures.push(`${desc} (${item.qty}m²) for outdoor living space`);\n    } else if (lowerDesc.includes('turf') || lowerDesc.includes('lawn')) {\n      newFeatures.push(`${desc} (${item.qty}m²) for greenery and ease of maintenance`);\n    } else if (lowerDesc.includes('paving') || lowerDesc.includes('patio')) {\n      newFeatures.push(`${desc} (${item.qty}m²) creating the main patio area`);\n    } else if (lowerDesc.includes('gravel')) {\n      newFeatures.push(`${desc} (${item.qty}m²) for low-maintenance ground cover`);\n    } else if (item.unit === 'each' && item.qty > 0) {\n      newFeatures.push(`${desc} (${item.qty})`);\n    } else {\n      newFeatures.push(`${desc} (${item.qty}${item.unit})`);\n    }\n  }\n  \n  updatedConcept.narrative = narrative;\n  updatedConcept.features = newFeatures;\n  \n  console.log(`📝 New features count: ${newFeatures.length}`);\n  \n  // Recalculate totals\n  const finalSubtotal = Math.round(newSubtotal);\n  const finalContingency = Math.round(finalSubtotal * 0.05);\n  const finalVat = Math.round((finalSubtotal + finalContingency) * 0.20);\n  const finalTotal = finalSubtotal + finalContingency + finalVat;\n  \n  console.log(`\\n=== RESULT ===`);\n  console.log(`Removals: ${changes.removals.length}, Downgrades: ${changes.downgrades.length}`);\n  console.log(`Final: £${finalTotal} vs Budget: £${budget}`);\n  console.log(finalTotal <= budget ? '✅ UNDER BUDGET' : '❌ STILL OVER');\n  \n  // Update concept\n  if (j.output?.concept) j.output.concept = updatedConcept;\n  if (j.selectedConcept) j.selectedConcept = updatedConcept;\n  \n  // ❌ NO PHOTO PASS-THROUGH\n  return [{\n    json: {\n      customer: j.customer,\n      project: j.project,\n      mirrors: j.mirrors,\n      llm: j.llm,\n      prompt: j.prompt,\n      output: j.output,\n      selectedConcept: j.selectedConcept,\n      allocations: j.allocations,\n      hallucinationCleaning: j.hallucinationCleaning,\n      pricing: {\n        breakdown: newBreakdown,\n        subtotal: finalSubtotal,\n        contingency: finalContingency,\n        vat: finalVat,\n        total: finalTotal\n      },\n      correction: {\n        applied: true,\n        type: 'budget_optimization',\n        originalSubtotal: subtotal,\n        newSubtotal: finalSubtotal,\n        changes\n      }\n    }\n  }];\n}\n\n// === CASE 2: UNDER TARGET ===\nif (subtotal < minTarget) {\n  console.log('⚠️ Under 90% - adding edging...');\n  \n  const newBreakdown = [...breakdown];\n  \n  const hasEdging = breakdown.some(item => \n    item.description.toLowerCase().includes('edging') ||\n    item.description.toLowerCase().includes('kerb')\n  );\n  \n  if (!hasEdging && area > 0) {\n    const edgingLength = Math.round(area * 0.8);\n    const edgingCost = edgingLength * 60;\n    \n    newBreakdown.push({\n      item: 'Paving Edging / Kerbs / Setts',\n      variant: 'paving_edging_kerbs_setts',\n      description: 'Paving Edging / Kerbs / Setts',\n      qty: edgingLength,\n      unit: 'lm',\n      unitCost: 60,\n      lineTotal: edgingCost,\n      category: 'edging'\n    });\n    \n    const newSubtotal = subtotal + edgingCost;\n    const newContingency = Math.round(newSubtotal * 0.05);\n    const newVat = Math.round((newSubtotal + newContingency) * 0.20);\n    const newTotal = newSubtotal + newContingency + newVat;\n    \n    console.log(`Added edging: ${edgingLength}m = £${edgingCost}`);\n    \n    // ❌ NO PHOTO PASS-THROUGH\n    return [{\n      json: {\n        customer: j.customer,\n        project: j.project,\n        mirrors: j.mirrors,\n        llm: j.llm,\n        prompt: j.prompt,\n        output: j.output,\n        selectedConcept: j.selectedConcept,\n        allocations: j.allocations,\n        hallucinationCleaning: j.hallucinationCleaning,\n        pricing: {\n          breakdown: newBreakdown,\n          subtotal: newSubtotal,\n          contingency: newContingency,\n          vat: newVat,\n          total: newTotal\n        },\n        correction: {\n          applied: true,\n          type: 'addition',\n          itemsAdded: [`Edging ${edgingLength}m`]\n        }\n      }\n    }];\n  }\n}\n\n// === CASE 3: IN RANGE ===\nconsole.log('✅ Budget acceptable');\n\n// ❌ NO PHOTO PASS-THROUGH\nreturn [{\n  json: {\n    customer: j.customer,\n    project: j.project,\n    mirrors: j.mirrors,\n    llm: j.llm,\n    prompt: j.prompt,\n    output: j.output,\n    selectedConcept: j.selectedConcept,\n    allocations: j.allocations,\n    hallucinationCleaning: j.hallucinationCleaning,\n    pricing: j.pricing,\n    correction: j.correction\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        64
+      ],
+      "id": "42750788-14bd-4b45-b1cc-b5bb0a74036e",
+      "name": "Budget Validation & Correction"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "contact",
+        "email": "={{ $('Build PDF HTML').item.json.customer.email }}",
+        "additionalFields": {
+          "firstName": "={{ $('Build PDF HTML').item.json.customer.name.split(' ')[0] }}",
+          "lastName": "={{ $('Build PDF HTML').item.json.customer.name.split(' ').slice(1).join(' ') }}",
+          "phoneNumber": "={{ $('Build PDF HTML').item.json.customer.phone }}"
+        }
+      },
+      "id": "69a03242-25db-4b9a-a774-8aa2b12320a6",
+      "name": "HubSpot: Upsert Contact",
+      "type": "n8n-nodes-base.hubspot",
+      "position": [
+        3392,
+        -32
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "tyKz6c7o3Cwz8zFJ",
+          "name": "HubSpot account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "deal",
+        "operation": "update",
+        "dealId": {
+          "__rl": true,
+          "value": "={{ $('Check if Deal Exists').item.json.existingDealId }}",
+          "mode": "id"
+        },
+        "updateFields": {
+          "customPropertiesUi": {
+            "customPropertiesValues": [
+              {
+                "property": "ai_quote_pdf_url",
+                "value": "={{ $('Add File Url's To Data').first().json.pdfUrl }}"
+              },
+              {
+                "property": "ai_garden_image_url",
+                "value": "={{ $('Add Image URL to Data').first().json.imageUrl || '' }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "c137e4eb-03c5-451c-9b33-9ff78b4e22a4",
+      "name": "HubSpot: Update Existing Deal",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.2,
+      "position": [
+        4512,
+        -128
+      ],
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "tyKz6c7o3Cwz8zFJ",
+          "name": "HubSpot account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "2968aee1-9142-49a5-ac14-7f38dc061f6c",
+      "name": "Merge Deal Paths",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        4736,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.hubapi.com/crm/v3/objects/deals/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"filterGroups\": [\n    {\n      \"filters\": [\n        {\n          \"propertyName\": \"associations.contact\",\n          \"operator\": \"EQ\",\n          \"value\": \"{{ $node['HubSpot: Upsert Contact'].json.vid }}\"\n        }\n      ]\n    }\n  ],\n  \"properties\": [\"dealname\", \"amount\", \"dealstage\", \"hs_object_id\"],\n  \"limit\": 1,\n  \"sorts\": [\n    {\n      \"propertyName\": \"hs_lastmodifieddate\",\n      \"direction\": \"DESCENDING\"\n    }\n  ]\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3616,
+        -32
+      ],
+      "id": "20672aa6-2493-493b-8dc2-986b865016e4",
+      "name": "Get Deals for Contact",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "tyKz6c7o3Cwz8zFJ",
+          "name": "HubSpot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "db3239a9-a421-484a-ab06-ae522869ee8f",
+              "leftValue": "={{ $json.dealExists }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4064,
+        -32
+      ],
+      "id": "b79bc3a8-aec5-4ab9-b76d-f8857ed30d4e",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json || {};\nconst deals = response.results || [];\n\nconst dealExists = deals.length > 0;\nconst existingDealId = dealExists ? (deals[0].id || deals[0].properties?.hs_object_id || null) : null;\n\nreturn [{\n  json: {\n    dealExists,\n    existingDealId,\n    totalDeals: deals.length\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3840,
+        -32
+      ],
+      "id": "d54d665c-608b-4759-8702-eb17f282cc98",
+      "name": "Check if Deal Exists"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Format for PDF - NO PHOTO ===\n// Groups pricing breakdown items by category for PDF generation\n\nconst data = $input.all()[0].json;\nconst breakdown = data.pricing?.breakdown || [];\n\nconsole.log('=== FORMAT FOR PDF ===');\nconsole.log(`Breakdown items: ${breakdown.length}`);\n\n// Define categories\nconst categories = {\n  \"Hard Landscaping\": [\"Porcelain\", \"Indian Sandstone\", \"Limestone\", \"Granite\", \"Slate\", \"York Stone\", \"Travertine\", \"Quartzite\", \"Setts\", \"Block Paving\", \"Resin\", \"Concrete\", \"Paving Edging\"],\n  \"Decking & Turf\": [\"Decking\", \"Artificial Turf\", \"Natural Lawn\"],\n  \"Pathways & Aggregates\": [\"Gravel Path\", \"Bark Path\", \"Stepping Stones\", \"Decorative Gravel\", \"Slate Chippings\", \"Pebbles\", \"Boulders\"],\n  \"Water Features\": [\"Pond\", \"Pump\", \"Filter\", \"UV Clarifier\", \"Water Feature\", \"Fountain\", \"Cascade\", \"Water Bowl\", \"Rill\"],\n  \"Boundaries\": [\"Fencing\", \"Wall\", \"Hedging\", \"Gate\", \"Trellis\", \"Screen\"],\n  \"Structures\": [\"Pergola\", \"Gazebo\", \"Seating\", \"Fire Pit\", \"Kitchen\", \"BBQ\", \"Shed\", \"Summer House\", \"Greenhouse\", \"Garden Room\"],\n  \"Lighting\": [\"Lighting\", \"Transformer\", \"Cable\", \"Fitting\"],\n  \"Drainage\": [\"Drain\", \"Soakaway\", \"Channel\"],\n  \"Planting\": [\"Tree\", \"Shrub\", \"Planting\", \"Topsoil\", \"Mulch\"],\n  \"Other\": [\"Groundworks\", \"Step\", \"Ramp\"]\n};\n\n// Group items\nconst grouped = {};\nbreakdown.forEach(item => {\n  let assigned = false;\n  for (const [category, keywords] of Object.entries(categories)) {\n    if (keywords.some(kw => item.item.includes(kw))) {\n      if (!grouped[category]) grouped[category] = [];\n      grouped[category].push({\n        item: item.item,\n        description: item.description,\n        qty: item.qty,\n        unit: item.unit,\n        unitCost: item.unitCost,\n        total: item.lineTotal\n      });\n      assigned = true;\n      break;\n    }\n  }\n  if (!assigned) {\n    if (!grouped[\"General\"]) grouped[\"General\"] = [];\n    grouped[\"General\"].push({\n      item: item.item,\n      description: item.description,\n      qty: item.qty,\n      unit: item.unit,\n      unitCost: item.unitCost,\n      total: item.lineTotal\n    });\n  }\n});\n\nconsole.log(`Categories with items: ${Object.keys(grouped).join(', ')}`);\n\n// ❌ NO PHOTO PASS-THROUGH\nreturn [{\n  json: {\n    customer: data.customer,\n    project: data.project,\n    mirrors: data.mirrors,\n    llm: data.llm,\n    prompt: data.prompt,\n    output: data.output,\n    selectedConcept: data.selectedConcept,\n    allocations: data.allocations,\n    hallucinationCleaning: data.hallucinationCleaning,\n    pricing: data.pricing,\n    correction: data.correction,\n    aiSummary: data.aiSummary,\n    pdf: {\n      ...data.pdf,\n      groupedItems: grouped\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        64
+      ],
+      "id": "b06b6117-f3cc-4152-9f29-c081d1df663e",
+      "name": "Format for PDF"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Clean LLM Hallucinations v1.1 - NO PHOTO ===\n// Removes mentions of features that weren't allocated\n// Place this node AFTER \"Basic LLM Chain\" and BEFORE \"Map Allocations to Products\"\n\nconst j = $json;\nconst concept = j.output?.concept || {};\n\n// Get allocations\nconst allocations = concept.allocations || {};\n\nconsole.log('=== HALLUCINATION CLEANER v1.1 ===');\n\n// Define feature detection patterns\nconst featurePatterns = {\n  pond: {\n    allocationKeys: ['pond_m2', 'pond_4m2', 'pond_liner_m2', 'small_pond_each', 'medium_pond_each', 'large_pond_each', 'wildlife_pond_each', 'koi_pond_each'],\n    searchTerms: ['pond', 'water feature with liner', 'contemporary pond', 'koi pond', 'wildlife pond'],\n    name: 'pond'\n  },\n  fencing: {\n    allocationKeys: ['panel_fencing_lm', 'closeboard_fencing_lm', 'trellis_panels_lm', 'composite_fencing_lm'],\n    searchTerms: ['fencing', 'fence', 'panel fencing', 'closeboard', 'trellis'],\n    name: 'fencing'\n  },\n  planting_beds: {\n    allocationKeys: ['planting_beds_m2'],\n    searchTerms: ['planting bed', 'planting area', 'planted bed'],\n    name: 'planting beds'\n  },\n  water_feature: {\n    allocationKeys: ['water_feature_each', 'fountain_small_each', 'fountain_large_each', 'water_bowl_each', 'cascade_waterfall_each', 'wall_mounted_feature_each', 'water_rill_lm'],\n    searchTerms: ['water feature', 'fountain', 'waterfall', 'cascade', 'water bowl', 'rill'],\n    name: 'water feature'\n  },\n  walls: {\n    allocationKeys: ['brick_wall_lm', 'stone_wall_lm', 'rendered_wall_lm', 'sleeper_wall_lm', 'sandstone_wall_lm', 'limestone_wall_lm', 'granite_wall_lm', 'dry_stone_wall_lm'],\n    searchTerms: ['wall', 'retaining wall', 'brick wall', 'stone wall', 'boundary wall'],\n    name: 'walls'\n  },\n  hedging: {\n    allocationKeys: ['native_hedging_lm', 'instant_screening_lm'],\n    searchTerms: ['hedging', 'hedge', 'screening', 'instant screening'],\n    name: 'hedging'\n  },\n  gates: {\n    allocationKeys: ['timber_gate_each', 'metal_gate_each'],\n    searchTerms: ['gate', 'garden gate', 'entrance gate'],\n    name: 'gates'\n  },\n  outdoor_kitchen: {\n    allocationKeys: ['outdoor_kitchen_each', 'outdoor_kitchen_starter', 'outdoor_kitchen_standard', 'outdoor_kitchen_premium', 'bbq_area_each', 'built_in_bbq_each'],\n    searchTerms: ['outdoor kitchen', 'bbq', 'cooking area', 'built-in bbq', 'barbecue'],\n    name: 'outdoor kitchen'\n  },\n  shed: {\n    allocationKeys: ['shed_each', 'timber_shed_6x4', 'timber_shed_8x6', 'metal_shed_6x4'],\n    searchTerms: ['shed', 'storage building', 'tool shed'],\n    name: 'shed/storage'\n  },\n  pergola: {\n    allocationKeys: ['pergola_3x3_each', 'pergola_attached_each'],\n    searchTerms: ['pergola'],\n    name: 'pergola'\n  },\n  gazebo: {\n    allocationKeys: ['gazebo_each'],\n    searchTerms: ['gazebo'],\n    name: 'gazebo'\n  },\n  fire_pit: {\n    allocationKeys: ['sunken_firepit_each', 'sunken_firepit_seating_package_each'],\n    searchTerms: ['fire pit', 'firepit'],\n    name: 'fire pit'\n  },\n  summer_house: {\n    allocationKeys: ['summer_house_each'],\n    searchTerms: ['summer house', 'summerhouse'],\n    name: 'summer house'\n  },\n  greenhouse: {\n    allocationKeys: ['greenhouse_each', 'greenhouse_6x8', 'greenhouse_8x10'],\n    searchTerms: ['greenhouse'],\n    name: 'greenhouse'\n  }\n};\n\n// Check which features are hallucinated (mentioned but not allocated)\nconst hallucinations = [];\n\nfor (const [featureKey, pattern] of Object.entries(featurePatterns)) {\n  // Check if any allocation key for this feature has value > 0\n  const isAllocated = pattern.allocationKeys.some(key => {\n    const value = allocations[key];\n    return value != null && Number(value) > 0;\n  });\n  \n  if (!isAllocated) {\n    // Feature not allocated - check if it's mentioned in narrative or features\n    const narrative = (concept.narrative || '').toLowerCase();\n    const features = (concept.features || []).map(f => \n      typeof f === 'string' ? f.toLowerCase() : (f.type || '').toLowerCase()\n    );\n    \n    const mentionedInNarrative = pattern.searchTerms.some(term => \n      narrative.includes(term.toLowerCase())\n    );\n    \n    const mentionedInFeatures = features.some(feature => \n      pattern.searchTerms.some(term => feature.includes(term.toLowerCase()))\n    );\n    \n    if (mentionedInNarrative || mentionedInFeatures) {\n      hallucinations.push({\n        feature: pattern.name,\n        searchTerms: pattern.searchTerms,\n        inNarrative: mentionedInNarrative,\n        inFeatures: mentionedInFeatures\n      });\n      \n      console.log(`⚠️ HALLUCINATION: ${pattern.name} mentioned but not allocated`);\n    }\n  }\n}\n\n// If no hallucinations, pass through WITHOUT PHOTO\nif (hallucinations.length === 0) {\n  console.log('✅ No hallucinations detected - passing through (without photo)');\n  \n  // ❌ CRITICAL: Remove photo before passing through\n  const cleanOutput = { ...j };\n  if (cleanOutput.photo) {\n    delete cleanOutput.photo;\n    console.log('  🗑️ Removed photo data');\n  }\n  \n  return [cleanOutput];\n}\n\nconsole.log(`\\n🧹 Cleaning ${hallucinations.length} hallucination(s)...`);\n\n// Clean narrative\nlet cleanedNarrative = concept.narrative || '';\n\nfor (const hallucination of hallucinations) {\n  // Split into sentences\n  const sentences = cleanedNarrative.match(/[^.!?]+[.!?]+/g) || [cleanedNarrative];\n  \n  // Filter out sentences that mention the hallucinated feature\n  const filteredSentences = sentences.filter(sentence => {\n    const lower = sentence.toLowerCase();\n    \n    // Check if sentence is primarily about this feature\n    const mentionCount = hallucination.searchTerms.reduce((count, term) => {\n      const matches = (lower.match(new RegExp(term.toLowerCase(), 'g')) || []).length;\n      return count + matches;\n    }, 0);\n    \n    // Remove sentence if it mentions the feature\n    if (mentionCount > 0) {\n      console.log(`  🗑️ Removing: \"${sentence.trim().substring(0, 60)}...\"`);\n      return false;\n    }\n    \n    return true;\n  });\n  \n  cleanedNarrative = filteredSentences.join(' ').trim();\n}\n\n// Clean features list\nlet cleanedFeatures = (concept.features || []).filter(feature => {\n  const featureText = typeof feature === 'string' ? feature : (feature.type || '');\n  const lower = featureText.toLowerCase();\n  \n  // Check if feature mentions any hallucinated item\n  for (const hallucination of hallucinations) {\n    const mentions = hallucination.searchTerms.some(term => \n      lower.includes(term.toLowerCase())\n    );\n    \n    if (mentions) {\n      console.log(`  🗑️ Removing feature: \"${featureText}\"`);\n      return false;\n    }\n  }\n  \n  return true;\n});\n\n// Clean notes\nlet cleanedNotes = concept.notes || '';\n\nfor (const hallucination of hallucinations) {\n  const sentences = cleanedNotes.match(/[^.;]+[.;]+/g) || [cleanedNotes];\n  \n  const filteredSentences = sentences.filter(sentence => {\n    const lower = sentence.toLowerCase();\n    const mentions = hallucination.searchTerms.some(term => \n      lower.includes(term.toLowerCase())\n    );\n    \n    if (mentions) {\n      console.log(`  🗑️ Removing note: \"${sentence.trim().substring(0, 60)}...\"`);\n      return false;\n    }\n    \n    return true;\n  });\n  \n  cleanedNotes = filteredSentences.join(' ').trim();\n}\n\n// Clean risk_checks\nlet cleanedRisks = (concept.risk_checks || []).filter(risk => {\n  const lower = risk.toLowerCase();\n  \n  for (const hallucination of hallucinations) {\n    const mentions = hallucination.searchTerms.some(term => \n      lower.includes(term.toLowerCase())\n    );\n    \n    if (mentions) {\n      console.log(`  🗑️ Removing risk: \"${risk.substring(0, 60)}...\"`);\n      return false;\n    }\n  }\n  \n  return true;\n});\n\n// If narrative too short after cleaning, generate basic one\nif (cleanedNarrative.length < 100) {\n  const validateInput = $('validate Input').first();\n  const area = validateInput?.json?.project?.totalArea_m2 || 50;\n  const style = validateInput?.json?.project?.stylePreference || 'contemporary';\n  \n  cleanedNarrative = `A ${style} garden design for this ${area}m² space, featuring quality materials and professional installation optimized to your budget.`;\n  console.log('  🔄 Generated fallback narrative (original too short)');\n}\n\n// Update concept\nconst cleanedConcept = {\n  ...concept,\n  narrative: cleanedNarrative,\n  features: cleanedFeatures,\n  notes: cleanedNotes,\n  risk_checks: cleanedRisks\n};\n\nconsole.log(`\\n✅ Cleaned narrative: ${cleanedNarrative.length} chars`);\nconsole.log(`✅ Cleaned features: ${cleanedFeatures.length} items`);\n\n// ❌ CRITICAL: Build output WITHOUT photo\nconst cleanOutput = {\n  // Copy all fields EXCEPT photo\n  customer: j.customer,\n  project: j.project,\n  mirrors: j.mirrors,\n  llm: j.llm,\n  prompt: j.prompt,\n  output: {\n    ...j.output,\n    concept: cleanedConcept\n  }\n};\n\n// Update selectedConcept if it exists\nif (j.selectedConcept) {\n  cleanOutput.selectedConcept = cleanedConcept;\n}\n\n// Add any other fields that might exist (but NOT photo)\nfor (const key of Object.keys(j)) {\n  if (key !== 'photo' && !cleanOutput[key]) {\n    cleanOutput[key] = j[key];\n  }\n}\n\n// Add metadata\ncleanOutput.hallucinationCleaning = {\n  applied: true,\n  hallucinationsRemoved: hallucinations.map(h => h.feature),\n  timestamp: new Date().toISOString()\n};\n\nconsole.log('  🗑️ Photo data removed from output');\n\nreturn [cleanOutput];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        64
+      ],
+      "id": "f13db37c-3b0d-481e-992b-5375ea3f9d74",
+      "name": "Clean LLM Hallucinations"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Requirements Enforcer v1.0 ===\n// Forces mandatory customer requirements that LLM might have ignored\n// Place AFTER: OpenAI node\n// Place BEFORE: Calculate Pricing node\n\nconst j = $json;\nconst concept = j.output?.concept || j.concept || {};\nconst allocations = concept.allocations || {};\nconst mandatoryItems = concept.mandatoryItems || [];\nconst project = j.project || {};\nconst style = (project.stylePreference || '').toLowerCase();\n\nconsole.log('=== REQUIREMENTS ENFORCER v1.0 ===');\nconsole.log(`Style: ${style}`);\nconsole.log(`Mandatory Items: ${JSON.stringify(mandatoryItems)}`);\n\nlet correctionsMade = [];\n\n// ============================================\n// RULE 3: OPTIMIZE PACKAGE DEALS (DO THIS FIRST!)\n// ============================================\n\n// If both fire pit AND sunken seating are allocated, swap to package deal\nif (allocations.sunken_firepit_each > 0 && allocations.seating_sunken_each > 0 && allocations.sunken_firepit_seating_package_each === 0) {\n  // Swap to package deal\n  allocations.sunken_firepit_seating_package_each = 1;\n  allocations.sunken_firepit_each = 0;\n  allocations.seating_sunken_each = 0;\n  correctionsMade.push('✅ OPTIMIZED: Combined fire pit + sunken seating → package (saves £450)');\n}\n\n// ============================================\n// RULE 1: ENFORCE MANDATORY CUSTOMER ITEMS\n// ============================================\n\nmandatoryItems.forEach(item => {\n  if (item === 'outdoor_kitchen' && allocations.outdoor_kitchen_each === 0) {\n    allocations.outdoor_kitchen_each = 1;\n    correctionsMade.push('✅ FORCED: outdoor_kitchen_each = 1 (£6,000)');\n  }\n  \n  if (item === 'pergola' && allocations.pergola_3x3_each === 0) {\n    allocations.pergola_3x3_each = 1;\n    correctionsMade.push('✅ FORCED: pergola_3x3_each = 1 (£1,700)');\n  }\n  \n  if (item === 'fire_pit' && allocations.sunken_firepit_each === 0 && allocations.sunken_firepit_seating_package_each === 0) {\n    allocations.sunken_firepit_each = 1;\n    correctionsMade.push('✅ FORCED: sunken_firepit_each = 1 (£1,450)');\n  }\n  \n  if (item === 'sunken_seating' && allocations.seating_sunken_each === 0 && allocations.sunken_firepit_seating_package_each === 0) {\n    allocations.seating_sunken_each = 1;\n    correctionsMade.push('✅ FORCED: seating_sunken_each = 1 (£3,500)');\n  }\n  \n  if (item === 'sunken_firepit_seating_package' && allocations.sunken_firepit_seating_package_each === 0) {\n    allocations.sunken_firepit_seating_package_each = 1;\n    // Remove individual items if package is added\n    allocations.sunken_firepit_each = 0;\n    allocations.seating_sunken_each = 0;\n    correctionsMade.push('✅ FORCED: sunken_firepit_seating_package_each = 1 (£4,500 - SAVES £450)');\n  }\n  \n  if (item === 'pond' && allocations.medium_pond_each === 0 && allocations.small_pond_each === 0 && allocations.large_pond_each === 0) {\n    allocations.medium_pond_each = 1;\n    correctionsMade.push('✅ FORCED: medium_pond_each = 1 (£1,920)');\n  }\n  \n  if (item === 'water_feature' && allocations.water_feature_each === 0) {\n    allocations.water_feature_each = 1;\n    correctionsMade.push('✅ FORCED: water_feature_each = 1 (£1,200)');\n  }\n  \n  if (item === 'fencing' && allocations.panel_fencing_lm === 0 && allocations.closeboard_fencing_lm === 0 && allocations.composite_fencing_lm === 0) {\n    allocations.panel_fencing_lm = 20;\n    correctionsMade.push('✅ FORCED: panel_fencing_lm = 20 (£1,300)');\n  }\n});\n\n// ============================================\n// RULE 2: ENFORCE STYLE-BASED MATERIALS\n// ============================================\n\nif (style === 'contemporary' || style === 'modern') {\n  // Contemporary MUST use porcelain + artificial turf\n  if (allocations.porcelain_patio_m2 === 0 && allocations.indian_sandstone_m2 > 0) {\n    // Swap sandstone for porcelain\n    allocations.porcelain_patio_m2 = allocations.indian_sandstone_m2;\n    allocations.indian_sandstone_m2 = 0;\n    correctionsMade.push('✅ FIXED: Swapped sandstone → porcelain (contemporary style)');\n  }\n  \n  if (allocations.artificial_turf_m2 === 0 && allocations.natural_turf_m2 > 0) {\n    // Swap natural for artificial\n    allocations.artificial_turf_m2 = allocations.natural_turf_m2;\n    allocations.natural_turf_m2 = 0;\n    correctionsMade.push('✅ FIXED: Swapped natural turf → artificial (contemporary style)');\n  }\n  \n  // Ensure contemporary has SOME porcelain\n  if (allocations.porcelain_patio_m2 === 0) {\n    allocations.porcelain_patio_m2 = Math.round(project.totalArea_m2 * 0.5) || 30;\n    correctionsMade.push(`✅ FORCED: porcelain_patio_m2 = ${allocations.porcelain_patio_m2}m² (contemporary requires porcelain)`);\n  }\n  \n  // Ensure contemporary has SOME artificial turf\n  if (allocations.artificial_turf_m2 === 0) {\n    allocations.artificial_turf_m2 = Math.round(project.totalArea_m2 * 0.3) || 20;\n    correctionsMade.push(`✅ FORCED: artificial_turf_m2 = ${allocations.artificial_turf_m2}m² (contemporary requires artificial)`);\n  }\n}\n\nif (style === 'traditional' || style === 'cottage' || style === 'classic') {\n  // Traditional MUST use sandstone + natural turf\n  if (allocations.indian_sandstone_m2 === 0 && allocations.porcelain_patio_m2 > 0) {\n    // Swap porcelain for sandstone\n    allocations.indian_sandstone_m2 = allocations.porcelain_patio_m2;\n    allocations.porcelain_patio_m2 = 0;\n    correctionsMade.push('✅ FIXED: Swapped porcelain → sandstone (traditional style)');\n  }\n  \n  if (allocations.natural_turf_m2 === 0 && allocations.artificial_turf_m2 > 0) {\n    // Swap artificial for natural\n    allocations.natural_turf_m2 = allocations.artificial_turf_m2;\n    allocations.artificial_turf_m2 = 0;\n    correctionsMade.push('✅ FIXED: Swapped artificial → natural turf (traditional style)');\n  }\n}\n\n// ============================================\n// RULE 4: VERIFY AREA COVERAGE\n// ============================================\n\nconst totalArea = project.totalArea_m2 || 0;\nconst surfaceKeys = [\n  'porcelain_patio_m2', 'indian_sandstone_m2', 'limestone_paving_m2', 'granite_paving_m2', \n  'slate_paving_m2', 'york_stone_m2', 'travertine_m2', 'quartzite_m2', 'granite_setts_m2', \n  'sandstone_setts_m2', 'cobblestones_m2', 'block_paving_m2', 'resin_bound_m2', \n  'concrete_paving_m2', 'composite_deck_m2', 'softwood_deck_m2', 'hardwood_deck_m2',\n  'artificial_turf_m2', 'natural_turf_m2', 'gravel_path_m2', 'bark_path_m2',\n  'decorative_gravel_m2', 'slate_chippings_m2', 'pebbles_decorative_m2', \n  'planting_beds_m2', 'rendered_planter_m2', 'raised_bed_m2'\n];\n\nconst allocatedArea = surfaceKeys.reduce((sum, key) => sum + (Number(allocations[key]) || 0), 0);\n\nif (Math.abs(allocatedArea - totalArea) > 1) {\n  console.warn(`⚠️ WARNING: Surface area mismatch! Allocated: ${allocatedArea}m², Total: ${totalArea}m²`);\n  correctionsMade.push(`⚠️ WARNING: Surface coverage is ${allocatedArea}m² but total area is ${totalArea}m²`);\n}\n\n// ============================================\n// OUTPUT CORRECTIONS\n// ============================================\n\nif (correctionsMade.length > 0) {\n  console.log('\\n🔧 CORRECTIONS MADE:');\n  correctionsMade.forEach(c => console.log(`  ${c}`));\n  console.log('\\n✅ Budget validator applied corrections');\n} else {\n  console.log('✅ No corrections needed - LLM output was correct');\n}\n\n// Update the concept with corrected allocations\nconcept.allocations = allocations;\n\n// TAG MANDATORY ITEMS for downstream nodes\nconcept.mandatoryAllocations = {};\nmandatoryItems.forEach(item => {\n  if (item === 'outdoor_kitchen' && allocations.outdoor_kitchen_each > 0) {\n    concept.mandatoryAllocations.outdoor_kitchen_each = true;\n  }\n  if (item === 'pergola' && allocations.pergola_3x3_each > 0) {\n    concept.mandatoryAllocations.pergola_3x3_each = true;\n  }\n  if (item === 'fire_pit' && allocations.sunken_firepit_each > 0) {\n    concept.mandatoryAllocations.sunken_firepit_each = true;\n  }\n  if (item === 'sunken_seating' && allocations.seating_sunken_each > 0) {\n    concept.mandatoryAllocations.seating_sunken_each = true;\n  }\n  if (item === 'sunken_firepit_seating_package' && allocations.sunken_firepit_seating_package_each > 0) {\n    concept.mandatoryAllocations.sunken_firepit_seating_package_each = true;\n  }\n  if (item === 'pond') {\n    if (allocations.small_pond_each > 0) concept.mandatoryAllocations.small_pond_each = true;\n    if (allocations.medium_pond_each > 0) concept.mandatoryAllocations.medium_pond_each = true;\n    if (allocations.large_pond_each > 0) concept.mandatoryAllocations.large_pond_each = true;\n  }\n  if (item === 'water_feature' && allocations.water_feature_each > 0) {\n    concept.mandatoryAllocations.water_feature_each = true;\n  }\n  if (item === 'fencing') {\n    if (allocations.panel_fencing_lm > 0) concept.mandatoryAllocations.panel_fencing_lm = true;\n    if (allocations.closeboard_fencing_lm > 0) concept.mandatoryAllocations.closeboard_fencing_lm = true;\n    if (allocations.composite_fencing_lm > 0) concept.mandatoryAllocations.composite_fencing_lm = true;\n  }\n});\n\nconsole.log(`📋 Tagged ${Object.keys(concept.mandatoryAllocations || {}).length} mandatory allocations`);\n\n// Add correction log to output\nconst output = {\n  ...j,\n  output: {\n    ...j.output,\n    concept: concept\n  },\n  validatorLog: {\n    correctionsMade: correctionsMade,\n    mandatoryAllocations: concept.mandatoryAllocations,\n    timestamp: new Date().toISOString()\n  }\n};\n\nreturn [{ json: output }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1088,
+        192
+      ],
+      "id": "00ba3d4e-5243-4159-b3f2-4105f902c663",
+      "name": "Requirements enforcer"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get input data from Add PDF URL to Data node (which has all the original data)\nconst data = $('Add File Url's To Data').first().json;\n\n// Helper functions\nconst toStr = (val, fallback = \"\") => val != null ? String(val) : fallback;\nconst toMoneyStr = (val) => val != null ? String(Number(val).toFixed(2)) : \"0.00\";\nconst toHubSpotDate = (daysFromNow) => {\n  const date = new Date();\n  date.setDate(date.getDate() + daysFromNow);\n  date.setUTCHours(0, 0, 0, 0);\n  return String(date.getTime());\n};\n\n// Extract data from input\nconst customer = data.customer || {};\nconst project = data.project || {};\nconst pricing = data.pricing || {};\nconst pdf = data.pdf || {};\nconst aiSummary = data.aiSummary || \"\";\n\n// Get PDF URL (already in the data from Add PDF URL to Data node)\nconst pdfUrl = data.pdfUrl || null;\n\n// Build deal data object\nconst dealData = {\n  // Standard properties\n  amount: toMoneyStr(pricing.total),\n  closedate: toHubSpotDate(90),\n  dealname: `${toStr(customer.name, \"Client\")} - Full Garden Redesign - ${toStr(pdf.quoteRef, \"QUOTE\")}`,\n  \n  // Custom properties\n  quote_referenc: toStr(pdf.quoteRef, \"\"),\n  estimated_total_: toMoneyStr(pricing.total),\n  design_created_at: String(new Date(new Date().setUTCHours(0,0,0,0)).getTime()),\n  garden_area_m: toStr(project.totalArea_m2, \"0\"),\n  short_deal_summary: toStr(aiSummary).substring(0, 200) + (aiSummary.length > 200 ? \"...\" : \"\"),\n  project_style: toStr(project.stylePreference, \"Contemporary\"),\n  design_name: toStr(project.title, \"Garden Design\"),\n  quote_date: new Date().toISOString().split('T')[0],\n  ai_quote_pdf_url: toStr(pdfUrl, \"\")\n};\n\n// Return formatted data\nreturn [{\n  json: {\n    ...data,\n    hubspot: {\n      deal: dealData\n    },\n    pdfUrl: pdfUrl\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4288,
+        64
+      ],
+      "id": "44238302-f4a3-4422-be52-84ebd9837b03",
+      "name": "Prepare HubSpot Data"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "deal",
+        "stage": "appointmentscheduled",
+        "additionalFields": {
+          "amount": "={{ $('Prepare HubSpot Data').item.json.hubspot.deal.amount }}",
+          "associatedVids": "={{ $node[\"HubSpot: Upsert Contact\"].json.vid }}",
+          "customPropertiesUi": {
+            "customPropertiesValues": [
+              {
+                "property": "project_type",
+                "value": "={{ $('Build PDF HTML').item.json.project.type || $('Build PDF HTML').item.json.project.title || 'full_garden_redesign' }}"
+              },
+              {
+                "property": "garden_area_m",
+                "value": "={{ $('Prepare HubSpot Data').item.json.hubspot.deal.garden_area_m }}"
+              },
+              {
+                "property": "estimated_total_",
+                "value": "={{ $('Prepare HubSpot Data').item.json.hubspot.deal.estimated_total_ }}"
+              },
+              {
+                "property": "design_created_at",
+                "value": "={{ new Date(new Date().setUTCHours(0,0,0,0)).getTime() }}"
+              },
+              {
+                "property": "short_deal_summary",
+                "value": "={{ $('Prepare HubSpot Data').item.json.hubspot.deal.short_deal_summary }}"
+              },
+              {
+                "property": "quote_reference",
+                "value": "={{ $('Prepare HubSpot Data').item.json.hubspot.deal.quote_referenc }}"
+              },
+              {
+                "property": "ai_quote_pdf_url",
+                "value": "={{ $('Add File Url's To Data').first().json.pdfUrl }}"
+              },
+              {
+                "property": "ai_garden_image_url",
+                "value": "={{ $('Add Image URL to Data').first().json.imageUrl || '' }}"
+              }
+            ]
+          },
+          "description": "={{ $('Prepare HubSpot Data').item.json.hubspot.deal.short_deal_summary }}",
+          "dealName": "={{ $('Prepare HubSpot Data').item.json.hubspot.deal.dealname }}"
+        }
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.2,
+      "position": [
+        4512,
+        64
+      ],
+      "id": "53ab03ff-1642-4a6d-b80a-5b840e675ee5",
+      "name": "Create a deal",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "tyKz6c7o3Cwz8zFJ",
+          "name": "HubSpot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $json.supabaseUploadUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzd2twY25ieXJibW5sdGN6cGh4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDU2MDc5NSwiZXhwIjoyMDgwMTM2Nzk1fQ.2QQ6vUTDLvANIMTSklCGIDconamYfIqjqhXEb_KHxds"
+            },
+            {
+              "name": "Content-Type",
+              "value": " application/pdf"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2720,
+        160
+      ],
+      "id": "42325e5b-907a-42cc-b04f-a006da56f78a",
+      "name": "Upload PDF to Supabase"
+    },
+    {
+      "parameters": {
+        "jsCode": "/* === BUILD SUPABASE UPLOAD PATH === */\n// Handles both PDF and Design image uploads\n\nconst data = $input.first().json;\nconst binary = $input.first().binary;\n\nconst quoteRef = data.pdf?.quoteRef || data.quoteRef || `quote-${Date.now()}`;\nconst customerEmail = data.customer?.email || 'unknown@email.com';\nconst customerName = data.customer?.name || 'Unknown Customer';\n\n// Clean customer name for filename\nconst cleanName = customerName\n  .replace(/[^a-zA-Z0-9\\s-]/g, '')\n  .replace(/\\s+/g, '-')\n  .substring(0, 30);\n\nconsole.log('=== BUILDING SUPABASE UPLOAD PATHS ===');\nconsole.log('Available binaries:', Object.keys(binary || {}));\n\n// Check what binaries we have\nconst hasPdf = !!binary?.pdf || !!binary?.data;\nconst hasDesign = !!binary?.design;\n\nconsole.log('Has PDF:', hasPdf);\nconsole.log('Has Design:', hasDesign);\n\n// Build outputs for each file type\nconst outputs = [];\n\n// PDF upload\nif (hasPdf) {\n  const pdfFilename = `${cleanName}-${quoteRef}.pdf`;\n  const pdfBucketPath = `garden-designs/${customerEmail}/${pdfFilename}`;\n  const pdfUploadUrl = `https://sswkpcnbyrmbttczphlx.supabase.co/storage/v1/object/${pdfBucketPath}`;\n  const pdfPublicUrl = `https://sswkpcnbyrmbttczphlx.supabase.co/storage/v1/object/public/${pdfBucketPath}`;\n  \n  outputs.push({\n    json: {\n      ...data,\n      uploadType: 'pdf',\n      fileName: pdfFilename,\n      supabaseUploadUrl: pdfUploadUrl,\n      publicPdfUrl: pdfPublicUrl,\n      bucketPath: pdfBucketPath,\n      customerEmail: customerEmail,\n      customerName: cleanName\n    },\n    binary: {\n      data: binary.pdf || binary.data\n    }\n  });\n  \n  console.log('✓ PDF upload path created:', pdfFilename);\n}\n\n// Design image upload\nif (hasDesign) {\n  const designFilename = `${cleanName}-${quoteRef}-design.png`;\n  const designBucketPath = `garden-designs/${customerEmail}/${designFilename}`;\n  const designUploadUrl = `https://sswkpcnbyrmbttczphlx.supabase.co/storage/v1/object/${designBucketPath}`;\n  const designPublicUrl = `https://sswkpcnbyrmbttczphlx.supabase.co/storage/v1/object/public/${designBucketPath}`;\n  \n  outputs.push({\n    json: {\n      ...data,\n      uploadType: 'design',\n      fileName: designFilename,\n      supabaseUploadUrl: designUploadUrl,\n      publicDesignUrl: designPublicUrl,\n      bucketPath: designBucketPath,\n      customerEmail: customerEmail,\n      customerName: cleanName\n    },\n    binary: {\n      data: binary.design\n    }\n  });\n  \n  console.log('✓ Design upload path created:', designFilename);\n}\n\nconsole.log(`Returning ${outputs.length} item(s) for upload`);\n\nreturn outputs;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2496,
+        64
+      ],
+      "id": "e6fbfec3-9b11-4141-a019-b2301e23bf82",
+      "name": "Build Supabase Upload Path"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\n\n/* ========= IMAGE (FROM validate Input) ========= */\nconst validateNode = $('validate Input').first();\nconst photo = validateNode?.json?.photo;\n\nif (!photo?.data) {\n  throw new Error('❌ No image found in validate Input → photo.data');\n}\n\nconst match = photo.data.match(/^data:(image\\/\\w+);base64,(.+)$/);\nif (!match) {\n  throw new Error('❌ Invalid base64 image format');\n}\n\nconst imageMime = match[1];\nconst imageBase64 = match[2];\n\n/* ========= PDF DATA (STRUCTURED, NOT HTML) ========= */\nconst pdfData = {\n  quoteRef: item.json.pdf?.quoteRef,\n  summary: item.json.aiSummary,\n  features: item.json.selectedConcept?.features || [],\n  allocations: item.json.selectedConcept?.allocations || {},\n  narrative: item.json.selectedConcept?.narrative,\n  totals: item.json.pricing\n};\n\n/* ========= PAYLOAD SENT TO IMAGE WORKFLOW ========= */\nreturn [{\n  json: {\n    meta: {\n      source: 'main_quote_workflow',\n      timestamp: new Date().toISOString(),\n      quoteType: 'full_garden_redesign'\n    },\n\n    customer: item.json.customer,\n    project: item.json.project,\n\n    // ✅ CLEAN DESIGN CONTEXT\n    design: {\n      concept: item.json.selectedConcept?.name,\n      narrative: item.json.selectedConcept?.narrative,\n      features: item.json.selectedConcept?.features,\n      allocations: item.json.selectedConcept?.allocations\n    },\n\n    // ✅ PRICING CONTEXT (NO HTML)\n    pricing: pdfData,\n\n    // ✅ IMAGE (THIS FIXES EVERYTHING)\n    photo: {\n      name: photo.name || 'garden.jpg',\n      type: imageMime,\n      base64: imageBase64\n    }\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        64
+      ],
+      "id": "6d4f32a9-94a7-4ce3-a0a0-b433510adc46",
+      "name": "Prepare Image Generation Payload",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === UPDATE DEAL WITH IMAGE URL ===\n// Adds the generated image URL to the HubSpot deal\n\nconst data = $input.first().json;\n\n// Get the deal ID (from either Merge Deal Paths or from earlier)\nconst dealId = data.id || data.dealId || data.hubspot?.deal?.id;\n\n// Get the image URL\nconst imageUrl = $('Add Image URL to Data').first().json.imageUrl;\n\nif (!dealId) {\n  console.log('⚠️  No deal ID found - cannot update with image URL');\n  return [{\n    json: {\n      ...data,\n      imageUrlUpdateSkipped: true,\n      reason: 'No deal ID available'\n    }\n  }];\n}\n\nif (!imageUrl) {\n  console.log('⚠️  No image URL - deal will not be updated with image');\n  return [{\n    json: {\n      ...data,\n      imageUrlUpdateSkipped: true,\n      reason: 'No image generated'\n    }\n  }];\n}\n\n// Prepare HubSpot update\nconst hubspotUpdate = {\n  dealId: dealId,\n  imageUrl: imageUrl,\n  shouldUpdate: true\n};\n\nconsole.log('✓ Will update HubSpot deal', dealId, 'with image URL');\n\nreturn [{\n  json: {\n    ...data,\n    hubspotImageUpdate: hubspotUpdate\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4960,
+        -32
+      ],
+      "id": "6ff04790-69f6-4ec9-aaab-c8ee9a6f3a38",
+      "name": "Update Deal with Image URL"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        1296
+      ],
+      "id": "48beb5dd-7b72-42a2-b237-ae6100ed8e1f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://digitaltailorsdxb.app.n8n.cloud/webhook/premium-landscapes-quote-to-image",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1824,
+        64
+      ],
+      "id": "229b2106-8d85-49e7-9942-c3a1f7e2c1fa",
+      "name": "Call Image Generation Workflow",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get input data from Add PDF URL to Data node (which has all the original data)\nconst data = $('Add File Url's To Data').first().json;\n\n// Helper functions\nconst toStr = (val, fallback = \"\") => val != null ? String(val) : fallback;\nconst toMoneyStr = (val) => val != null ? String(Number(val).toFixed(2)) : \"0.00\";\nconst toHubSpotDate = (daysFromNow) => {\n  const date = new Date();\n  date.setDate(date.getDate() + daysFromNow);\n  date.setUTCHours(0, 0, 0, 0);\n  return String(date.getTime());\n};\n\n// Extract data from input\nconst customer = data.customer || {};\nconst project = data.project || {};\nconst pricing = data.pricing || {};\nconst pdf = data.pdf || {};\nconst aiSummary = data.aiSummary || \"\";\n\n// Get PDF URL (already in the data from Add PDF URL to Data node)\nconst pdfUrl = data.pdfUrl || null;\n\n// Build deal data object\nconst dealData = {\n  // Standard properties\n  amount: toMoneyStr(pricing.total),\n  closedate: toHubSpotDate(90),\n  dealname: `${toStr(customer.name, \"Client\")} - Full Garden Redesign - ${toStr(pdf.quoteRef, \"QUOTE\")}`,\n  \n  // Custom properties\n  quote_referenc: toStr(pdf.quoteRef, \"\"),\n  estimated_total_: toMoneyStr(pricing.total),\n  design_created_at: String(new Date(new Date().setUTCHours(0,0,0,0)).getTime()),\n  garden_area_m: toStr(project.totalArea_m2, \"0\"),\n  short_deal_summary: toStr(aiSummary).substring(0, 200) + (aiSummary.length > 200 ? \"...\" : \"\"),\n  project_style: toStr(project.stylePreference, \"Contemporary\"),\n  design_name: toStr(project.title, \"Garden Design\"),\n  quote_date: new Date().toISOString().split('T')[0],\n  ai_quote_pdf_url: toStr(pdfUrl, \"\")\n};\n\n// Return formatted data\nreturn [{\n  json: {\n    ...data,\n    hubspot: {\n      deal: dealData\n    },\n    pdfUrl: pdfUrl\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4288,
+        -128
+      ],
+      "id": "e0639db0-ab38-4aab-9896-364ea7b49480",
+      "name": "Prepare HubSpot Data1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const currentItem = $input.first();\nconsole.log('=== PREPARING EMAIL ATTACHMENTS ===');\n\n// ✅ Use ONLY the renamed PDF node\nconst pdfNode = $('Rename PDF Binary').first();\nconst pdfBinary = pdfNode?.binary?.pdf || null;\n\n// ✅ AI image from image workflow\nconst imageNode = $('Call Image Generation Workflow').first();\nconst aiImageBinary = imageNode?.binary?.design || null;\n\nconsole.log('Has PDF:', !!pdfBinary);\nconsole.log('Has AI Image:', !!aiImageBinary);\n\nif (pdfBinary) {\n  console.log('PDF ready:', pdfBinary.fileName || 'quote.pdf');\n}\n\nif (aiImageBinary) {\n  console.log('AI design ready:', aiImageBinary.fileName || 'design.png');\n}\n\n// ✅ Attach each file once under a clear binary key\nconst attachments = {};\n\nif (pdfBinary) {\n  attachments.pdf = pdfBinary;\n}\n\nif (aiImageBinary) {\n  attachments.design = aiImageBinary;\n}\n\nreturn [{\n  json: {\n    customer: currentItem.json.customer,\n    project: currentItem.json.project,\n    mirrors: currentItem.json.mirrors,\n    pricing: currentItem.json.pricing,\n    selectedConcept: currentItem.json.selectedConcept,\n    aiSummary: currentItem.json.aiSummary,\n    attachmentsReady: true,\n    hasPdf: !!pdfBinary,\n    hasDesign: !!aiImageBinary\n  },\n  binary: attachments\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2048,
+        64
+      ],
+      "id": "9f9a9867-4bad-4ace-9f66-03f71c058b08",
+      "name": "Prepare Email Attachments"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $json.supabaseUploadUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzd2twY25ieXJibW5sdGN6cGh4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDU2MDc5NSwiZXhwIjoyMDgwMTM2Nzk1fQ.2QQ6vUTDLvANIMTSklCGIDconamYfIqjqhXEb_KHxds"
+            },
+            {
+              "name": "Content-Type",
+              "value": "={{ $json.uploadType === 'pdf' ? 'application/pdf' : 'image/png' }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2720,
+        -32
+      ],
+      "id": "0b87010b-5383-4952-b953-e2b118f4af2b",
+      "name": "Upload image to Supabase"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2944,
+        64
+      ],
+      "id": "29fb6a9d-3955-4fe5-ac10-8f3d7bb5d353",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "jsCode": "/* === ADD FILE URLS TO DATA === */\n// Collects URLs from both PDF and Design uploads\n\nconst currentItem = $input.first();\n\nconsole.log('=== ADDING FILE URLS TO DATA ===');\n\n// Get all items from \"Upload PDF to Supabase\" node\nconst pdfUploadNodes = $('Upload PDF to Supabase').all();\n// Get all items from \"Upload image to Supabase\" node  \nconst imageUploadNodes = $('Upload image to Supabase').all();\n\nconsole.log('PDF uploads:', pdfUploadNodes.length);\nconsole.log('Image uploads:', imageUploadNodes.length);\n\n// Collect URLs\nlet pdfUrl = null;\nlet designUrl = null;\n\n// Get PDF URL\nif (pdfUploadNodes.length > 0) {\n  const pdfNode = pdfUploadNodes.find(node => node.json.uploadType === 'pdf');\n  if (pdfNode) {\n    pdfUrl = pdfNode.json.publicPdfUrl || pdfNode.json.supabaseUploadUrl;\n    console.log('✓ PDF URL:', pdfUrl);\n  }\n}\n\n// Get Design URL\nif (imageUploadNodes.length > 0) {\n  const designNode = imageUploadNodes.find(node => node.json.uploadType === 'design');\n  if (designNode) {\n    designUrl = designNode.json.publicDesignUrl || designNode.json.supabaseUploadUrl;\n    console.log('✓ Design URL:', designUrl);\n  }\n}\n\n// Return data with both URLs\nreturn [{\n  json: {\n    ...currentItem.json,\n    pdfUrl: pdfUrl,\n    designUrl: designUrl,\n    filesUploaded: {\n      pdf: !!pdfUrl,\n      design: !!designUrl\n    }\n  },\n  binary: currentItem.binary || {}\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3152,
+        64
+      ],
+      "id": "568b6b1d-12db-4704-a646-40cea1591c06",
+      "name": "Add File Url's To Data"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send Error Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "validate Input": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build LLM Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate pricing": {
+      "main": [
+        [
+          {
+            "node": "Budget Validation & Correction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Summary1": {
+      "main": [
+        [
+          {
+            "node": "Format for PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build LLM Brief": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Requirements enforcer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Clean LLM Hallucinations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map LLM Concept → Products": {
+      "main": [
+        [
+          {
+            "node": "Map Allocations to Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Allocations to Products": {
+      "main": [
+        [
+          {
+            "node": "Calculate pricing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Quote to Google Sheets": {
+      "main": [
+        []
+      ]
+    },
+    "Rename PDF Binary": {
+      "main": [
+        [
+          {
+            "node": "Prepare Image Generation Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Quote": {
+      "main": [
+        [
+          {
+            "node": "Log Quote to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "Build Supabase Upload Path",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build PDF HTML": {
+      "main": [
+        [
+          {
+            "node": "HTML - PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML - PDF": {
+      "main": [
+        [
+          {
+            "node": "Rename PDF Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Budget Validation & Correction": {
+      "main": [
+        [
+          {
+            "node": "AI Summary1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot: Upsert Contact": {
+      "main": [
+        [
+          {
+            "node": "Get Deals for Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot: Update Existing Deal": {
+      "main": [
+        [
+          {
+            "node": "Merge Deal Paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Deal Paths": {
+      "main": [
+        [
+          {
+            "node": "Update Deal with Image URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Deals for Contact": {
+      "main": [
+        [
+          {
+            "node": "Check if Deal Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Prepare HubSpot Data1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare HubSpot Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Deal Exists": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format for PDF": {
+      "main": [
+        [
+          {
+            "node": "Build PDF HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean LLM Hallucinations": {
+      "main": [
+        [
+          {
+            "node": "Map LLM Concept → Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Requirements enforcer": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Prepare HubSpot Data": {
+      "main": [
+        [
+          {
+            "node": "Create a deal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a deal": {
+      "main": [
+        [
+          {
+            "node": "Merge Deal Paths",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Upload PDF to Supabase": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Build Supabase Upload Path": {
+      "main": [
+        [
+          {
+            "node": "Upload PDF to Supabase",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Upload image to Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Image Generation Payload": {
+      "main": [
+        [
+          {
+            "node": "Call Image Generation Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Deal with Image URL": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Image Generation Workflow": {
+      "main": [
+        [
+          {
+            "node": "Prepare Email Attachments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare HubSpot Data1": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: Update Existing Deal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Email Attachments": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload image to Supabase": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Add File Url's To Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add File Url's To Data": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: Upsert Contact",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "40d1d5a2-5aa0-4fa9-a6dd-4233dc2b508e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e1c866f51f89be40bb7a8fd6d598585ff0ef85e3ee97add539aaea059383a17d"
+  },
+  "id": "aPB5B8xJWDhG0Z4H",
+  "tags": []
+}

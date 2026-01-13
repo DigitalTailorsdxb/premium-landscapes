@@ -1331,15 +1331,21 @@ function prepareWebhookPayload() {
         }
         
         // Add metadata for n8n workflow tracking
+        // Generate unique request ID to trace duplicates
+        const requestId = 'REQ-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8);
+        
         payload.metadata = {
             source: 'website_quote_form',
             timestamp: new Date().toISOString(),
+            requestId: requestId, // Unique ID to detect duplicate webhook calls
             quoteType: isFullRedesign ? 'full_garden_redesign' : 'individual_products',
             webhookDestination: isFullRedesign 
                 ? window.brandConfig?.webhooks?.quoteFullRedesign || 'https://n8n.example.com/webhook/premium-landscapes-full-redesign'
                 : window.brandConfig?.webhooks?.quote || 'https://n8n.example.com/webhook/premium-landscapes-quote',
             aiDesignRequested: quoteData.aiDesign || false
         };
+        
+        console.log('🔑 REQUEST ID:', requestId);
         
         // Add photo for AI design if requested (single consolidated payload)
         if (quoteData.aiDesign) {
