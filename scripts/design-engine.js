@@ -548,12 +548,20 @@ async function submitDesign() {
 }
 
 async function sendToWebhook(payload) {
-    console.log('🎨 AI DESIGN REQUEST - Sending to n8n workflow...');
+    // Add unique request ID for tracing
+    const requestId = 'DESIGN-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8);
+    payload.metadata.requestId = requestId;
+    
+    console.log('========================================');
+    console.log('🎨 AI DESIGN REQUEST - SINGLE CALL');
+    console.log('========================================');
+    console.log('🔑 REQUEST ID:', requestId);
+    console.log('⏰ Timestamp:', new Date().toISOString());
     console.log('📦 Design Data:', payload);
     
     const webhookUrl = window.brandConfig?.webhooks?.design || 'https://your-n8n-webhook-url.com';
     
-    console.log('🔗 Webhook URL:', webhookUrl);
+    console.log('📤 SENDING TO N8N:', webhookUrl);
     
     if (!webhookUrl || webhookUrl.includes('your-n8n-webhook-url')) {
         console.warn('⚠️ Webhook URL not configured. Using demo mode.');
