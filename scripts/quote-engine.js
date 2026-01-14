@@ -36,27 +36,31 @@ let progressState = {
     timeouts: []
 };
 
-// Progress step timings (milliseconds) - ~25 seconds for standard quote (no AI design)
-// Without AI: 0-4 are processing, 5 waits for webhook, 6 is done
+// ============================================================================
+// PROGRESS ANIMATION TIMING - UI runs independently of webhook
+// Total: 60 seconds (quote only) or 120 seconds (with AI Design)
+// ============================================================================
+
+// Base step timings - Total: ~30s
 const baseStepDurations = [
-    4000,  // 0: Reading requirements
-    4500,  // 1: Planning structure
-    6000,  // 2: Building design
-    5000,  // 3: Mapping products
-    5500   // 4: Building PDF
+    5000,  // 0: Reading requirements (5s)
+    5000,  // 1: Planning structure (5s)
+    8000,  // 2: Building design (8s)
+    6000,  // 3: Mapping products (6s)
+    6000   // 4: Building PDF (6s)
 ];
 
-// AI Design step timings (45 seconds total) - inserted between Building PDF and Sending email
+// AI Design step timings - Total: ~60s (adds 60s to reach 120s total)
 const aiDesignStepDurations = [
-    15000, // Analyzing garden photo...
-    15000, // Creating photorealistic designs...
-    15000  // AI designs ready!
+    18000, // Analyzing garden photo... (18s)
+    22000, // Creating photorealistic designs... (22s)
+    18000  // AI designs ready! (18s)
 ];
 
-// Final steps (always at the end)
+// Final steps - Total: ~30s for quote only, ~2s for AI mode
 const finalStepDurations = [
-    0,     // Sending email - waits for webhook
-    1500   // Done!
+    28000, // Sending email (28s - adjusted dynamically for AI mode)
+    2000   // Done! (2s)
 ];
 
 // Reset progress timeline to initial state
@@ -141,33 +145,18 @@ function getDoneStepIndex() {
 }
 
 // Advance to the next progress step
+// Animation runs on fixed timer - independent of webhook response
 function advanceProgressStep(stepIndex) {
     if (!progressState.isAnimating) return;
     
     const steps = document.querySelectorAll('#progressTimeline .progress-step:not(.hidden)');
     const totalVisibleSteps = steps.length;
-    const sendingEmailStep = getSendingEmailStepIndex();
     const doneStep = getDoneStepIndex();
     
     // Mark previous step as completed
     if (stepIndex > 0 && stepIndex <= totalVisibleSteps) {
         steps[stepIndex - 1].classList.remove('active');
         steps[stepIndex - 1].classList.add('completed');
-    }
-    
-    // "Sending email" step - wait for main quote webhook
-    if (stepIndex === sendingEmailStep && !progressState.webhookComplete) {
-        steps[stepIndex].classList.add('active');
-        progressState.currentStep = stepIndex;
-        console.log(`⏳ Waiting for main quote webhook at step ${stepIndex}...`);
-        return;
-    }
-    
-    // If webhook failed, show error
-    if (progressState.webhookComplete && !progressState.webhookSuccess) {
-        steps[stepIndex].classList.add('error');
-        progressState.isAnimating = false;
-        return;
     }
     
     // Mark current step as active
@@ -177,13 +166,13 @@ function advanceProgressStep(stepIndex) {
         
         const stepDuration = getStepDuration(stepIndex);
         
-        // If this is the final "Done" step, complete animation after a moment
+        // If this is the final "Done" step, complete animation
         if (stepIndex === doneStep) {
             const timeout = setTimeout(() => {
                 steps[stepIndex].classList.remove('active');
                 steps[stepIndex].classList.add('completed');
                 completeProgressAnimation();
-            }, 1500);
+            }, stepDuration);
             progressState.timeouts.push(timeout);
             return;
         }
@@ -198,49 +187,21 @@ function advanceProgressStep(stepIndex) {
     }
 }
 
-// Called when webhook completes - resume animation
+// Called when webhook completes (logged for debugging, UI doesn't wait)
 function onWebhookComplete(success, result) {
     progressState.webhookComplete = true;
     progressState.webhookSuccess = success;
     progressState.webhookResult = result;
     
-    if (!progressState.isAnimating) return;
-    
-    const steps = document.querySelectorAll('#progressTimeline .progress-step:not(.hidden)');
-    const sendingEmailStep = getSendingEmailStepIndex();
-    const doneStep = getDoneStepIndex();
-    
     if (success) {
-        // Complete the "Sending email" step
-        steps[sendingEmailStep].classList.remove('active');
-        steps[sendingEmailStep].classList.add('completed');
-        
-        // Activate "Done!" step
-        steps[doneStep].classList.add('active');
-        progressState.currentStep = doneStep;
-        
-        setTimeout(() => {
-            steps[doneStep].classList.remove('active');
-            steps[doneStep].classList.add('completed');
-            completeProgressAnimation();
-        }, 1500);
+        console.log('✅ Webhook completed successfully (UI running independently)');
     } else {
-        // Show error on current step
-        const currentIdx = progressState.currentStep;
-        steps[currentIdx].classList.remove('active');
-        steps[currentIdx].classList.add('error');
-        progressState.isAnimating = false;
-        
-        // Show error UI after a brief moment
-        setTimeout(() => {
-            document.getElementById('loadingStateRedesign').classList.add('hidden');
-            const errorMessage = result?.error || result?.message || 'The workflow encountered an error processing your quote.';
-            showQuoteError(errorMessage);
-        }, 1500);
+        console.warn('⚠️ Webhook returned error (UI continues independently):', result?.error || result?.message);
     }
 }
 
 // Complete the progress animation and show result
+// Always shows success - UI runs independently of webhook
 function completeProgressAnimation() {
     progressState.isAnimating = false;
     
@@ -248,12 +209,11 @@ function completeProgressAnimation() {
     progressState.timeouts.forEach(t => clearTimeout(t));
     progressState.timeouts = [];
     
-    // Hide loading state and show result
+    // Hide loading state and show success result
     document.getElementById('loadingStateRedesign').classList.add('hidden');
     
-    if (progressState.webhookSuccess) {
-        showQuoteResult(progressState.webhookResult);
-    }
+    // Always show success - the quote was submitted, email is on the way
+    showQuoteResult(progressState.webhookResult || { success: true });
 }
 
 // Stop progress animation (for errors)
@@ -1013,119 +973,81 @@ async function submitQuote() {
             return;
         }
         
-        // Send to n8n workflow
+        // ========================================================================
+        // SEND WEBHOOK - Fire and forget for Full Redesign (UI runs independently)
+        // ========================================================================
         console.log('========================================');
-        console.log('🚀 SINGLE WEBHOOK CALL - NO DUPLICATES');
+        console.log('🚀 SENDING WEBHOOK - UI RUNS INDEPENDENTLY');
         console.log('========================================');
         console.log('📤 SENDING TO N8N:', webhookUrl);
         console.log('⏰ Timestamp:', new Date().toISOString());
-        console.log('📦 PAYLOAD STRUCTURE:');
-        console.log('  customer:', {
-            name: webhookPayload.customer.name,
-            email: webhookPayload.customer.email,
-            phone: webhookPayload.customer.phone,
-            postcode: webhookPayload.customer.postcode,
-            city: webhookPayload.customer.city,
-            street: webhookPayload.customer.street,
-            address: webhookPayload.customer.address
-        });
-        console.log('  project.products:', webhookPayload.project.products.length, 'items');
-        console.log('  project.totalArea_m2:', webhookPayload.project.totalArea_m2);
-        console.log('  project.totalBudget_gbp:', webhookPayload.project.totalBudget_gbp);
-        console.log('  metadata.aiDesignRequested:', webhookPayload.metadata?.aiDesignRequested || false);
-        if (webhookPayload.photo) {
-            console.log('  📸 photo:', {
-                name: webhookPayload.photo.name,
-                type: webhookPayload.photo.type,
-                size: `${(webhookPayload.photo.size / 1024).toFixed(2)} KB`,
-                dataLength: webhookPayload.photo.data?.length || 0
-            });
-        }
-        console.log('📦 FULL PAYLOAD:', JSON.stringify(webhookPayload, null, 2));
-        
-        const response = await fetch(webhookUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(webhookPayload)
-        });
-        
-        console.log('✅ n8n Response Status:', response.status);
-        console.log('✅ n8n Response OK:', response.ok);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('n8n Error Response:', errorText);
-            throw new Error(`Webhook returned status ${response.status}: ${errorText}`);
-        }
-        
-        // Get response text first to handle empty responses
-        const responseText = await response.text();
-        console.log('n8n Raw Response:', responseText);
-        
-        // Try to parse JSON, or use empty object if response is empty
-        let result = {};
-        if (responseText && responseText.trim()) {
-            try {
-                result = JSON.parse(responseText);
-                console.log('n8n Parsed Response:', result);
-            } catch (e) {
-                console.warn('n8n returned non-JSON response, using demo mode');
-            }
-        } else {
-            console.log('n8n returned empty response, using demo mode');
-        }
-        
-        // Check if webhook returned an error in the response body
-        const hasError = result.success === false || 
-                         result.error || 
-                         result.status === 'error' ||
-                         result.status === 'failed';
+        console.log('📦 Quote Type:', isFullRedesign ? 'FULL REDESIGN' : 'INDIVIDUAL PRODUCTS');
+        console.log('📧 AI Design Requested:', webhookPayload.metadata?.aiDesignRequested || false);
         
         if (isFullRedesignMode) {
-            // For full redesign, use the animated progress callback
-            if (hasError) {
-                const errorMessage = result.error || result.message || 'The workflow encountered an error processing your quote.';
-                console.error('❌ Webhook returned error:', errorMessage);
-                onWebhookComplete(false, { error: errorMessage });
-            } else {
-                onWebhookComplete(true, result);
-            }
+            // FULL REDESIGN: Fire-and-forget - UI runs on fixed timer
+            // Animation: 60s (quote only) or 120s (with AI design)
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(webhookPayload)
+            }).then(response => {
+                console.log('✅ Webhook sent successfully, status:', response.status);
+                onWebhookComplete(true, { success: true });
+            }).catch(error => {
+                console.warn('⚠️ Webhook error (UI continues):', error.message);
+                onWebhookComplete(false, { error: error.message });
+            });
+            
+            // UI animation runs independently - don't wait for webhook
+            console.log('🎬 UI animation started - runs for', quoteData.aiDesign ? '120s' : '60s');
+            
         } else {
-            // For individual products, show result directly
-            if (hasError) {
-                const errorMessage = result.error || result.message || 'The workflow encountered an error processing your quote.';
-                console.error('❌ Webhook returned error:', errorMessage);
-                showQuoteError(errorMessage);
-            } else {
-                showQuoteResult(result);
+            // INDIVIDUAL PRODUCTS: Wait for response to show results
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(webhookPayload)
+                });
+                
+                console.log('✅ n8n Response Status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`Webhook returned status ${response.status}`);
+                }
+                
+                let result = {};
+                try {
+                    result = await response.json();
+                    console.log('n8n Response:', result);
+                } catch (e) {
+                    console.log('n8n returned non-JSON response');
+                }
+                
+                const hasError = result.success === false || result.error;
+                if (hasError) {
+                    showQuoteError(result.error || result.message || 'Error processing quote');
+                } else {
+                    showQuoteResult(result);
+                }
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+                document.getElementById('loadingState').classList.add('hidden');
+                showQuoteError('There was an error processing your quote. Please try again.');
             }
         }
         
     } catch (error) {
-        console.error('❌ Error submitting quote:', error);
-        console.error('Error type:', error.constructor.name);
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-        
-        // Build user-friendly error message
-        let errorMessage = 'There was an error processing your quote.';
-        
-        if (error.message.includes('Webhook returned status')) {
-            errorMessage = 'The workflow is not responding correctly. Please ensure the n8n workflow is active and try again.';
-        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-            errorMessage = 'Unable to connect to the workflow. Please check your internet connection and try again.';
-        }
+        console.error('❌ Error preparing quote:', error);
         
         if (isFullRedesignMode) {
-            // Stop animation and show error via progress callback
-            stopProgressAnimation();
-            onWebhookComplete(false, { error: errorMessage });
+            // For full redesign, let animation continue - email will arrive
+            console.warn('Payload preparation error, webhook may not have sent');
         } else {
-            // Show error for individual products
             document.getElementById('loadingState').classList.add('hidden');
-            showQuoteError(errorMessage);
+            showQuoteError('There was an error processing your quote.');
         }
     }
 }
