@@ -2,7 +2,7 @@
 // Multi-step conversational quote system
 
 let currentStep = 1;
-const totalSteps = 5;
+const totalSteps = 6;
 let quoteData = {
     quoteMode: '', // 'full-redesign' or 'individual-products'
     features: [],
@@ -634,10 +634,10 @@ function updateAIDesignVisibility() {
     
     if (quoteData.files.length > 0) {
         // With photos - image-based design
-        aiDesignDescription.textContent = 'Based on your uploaded photos, we\'ll transform your current garden into stunning AI-generated design concepts and email them within 60 seconds';
+        aiDesignDescription.textContent = 'Based on your uploaded photos, we\'ll transform your current garden into stunning AI-generated design concepts and email them within 90 seconds';
     } else {
         // Without photos - budget-based design
-        aiDesignDescription.textContent = 'Based on your budget and preferences, we\'ll generate photorealistic design concepts and email them to you within 60 seconds';
+        aiDesignDescription.textContent = 'Based on your budget and preferences, we\'ll generate photorealistic design concepts and email them to you within 90 seconds';
     }
 }
 
@@ -685,6 +685,34 @@ function nextStep() {
         if (houseNumberInput) quoteData.houseNumber = houseNumberInput.value.trim();
     }
     
+    // Step 5: Validate contact details
+    if (currentStep === 5) {
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const phoneInput = document.getElementById('phone');
+        
+        if (!nameInput.value.trim()) {
+            alert('Please enter your name');
+            nameInput.focus();
+            return;
+        }
+        if (!emailInput.value.trim() || !emailInput.value.includes('@')) {
+            alert('Please enter a valid email address');
+            emailInput.focus();
+            return;
+        }
+        if (!phoneInput.value.trim()) {
+            alert('Please enter your phone number');
+            phoneInput.focus();
+            return;
+        }
+        
+        // Store contact details
+        quoteData.name = nameInput.value.trim();
+        quoteData.email = emailInput.value.trim();
+        quoteData.phone = phoneInput.value.trim();
+    }
+    
     // Hide current step
     document.getElementById(`step${currentStep}`).classList.add('hidden');
     
@@ -705,6 +733,16 @@ function nextStep() {
     // Update AI design visibility when entering step 5
     if (currentStep === 5) {
         updateAIDesignVisibility();
+    }
+    
+    // Initialize AI upload handlers when entering step 6
+    if (currentStep === 6) {
+        setTimeout(initAIUploadHandlers, 100);
+        // Set aiDesign to true by default in step 6
+        const aiDesignCheckbox = document.getElementById('aiDesign');
+        if (aiDesignCheckbox) {
+            aiDesignCheckbox.checked = true;
+        }
     }
     
     // Update progress
@@ -728,6 +766,17 @@ function prevStep() {
     
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function skipAIDesign() {
+    // Uncheck AI design and submit without it
+    const aiDesignCheckbox = document.getElementById('aiDesign');
+    if (aiDesignCheckbox) {
+        aiDesignCheckbox.checked = false;
+    }
+    quoteData.aiDesign = false;
+    quoteData.aiDesignFiles = [];
+    submitQuote();
 }
 
 function updateProgress() {
@@ -835,14 +884,16 @@ function updateSummary() {
         `;
     }
     
-    // Show if AI design is selected
-    const aiDesignCheckbox = document.getElementById('aiDesign');
-    if (aiDesignCheckbox && aiDesignCheckbox.checked) {
-        html += `
-            <div class="summary-item bg-gradient-to-r from-purple-50 to-blue-50 px-3 py-2 rounded-lg mt-2 border border-purple-200">
-                <p class="text-sm"><i class="fas fa-sparkles text-accent mr-2"></i><strong>+ Free AI Design</strong></p>
-            </div>
-        `;
+    // Show if AI design is selected (only show on step 6)
+    if (currentStep >= 6) {
+        const aiDesignCheckbox = document.getElementById('aiDesign');
+        if (aiDesignCheckbox && aiDesignCheckbox.checked) {
+            html += `
+                <div class="summary-item bg-gradient-to-r from-purple-50 to-blue-50 px-3 py-2 rounded-lg mt-2 border border-purple-200">
+                    <p class="text-sm"><i class="fas fa-sparkles text-accent mr-2"></i><strong>+ Free AI Design</strong></p>
+                </div>
+            `;
+        }
     }
     
     if (html === '') {
@@ -904,14 +955,14 @@ async function submitQuote() {
         const hasQuotePhoto = quoteData.files.length > 0;
         
         if (!hasAIPhoto && !hasQuotePhoto) {
-            alert('Please upload a photo of your garden to generate an AI design. You can upload in the AI Design section below the checkbox, or in the Photos section on the previous step.');
+            alert('Please upload a photo of your garden to get your free AI design visualization.');
             isSubmittingQuote = false;
             return;
         }
     }
     
-    // Hide form
-    document.getElementById('step5').classList.add('hidden');
+    // Hide form - step6 is the AI Design step
+    document.getElementById('step6').classList.add('hidden');
     
     // Check if this is a full redesign to determine which loading state to show
     const isFullRedesignMode = quoteData.quoteMode === 'full-redesign';

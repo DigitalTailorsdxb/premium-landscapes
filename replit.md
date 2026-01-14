@@ -21,14 +21,20 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
 
 ### Technical Implementations
 - **Frontend:** HTML, Tailwind CSS, JavaScript.
-- **Instant Quote Page (`quote.html`):** Features a 5-step conversational quote system with progressive disclosure:
-    - **Step 1:** Mutually exclusive quote mode selection: "Complete Garden Redesign" or "Select Individual Products."
+- **Instant Quote Page (`quote.html`):** Features a 6-step conversational quote system with progressive disclosure:
+    - **Step 1:** Mutually exclusive quote mode selection: "Full Garden Makeover" or "Select Individual Products."
     - **Step 2:**
         - **Individual Products Mode:** Product selection grid with dynamic detail fields for each selected product.
         - **Full Redesign Mode:** Single textarea for customers to describe their vision; no material selection UI.
     - **Step 3:** Area slider and budget selection.
     - **Step 4:** Simple 4-field manual address entry and drag-and-drop photo/video upload.
-    - **Step 5:** Contact details with an optional AI design checkbox, revealing a dedicated photo upload section for garden images.
+    - **Step 5:** Contact details (name, email, phone).
+    - **Step 6:** AI Design Visualization - dedicated step with educational content explaining:
+        - What AI garden visualization does (transforms current garden photo to photorealistic preview)
+        - Emphasis that it's 100% FREE with no obligation
+        - Photo upload tips for best results (daylight, full area, landscape orientation, eye-level angle)
+        - Option to skip and get quote only
+        - Delivery time: 90 seconds via email
     - Live summary panel updates in real-time.
     - Progress bar with step indicator.
     - **Quote Submission:** Shows a confirmation message; no fake pricing displayed.

@@ -262,7 +262,7 @@
     <div class="sticky top-20 z-40 bg-white shadow-sm">
         <div class="container mx-auto max-w-6xl px-4 py-4">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-semibold text-gray-600" id="progressText">Step 1 of 5</span>
+                <span class="text-sm font-semibold text-gray-600" id="progressText">Step 1 of 6</span>
                 <span class="text-xs text-gray-500" id="progressPercent">20%</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2">
@@ -678,49 +678,117 @@
                                 <p class="text-xs text-gray-500 mt-2"><i class="fas fa-info-circle"></i> We'll only call if you request a site visit</p>
                             </div>
                             
-                            <!-- AI Design Section - Always Available -->
-                            <div id="aiDesignSection" class="mb-6 bg-gradient-to-br from-accent to-primary p-6 rounded-xl shadow-lg transform hover:scale-[1.01] transition-transform cursor-pointer" onclick="document.getElementById('aiDesign').click()">
-                                <label class="flex items-start space-x-4 cursor-pointer">
-                                    <input type="checkbox" id="aiDesign" class="mt-1 w-6 h-6 text-white bg-white rounded border-2 border-white" onchange="toggleAIUploadSection()" onclick="event.stopPropagation()">
-                                    <div class="flex-1">
-                                        <p class="font-bold text-white text-lg flex items-center flex-wrap">
-                                            <i class="fas fa-magic mr-2"></i>
-                                            See Your New Garden Before We Build It
-                                            <span class="ml-2 bg-green-400 text-green-900 text-xs font-bold px-2 py-1 rounded-full">FREE</span>
-                                        </p>
-                                        <p id="aiDesignDescription" class="text-white text-opacity-95 mt-3 text-sm leading-relaxed">
-                                            Upload a photo of your current garden and we'll transform it into a <strong>photorealistic visual</strong> showing exactly how your new garden will look based on your quote.
-                                        </p>
-                                        <p class="text-yellow-300 text-xs mt-2 flex items-center">
-                                            <i class="fas fa-envelope mr-1"></i>
-                                            Delivered to your inbox within 90 seconds
-                                        </p>
-                                    </div>
-                                </label>
-                                
-                                <!-- AI Design Photo Upload (appears when checkbox is checked) -->
-                                <div id="aiDesignUploadSection" class="hidden mt-4 pt-4 border-t border-white border-opacity-30" onclick="event.stopPropagation()">
-                                    <p class="text-sm font-semibold text-white mb-2">
-                                        <i class="fas fa-camera mr-2"></i>
-                                        Upload a photo of your garden <span class="text-yellow-300">*required</span>
-                                    </p>
-                                    <p class="text-xs text-white text-opacity-80 mb-3">We need a photo of your current garden to create your AI design</p>
-                                    <div class="border-2 border-dashed border-white border-opacity-60 rounded-xl p-6 text-center hover:border-opacity-100 transition-colors cursor-pointer bg-white bg-opacity-10" id="aiDropZone">
-                                        <i class="fas fa-cloud-upload-alt text-4xl text-white mb-2"></i>
-                                        <p class="text-white mb-1 font-medium">Drag & drop your garden photo here</p>
-                                        <p class="text-xs text-white text-opacity-80">or click to browse</p>
-                                        <input type="file" id="aiFileInput" class="hidden" accept="image/*">
-                                    </div>
-                                    <div id="aiFilePreview" class="mt-3 grid grid-cols-3 gap-2"></div>
+                            <div class="flex gap-3">
+                                <button onclick="prevStep()" class="px-8 py-4 rounded-full text-lg font-semibold border-2 border-gray-300 hover:border-primary transition">
+                                    <i class="fas fa-arrow-left mr-2"></i> Back
+                                </button>
+                                <button onclick="nextStep()" class="flex-1 bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition shadow-lg">
+                                    Continue <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 6: AI Design Visualization -->
+                        <div id="step6" class="step-container hidden step-transition">
+                            <div class="text-center mb-6">
+                                <div class="inline-flex items-center bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-bold mb-4">
+                                    <i class="fas fa-gift mr-2"></i>
+                                    100% FREE - No Obligation
                                 </div>
+                                <h2 class="font-heading font-bold text-2xl md:text-3xl text-primary mb-2">
+                                    <i class="fas fa-magic text-accent mr-2"></i>
+                                    See Your New Garden Before We Build It
+                                </h2>
+                                <p class="text-gray-600 text-lg">Get a photorealistic preview of your transformed garden - delivered in 90 seconds!</p>
+                            </div>
+                            
+                            <!-- What is AI Design? -->
+                            <div class="bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-2xl mb-6 border border-blue-100">
+                                <h3 class="font-bold text-lg text-primary mb-3 flex items-center">
+                                    <i class="fas fa-sparkles text-accent mr-2"></i>
+                                    What is AI Garden Visualization?
+                                </h3>
+                                <p class="text-gray-700 mb-4 leading-relaxed">
+                                    Our AI technology transforms your current garden photo into a <strong>photorealistic image</strong> showing exactly how your new garden will look once completed. It's like seeing the future of your outdoor space before any work begins!
+                                </p>
+                                <div class="grid md:grid-cols-3 gap-4 text-sm">
+                                    <div class="flex items-start bg-white p-3 rounded-xl">
+                                        <i class="fas fa-check-circle text-green-500 mr-2 mt-0.5"></i>
+                                        <span>Based on your quote requirements</span>
+                                    </div>
+                                    <div class="flex items-start bg-white p-3 rounded-xl">
+                                        <i class="fas fa-check-circle text-green-500 mr-2 mt-0.5"></i>
+                                        <span>Delivered via email in 90 seconds</span>
+                                    </div>
+                                    <div class="flex items-start bg-white p-3 rounded-xl">
+                                        <i class="fas fa-check-circle text-green-500 mr-2 mt-0.5"></i>
+                                        <span>Completely free, no strings attached</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Photo Upload Tips -->
+                            <div class="bg-amber-50 border border-amber-200 p-6 rounded-2xl mb-6">
+                                <h3 class="font-bold text-lg text-amber-800 mb-3 flex items-center">
+                                    <i class="fas fa-lightbulb text-amber-500 mr-2"></i>
+                                    Tips for the Best Results
+                                </h3>
+                                <div class="grid md:grid-cols-2 gap-4 text-sm text-gray-700">
+                                    <div class="flex items-start">
+                                        <i class="fas fa-camera text-amber-600 mr-2 mt-0.5"></i>
+                                        <span><strong>Take photo in daylight</strong> - natural lighting gives the best results</span>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <i class="fas fa-expand-arrows-alt text-amber-600 mr-2 mt-0.5"></i>
+                                        <span><strong>Capture the full area</strong> - show as much of your garden as possible</span>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <i class="fas fa-mobile-alt text-amber-600 mr-2 mt-0.5"></i>
+                                        <span><strong>Hold phone landscape</strong> - wider shots work better for gardens</span>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <i class="fas fa-eye text-amber-600 mr-2 mt-0.5"></i>
+                                        <span><strong>Eye-level angle</strong> - take photo standing up, not from above</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Photo Upload Section -->
+                            <div id="aiDesignSection" class="bg-gradient-to-br from-accent to-primary p-6 rounded-2xl shadow-lg mb-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="font-bold text-white text-lg flex items-center">
+                                        <i class="fas fa-camera mr-2"></i>
+                                        Upload Your Garden Photo
+                                    </h3>
+                                    <span class="bg-green-400 text-green-900 text-xs font-bold px-3 py-1 rounded-full">FREE</span>
+                                </div>
+                                <p class="text-white text-opacity-90 mb-4 text-sm">
+                                    Upload a photo of your current garden and we'll transform it into a stunning visualization of your new space.
+                                </p>
+                                <div class="border-2 border-dashed border-white border-opacity-60 rounded-xl p-8 text-center hover:border-opacity-100 transition-colors cursor-pointer bg-white bg-opacity-10" id="aiDropZone">
+                                    <i class="fas fa-cloud-upload-alt text-5xl text-white mb-3"></i>
+                                    <p class="text-white mb-2 font-medium text-lg">Drag & drop your garden photo here</p>
+                                    <p class="text-sm text-white text-opacity-80 mb-3">or click to browse</p>
+                                    <p class="text-xs text-yellow-300"><i class="fas fa-info-circle mr-1"></i> Accepts JPG, PNG - Max 10MB</p>
+                                    <input type="file" id="aiFileInput" class="hidden" accept="image/*">
+                                </div>
+                                <div id="aiFilePreview" class="mt-4 grid grid-cols-3 gap-3"></div>
+                                <input type="checkbox" id="aiDesign" class="hidden">
+                            </div>
+                            
+                            <!-- Skip Option -->
+                            <div class="text-center mb-6">
+                                <button onclick="skipAIDesign()" class="text-gray-500 hover:text-gray-700 underline text-sm">
+                                    No thanks, just send me the quote
+                                </button>
                             </div>
                             
                             <div class="flex gap-3">
                                 <button onclick="prevStep()" class="px-8 py-4 rounded-full text-lg font-semibold border-2 border-gray-300 hover:border-primary transition">
                                     <i class="fas fa-arrow-left mr-2"></i> Back
                                 </button>
-                                <button onclick="submitQuote()" class="flex-1 bg-gradient-to-r from-primary to-accent text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl transition">
-                                    <i class="fas fa-magic mr-2"></i> Get My Instant Quote
+                                <button onclick="submitQuote()" id="submitWithAIBtn" class="flex-1 bg-gradient-to-r from-primary to-accent text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl transition">
+                                    <i class="fas fa-magic mr-2"></i> Get Quote + AI Design
                                 </button>
                             </div>
                         </div>
