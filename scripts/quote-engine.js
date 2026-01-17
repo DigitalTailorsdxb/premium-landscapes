@@ -759,13 +759,16 @@ function nextStep() {
 // Hide/show hero section based on current step (mobile only)
 function updateHeroVisibility() {
     const heroSection = document.getElementById('quoteHero');
+    console.log('updateHeroVisibility called - step:', currentStep, 'width:', window.innerWidth, 'heroFound:', !!heroSection);
     if (!heroSection) return;
     
     // Hide on mobile (< 768px) when past step 1
     if (window.innerWidth < 768 && currentStep > 1) {
-        heroSection.classList.add('hidden');
+        heroSection.style.display = 'none';
+        console.log('Hero hidden');
     } else {
-        heroSection.classList.remove('hidden');
+        heroSection.style.display = '';
+        console.log('Hero shown');
     }
 }
 
