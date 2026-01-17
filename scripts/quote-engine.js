@@ -749,8 +749,24 @@ function nextStep() {
     updateProgress();
     updateSummary();
     
+    // Hide hero on mobile when past step 1 for cleaner UX
+    updateHeroVisibility();
+    
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Hide/show hero section based on current step (mobile only)
+function updateHeroVisibility() {
+    const heroSection = document.getElementById('quoteHero');
+    if (!heroSection) return;
+    
+    // Hide on mobile (< 768px) when past step 1
+    if (window.innerWidth < 768 && currentStep > 1) {
+        heroSection.classList.add('hidden');
+    } else {
+        heroSection.classList.remove('hidden');
+    }
 }
 
 function prevStep() {
@@ -763,6 +779,9 @@ function prevStep() {
     
     // Update progress
     updateProgress();
+    
+    // Update hero visibility when going back
+    updateHeroVisibility();
     
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
