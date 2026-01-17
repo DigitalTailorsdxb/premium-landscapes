@@ -3,11 +3,11 @@ const brandConfig = {
     primaryColor: "#2563eb",
     secondaryColor: "#3b82f6",
     accentColor: "#8b5cf6",
-    phone: "07444 887813",
-    email: "info@premium-landscapes.co.uk",
-    whatsapp: "447444887813",
+    phone: "07877 934782",
+    email: "premiumlandscapesuk@gmail.com",
+    whatsapp: "447877934782",
     location: "Serving Midlands & Home Counties",
-    address: "Leicester Forest East, Leicester",
+    address: "",
     
     // ============================================================================
     // WEBHOOK CONFIGURATION - Make.com / n8n Integration Points
