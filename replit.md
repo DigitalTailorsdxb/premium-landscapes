@@ -9,7 +9,7 @@ Premium Landscapes is an AI-powered, high-converting landscaping website templat
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
 
 ## System Architecture
-The website utilizes a multi-page architecture (`index.html`, `quote.html`, `design.html`, `about.html`, `services.html`, `gallery.html`, `contact.html`, `blog.html`, and individual blog post pages) for enhanced UX and SEO.
+The website utilizes a multi-page architecture (`index.html`, `quote.html`, `about.html`, `services.html`, `gallery.html`, `contact.html`, `blog.html`, and individual blog post pages) for enhanced UX and SEO. The standalone AI Design page was removed in favor of an integrated quote + design flow for better conversion.
 
 ### UI/UX Decisions
 - **Visual Style:** Modern SaaS design with white backgrounds for a clean, professional, and minimal aesthetic.
@@ -39,7 +39,7 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `des
     - Progress bar with step indicator.
     - **Quote Submission:** Shows a confirmation message; no fake pricing displayed.
     - **n8n Integration:** Dual webhook routing automatically directs quotes to separate workflows based on type (`individual_products` or `full_garden_redesign`). All quotes include `customer`, `project`, and `metadata` objects.
-- **AI Design Generator Page (`design.html`):** Allows users to select garden styles, upload an optional image, and provide an email for AI-generated designs. The workflow sends data to a Make.com webhook.
+- **Integrated AI Design (Step 6 of Quote):** AI design generation is now integrated into the quote flow as Step 6, ensuring customers provide project details before receiving visualizations. This improves lead quality and conversion.
 - **PDF Quote Generator:** Auto-generates branded PDF quotes.
 - **White-Label Configuration:** Handled via `scripts/config.js` for easy client-specific customization.
 
