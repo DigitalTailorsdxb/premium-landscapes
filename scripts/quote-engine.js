@@ -758,21 +758,27 @@ function nextStep() {
 
 // Scroll to form with offset for sticky elements
 function scrollToFormTop() {
-    // Small delay to ensure DOM is updated before scrolling
+    // Delay to ensure hero visibility change is applied first
     setTimeout(() => {
-        // Find the currently visible step
+        // Find the currently visible step's gradient header
         const activeStep = document.getElementById(`step${currentStep}`);
         
         if (activeStep) {
-            // On mobile, scroll to show the step's gradient header at the top
-            const headerOffset = 140; // Account for sticky header + progress bar + extra padding
-            const elementPosition = activeStep.getBoundingClientRect().top + window.pageYOffset;
-            const offsetPosition = elementPosition - headerOffset;
-            window.scrollTo({ top: Math.max(0, offsetPosition), behavior: 'smooth' });
-        } else {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Find the gradient header inside the step
+            const gradientHeader = activeStep.querySelector('.bg-gradient-to-r');
+            const targetElement = gradientHeader || activeStep;
+            
+            // Use scrollIntoView with start alignment to show title at top
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // Then adjust for the sticky header/nav
+            setTimeout(() => {
+                const isMobile = window.innerWidth < 768;
+                const navOffset = isMobile ? 80 : 100;
+                window.scrollBy({ top: -navOffset, behavior: 'smooth' });
+            }, 300);
         }
-    }, 100);
+    }, 200);
 }
 
 // Hide/show hero section based on current step (mobile only)
