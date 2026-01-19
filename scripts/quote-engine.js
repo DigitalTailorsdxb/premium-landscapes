@@ -760,10 +760,8 @@ function nextStep() {
 function scrollToFormTop() {
     const formContainer = document.querySelector('.step-container:not(.hidden)');
     if (formContainer) {
-        const headerOffset = 140; // Account for sticky header + progress bar
-        const elementPosition = formContainer.getBoundingClientRect().top + window.pageYOffset;
-        const offsetPosition = elementPosition - headerOffset;
-        window.scrollTo({ top: Math.max(0, offsetPosition), behavior: 'smooth' });
+        // Use scrollIntoView with scroll-margin-top CSS handling the offset
+        formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }

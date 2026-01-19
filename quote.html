@@ -55,6 +55,30 @@
             animation: slideIn 0.4s ease-out;
         }
         
+        /* Ensure step titles are visible on mobile - add scroll margin */
+        .step-container {
+            scroll-margin-top: 120px;
+        }
+        
+        /* Add visible step title styling on mobile */
+        .step-container > h2:first-child {
+            background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+            margin: -1rem -1rem 1rem -1rem;
+            padding: 1rem;
+            border-radius: 0.75rem 0.75rem 0 0;
+            border-bottom: 2px solid #e0e7ff;
+        }
+        
+        @media (min-width: 768px) {
+            .step-container > h2:first-child {
+                background: transparent;
+                margin: 0 0 0.75rem 0;
+                padding: 0;
+                border-radius: 0;
+                border-bottom: none;
+            }
+        }
+        
         @keyframes slideIn {
             from {
                 opacity: 0;
