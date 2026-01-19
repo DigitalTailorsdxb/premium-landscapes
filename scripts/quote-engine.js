@@ -756,11 +756,18 @@ function nextStep() {
     scrollToFormTop();
 }
 
-// Scroll to top - simple and reliable on all devices
+// Scroll to show step content below sticky header and progress bar
 function scrollToFormTop() {
     setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 100);
+        // Find the active step's gradient header and scroll it into view
+        const activeStep = document.getElementById(`step${currentStep}`);
+        if (activeStep) {
+            // Use scrollIntoView which respects CSS scroll-padding-top
+            activeStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, 150);
 }
 
 // Hide/show hero section based on current step (mobile only)
