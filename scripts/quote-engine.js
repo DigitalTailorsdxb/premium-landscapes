@@ -756,24 +756,11 @@ function nextStep() {
     scrollToFormTop();
 }
 
-// Scroll to show step content with proper spacing below sticky progress bar
+// Scroll to show step content - scroll to top on mobile to show spacer above header
 function scrollToFormTop() {
     setTimeout(() => {
-        if (window.innerWidth < 768 && currentStep > 1) {
-            // On mobile after step 1: scroll to show the step container with proper spacing
-            // The sticky progress bar is about 80px, so we scroll to position content nicely below it
-            const stepContainer = document.getElementById(`step${currentStep}`);
-            if (stepContainer) {
-                const rect = stepContainer.getBoundingClientRect();
-                const scrollTop = window.pageYOffset + rect.top - 100; // 100px offset for progress bar + spacing
-                window.scrollTo({ top: Math.max(0, scrollTop), behavior: 'instant' });
-            } else {
-                window.scrollTo({ top: 0, behavior: 'instant' });
-            }
-        } else {
-            // Step 1 or desktop: scroll to top
-            window.scrollTo({ top: 0, behavior: 'instant' });
-        }
+        // Always scroll to top - simple and reliable
+        window.scrollTo({ top: 0, behavior: 'instant' });
     }, 50);
 }
 

@@ -63,10 +63,15 @@
             .step-container .bg-gradient-to-r {
                 padding-top: 1rem;
                 padding-bottom: 0.875rem;
+                margin-top: 1.5rem;
             }
             .step-container .bg-gradient-to-r h2 {
                 font-size: 1.25rem;
                 font-weight: 700;
+            }
+            /* Hide spacer divs since we're using margin instead */
+            .mobile-step-spacer {
+                display: none;
             }
         }
         
@@ -375,7 +380,7 @@
                         
                         <!-- Step 2: Project Details -->
                         <div id="step2" class="step-container hidden step-transition">
-                            <div class="mobile-step-spacer h-6 md:hidden"></div>
+                            <div class="mobile-step-spacer h-12 md:hidden"></div>
                             <div class="bg-gradient-to-r from-primary to-accent px-4 py-3 rounded-xl mb-4 -mx-4 md:mx-0 md:rounded-lg">
                                 <h2 id="step2Title" class="font-heading font-bold text-lg md:text-2xl text-white mb-1">Select Your Products</h2>
                                 <p id="step2Subtitle" class="text-white opacity-90 text-sm">Choose the products you'd like quoted</p>
@@ -557,7 +562,7 @@
                         
                         <!-- Step 3: Area & Budget -->
                         <div id="step3" class="step-container hidden step-transition">
-                            <div class="mobile-step-spacer h-6 md:hidden"></div>
+                            <div class="mobile-step-spacer h-12 md:hidden"></div>
                             <div class="bg-gradient-to-r from-primary to-accent px-4 py-3 rounded-xl mb-4 -mx-4 md:mx-0 md:rounded-lg">
                                 <h2 class="font-heading font-bold text-lg md:text-2xl text-white mb-1">Project Size & Budget</h2>
                                 <p class="text-white opacity-90 text-sm">Help us understand the scope</p>
@@ -606,7 +611,7 @@
                         
                         <!-- Step 4: Location & Photo -->
                         <div id="step4" class="step-container hidden step-transition">
-                            <div class="mobile-step-spacer h-6 md:hidden"></div>
+                            <div class="mobile-step-spacer h-12 md:hidden"></div>
                             <div class="bg-gradient-to-r from-primary to-accent px-4 py-3 rounded-xl mb-4 -mx-4 md:mx-0 md:rounded-lg">
                                 <h2 class="font-heading font-bold text-lg md:text-2xl text-white mb-1">Your Location</h2>
                                 <p class="text-white opacity-90 text-sm">This helps us provide accurate regional pricing</p>
@@ -658,7 +663,7 @@
                         
                         <!-- Step 5: Contact Details -->
                         <div id="step5" class="step-container hidden step-transition">
-                            <div class="mobile-step-spacer h-6 md:hidden"></div>
+                            <div class="mobile-step-spacer h-12 md:hidden"></div>
                             <div class="bg-gradient-to-r from-primary to-accent px-4 py-3 rounded-xl mb-4 -mx-4 md:mx-0 md:rounded-lg">
                                 <h2 class="font-heading font-bold text-lg md:text-2xl text-white mb-1">Your Contact Details</h2>
                                 <p class="text-white opacity-90 text-sm">Where should we send your quote?</p>
@@ -710,7 +715,7 @@
                         
                         <!-- Step 6: AI Design Visualization -->
                         <div id="step6" class="step-container hidden step-transition">
-                            <div class="mobile-step-spacer h-6 md:hidden"></div>
+                            <div class="mobile-step-spacer h-12 md:hidden"></div>
                             <div class="text-center mb-6">
                                 <div class="inline-flex items-center bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-bold mb-4">
                                     <i class="fas fa-gift mr-2"></i>
