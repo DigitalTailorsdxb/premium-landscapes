@@ -752,8 +752,21 @@ function nextStep() {
     // Hide hero on mobile when past step 1 for cleaner UX
     updateHeroVisibility();
     
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Scroll to form container with offset for sticky header
+    scrollToFormTop();
+}
+
+// Scroll to form with offset for sticky elements
+function scrollToFormTop() {
+    const formContainer = document.querySelector('.step-container:not(.hidden)');
+    if (formContainer) {
+        const headerOffset = 140; // Account for sticky header + progress bar
+        const elementPosition = formContainer.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - headerOffset;
+        window.scrollTo({ top: Math.max(0, offsetPosition), behavior: 'smooth' });
+    } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 }
 
 // Hide/show hero section based on current step (mobile only)
@@ -786,8 +799,8 @@ function prevStep() {
     // Update hero visibility when going back
     updateHeroVisibility();
     
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Scroll to form container with offset for sticky header
+    scrollToFormTop();
 }
 
 function skipAIDesign() {
