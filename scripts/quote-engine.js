@@ -760,16 +760,19 @@ function nextStep() {
 function scrollToFormTop() {
     // Small delay to ensure DOM is updated before scrolling
     setTimeout(() => {
-        const formCard = document.querySelector('.bg-white.rounded-2xl.shadow-xl');
-        if (formCard) {
-            const headerOffset = 100; // Account for sticky header + progress bar
-            const elementPosition = formCard.getBoundingClientRect().top + window.pageYOffset;
+        // Find the currently visible step
+        const activeStep = document.getElementById(`step${currentStep}`);
+        
+        if (activeStep) {
+            // On mobile, scroll to show the step's gradient header at the top
+            const headerOffset = 140; // Account for sticky header + progress bar + extra padding
+            const elementPosition = activeStep.getBoundingClientRect().top + window.pageYOffset;
             const offsetPosition = elementPosition - headerOffset;
             window.scrollTo({ top: Math.max(0, offsetPosition), behavior: 'smooth' });
         } else {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-    }, 50);
+    }, 100);
 }
 
 // Hide/show hero section based on current step (mobile only)
