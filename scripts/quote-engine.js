@@ -1951,7 +1951,15 @@ function updateStep2Mode() {
         return;
     }
     
+    // Update the header title and subtitle
+    const step2Title = document.getElementById('step2Title');
+    const step2Subtitle = document.getElementById('step2Subtitle');
+    
     if (isFullRedesign) {
+        // Update header for full redesign mode
+        if (step2Title) step2Title.textContent = 'Full Garden Makeover';
+        if (step2Subtitle) step2Subtitle.textContent = "We'll create a complete custom design and quote based on your vision and budget";
+        
         // Show full redesign mode
         console.log('🎨 Showing Full Redesign mode...');
         step2Standard.classList.add('hidden');
@@ -1981,6 +1989,10 @@ function updateStep2Mode() {
         
         console.log('🎨 Full Redesign mode activated');
     } else {
+        // Update header for standard mode
+        if (step2Title) step2Title.textContent = 'Select Your Products';
+        if (step2Subtitle) step2Subtitle.textContent = "Choose the products you'd like quoted";
+        
         // Show standard mode
         console.log('📝 Showing Standard mode...');
         step2Standard.classList.remove('hidden');
