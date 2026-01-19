@@ -756,29 +756,11 @@ function nextStep() {
     scrollToFormTop();
 }
 
-// Scroll to form with offset for sticky elements
+// Scroll to top - simple and reliable on all devices
 function scrollToFormTop() {
-    // Delay to ensure hero visibility change is applied first
     setTimeout(() => {
-        // Find the currently visible step's gradient header
-        const activeStep = document.getElementById(`step${currentStep}`);
-        
-        if (activeStep) {
-            // Find the gradient header inside the step
-            const gradientHeader = activeStep.querySelector('.bg-gradient-to-r');
-            const targetElement = gradientHeader || activeStep;
-            
-            // Use scrollIntoView with start alignment to show title at top
-            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            
-            // Then adjust for the sticky header/nav
-            setTimeout(() => {
-                const isMobile = window.innerWidth < 768;
-                const navOffset = isMobile ? 80 : 100;
-                window.scrollBy({ top: -navOffset, behavior: 'smooth' });
-            }, 300);
-        }
-    }, 200);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
 }
 
 // Hide/show hero section based on current step (mobile only)
