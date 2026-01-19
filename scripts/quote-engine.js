@@ -758,13 +758,18 @@ function nextStep() {
 
 // Scroll to form with offset for sticky elements
 function scrollToFormTop() {
-    const formContainer = document.querySelector('.step-container:not(.hidden)');
-    if (formContainer) {
-        // Use scrollIntoView with scroll-margin-top CSS handling the offset
-        formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    // Small delay to ensure DOM is updated before scrolling
+    setTimeout(() => {
+        const formCard = document.querySelector('.bg-white.rounded-2xl.shadow-xl');
+        if (formCard) {
+            const headerOffset = 100; // Account for sticky header + progress bar
+            const elementPosition = formCard.getBoundingClientRect().top + window.pageYOffset;
+            const offsetPosition = elementPosition - headerOffset;
+            window.scrollTo({ top: Math.max(0, offsetPosition), behavior: 'smooth' });
+        } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, 50);
 }
 
 // Hide/show hero section based on current step (mobile only)

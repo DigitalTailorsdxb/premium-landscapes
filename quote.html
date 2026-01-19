@@ -61,7 +61,9 @@
         }
         
         /* Add visible step title styling on mobile */
-        .step-container > h2:first-child {
+        .step-container h2.font-heading:first-of-type,
+        #step2Standard > h2:first-child,
+        #step2FullRedesign > h2:first-child {
             background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
             margin: -1rem -1rem 1rem -1rem;
             padding: 1rem;
@@ -70,7 +72,9 @@
         }
         
         @media (min-width: 768px) {
-            .step-container > h2:first-child {
+            .step-container h2.font-heading:first-of-type,
+            #step2Standard > h2:first-child,
+            #step2FullRedesign > h2:first-child {
                 background: transparent;
                 margin: 0 0 0.75rem 0;
                 padding: 0;
@@ -315,8 +319,10 @@
                         
                         <!-- Step 1: Project Type -->
                         <div id="step1" class="step-container step-transition">
-                            <h2 class="font-heading font-bold text-xl md:text-2xl text-primary mb-2 md:mb-3">Quote Type</h2>
-                            <p class="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">Choose one option below</p>
+                            <div class="bg-gradient-to-r from-primary to-accent text-white px-4 py-3 rounded-xl mb-4 -mx-4 md:mx-0 md:rounded-lg">
+                                <h2 class="font-heading font-bold text-lg md:text-2xl">Quote Type</h2>
+                                <p class="text-white text-opacity-90 text-sm">Choose one option below</p>
+                            </div>
                             
                             <!-- Option 1: Complete Garden Redesign -->
                             <div class="mb-4">
@@ -384,8 +390,10 @@
                             
                             <!-- Standard Mode (for individual products) -->
                             <div id="step2Standard">
-                                <h2 class="font-heading font-bold text-xl md:text-2xl text-primary mb-2 md:mb-3">Select Your Products</h2>
-                                <p class="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">Choose the products you'd like quoted</p>
+                                <div class="bg-gradient-to-r from-primary to-accent text-white px-4 py-3 rounded-xl mb-4 -mx-4 md:mx-0 md:rounded-lg">
+                                    <h2 class="font-heading font-bold text-lg md:text-2xl">Select Your Products</h2>
+                                    <p class="text-white text-opacity-90 text-sm">Choose the products you'd like quoted</p>
+                                </div>
                                 
                                 <!-- Product Selection Grid -->
                                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
@@ -440,8 +448,10 @@
                             
                             <!-- Full Redesign Mode (simplified - just requirements textarea) -->
                             <div id="step2FullRedesign" class="hidden">
-                                <h2 class="font-heading font-bold text-xl md:text-2xl text-primary mb-2 md:mb-3">Full Garden Makeover</h2>
-                                <p class="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">We'll create a complete custom design and quote based on your vision and budget</p>
+                                <div class="bg-gradient-to-r from-primary to-accent text-white px-4 py-3 rounded-xl mb-4 -mx-4 md:mx-0 md:rounded-lg">
+                                    <h2 class="font-heading font-bold text-lg md:text-2xl">Full Garden Makeover</h2>
+                                    <p class="text-white text-opacity-90 text-sm">We'll create a complete custom design and quote based on your vision and budget</p>
+                                </div>
                                 
                                 <!-- Design Vision Notes - Now the main focus -->
                                 <div class="mb-6">
@@ -564,8 +574,10 @@
                         
                         <!-- Step 3: Area & Budget -->
                         <div id="step3" class="step-container hidden step-transition">
-                            <h2 class="font-heading font-bold text-xl md:text-2xl text-primary mb-2 md:mb-3">Project Size & Budget</h2>
-                            <p class="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">Help us understand the scope</p>
+                            <div class="bg-gradient-to-r from-primary to-accent text-white px-4 py-3 rounded-xl mb-4 -mx-4 md:mx-0 md:rounded-lg">
+                                <h2 class="font-heading font-bold text-lg md:text-2xl">Project Size & Budget</h2>
+                                <p class="text-white text-opacity-90 text-sm">Help us understand the scope</p>
+                            </div>
                             
                             <div class="mb-6">
                                 <label class="block text-gray-700 font-semibold mb-2">Approximate total area <span id="areaRequired" class="text-red-500">*</span></label>
@@ -610,8 +622,10 @@
                         
                         <!-- Step 4: Location & Photo -->
                         <div id="step4" class="step-container hidden step-transition">
-                            <h2 class="font-heading font-bold text-xl md:text-2xl text-primary mb-2 md:mb-3">Your Location</h2>
-                            <p class="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">This helps us provide accurate regional pricing</p>
+                            <div class="bg-gradient-to-r from-primary to-accent text-white px-4 py-3 rounded-xl mb-4 -mx-4 md:mx-0 md:rounded-lg">
+                                <h2 class="font-heading font-bold text-lg md:text-2xl">Your Location</h2>
+                                <p class="text-white text-opacity-90 text-sm">This helps us provide accurate regional pricing</p>
+                            </div>
                             
                             <div class="mb-6">
                                 <label class="block text-gray-700 font-semibold mb-2">Full Address *</label>
@@ -659,8 +673,10 @@
                         
                         <!-- Step 5: Contact Details -->
                         <div id="step5" class="step-container hidden step-transition">
-                            <h2 class="font-heading font-bold text-xl md:text-2xl text-primary mb-2 md:mb-3">Your Contact Details</h2>
-                            <p class="text-gray-600 mb-4 md:mb-6 text-sm md:text-base">Where should we send your quote?</p>
+                            <div class="bg-gradient-to-r from-primary to-accent text-white px-4 py-3 rounded-xl mb-4 -mx-4 md:mx-0 md:rounded-lg">
+                                <h2 class="font-heading font-bold text-lg md:text-2xl">Your Contact Details</h2>
+                                <p class="text-white text-opacity-90 text-sm">Where should we send your quote?</p>
+                            </div>
                             
                             <div class="mb-6">
                                 <label class="block text-gray-700 font-semibold mb-2">Full Name *</label>
