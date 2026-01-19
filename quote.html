@@ -60,16 +60,18 @@
         
         /* Ensure gradient headers are fully visible on mobile */
         @media (max-width: 767px) {
+            .step-container {
+                padding-top: 1.5rem;
+            }
             .step-container .bg-gradient-to-r {
                 padding-top: 1rem;
                 padding-bottom: 0.875rem;
-                margin-top: 1.5rem;
             }
             .step-container .bg-gradient-to-r h2 {
                 font-size: 1.25rem;
                 font-weight: 700;
             }
-            /* Hide spacer divs since we're using margin instead */
+            /* Hide spacer divs since we're using padding instead */
             .mobile-step-spacer {
                 display: none;
             }
