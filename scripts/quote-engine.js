@@ -985,7 +985,7 @@ async function submitQuote() {
         const hasQuotePhoto = quoteData.files.length > 0;
         
         if (!hasAIPhoto && !hasQuotePhoto) {
-            alert('Please upload a photo of your garden to get your free AI design visualization.');
+            alert('Please upload a photo of your garden to get your free AI design visualisation.');
             isSubmittingQuote = false;
             return;
         }
