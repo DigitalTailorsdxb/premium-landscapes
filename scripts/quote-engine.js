@@ -1106,17 +1106,20 @@ async function submitQuote() {
                     console.log('n8n returned non-JSON response');
                 }
                 
-                const hasError = result.success === false || result.error;
-                if (hasError) {
-                    showQuoteError(result.error || result.message || 'Error processing quote');
+                // Check response based on success flag
+                if (result.success === false) {
+                    // Error response from n8n
+                    showQuoteError(result);
                 } else {
+                    // Success - show confirmation with quote ref if available
                     showQuoteResult(result);
                 }
                 
             } catch (error) {
-                console.error('❌ Error:', error);
+                console.error('❌ Network Error:', error);
                 document.getElementById('loadingState').classList.add('hidden');
-                showQuoteError('There was an error processing your quote. Please try again.');
+                // Network/timeout error - show with default contact info
+                showNetworkError();
             }
         }
         
@@ -1128,7 +1131,7 @@ async function submitQuote() {
             console.warn('Payload preparation error, webhook may not have sent');
         } else {
             document.getElementById('loadingState').classList.add('hidden');
-            showQuoteError('There was an error processing your quote.');
+            showNetworkError();
         }
     }
 }
@@ -1388,6 +1391,24 @@ async function showQuoteResult(data) {
     console.log('✅ Quote request submitted successfully!');
     console.log('Customer will receive detailed PDF quote via email from n8n workflow');
     
+    // If webhook returned a quote reference, display it
+    if (data?.quoteRef && data.quoteRef !== 'processing') {
+        const quoteResultDiv = document.getElementById('quoteResult');
+        const refDisplay = document.createElement('div');
+        refDisplay.className = 'bg-green-50 border border-green-200 rounded-xl p-4 mb-6 text-center';
+        refDisplay.innerHTML = `
+            <p class="text-green-800 font-medium">
+                <i class="fas fa-file-invoice mr-2"></i>
+                Quote Reference: <strong>${data.quoteRef}</strong>
+            </p>
+        `;
+        // Insert after the confirmation icon
+        const confirmationBox = quoteResultDiv.querySelector('.bg-gradient-to-br');
+        if (confirmationBox) {
+            confirmationBox.parentNode.insertBefore(refDisplay, confirmationBox);
+        }
+    }
+    
     // If AI design was requested, it's now included in the main payload
     // No separate webhook call needed - n8n main workflow handles routing
     if (quoteData.aiDesign) {
@@ -1414,15 +1435,26 @@ async function showQuoteResult(data) {
 // ============================================================================
 // DISPLAY QUOTE ERROR
 // Shows error message when webhook returns an error response
+// Accepts full response object from n8n with contact info
 // ============================================================================
-function showQuoteError(errorMessage) {
+function showQuoteError(errorResponse) {
     document.getElementById('loadingState').classList.add('hidden');
+    document.getElementById('loadingStateRedesign')?.classList.add('hidden');
     document.getElementById('quoteResult').classList.add('hidden');
+    
+    // Extract error details from response
+    const message = errorResponse?.message || 'Sorry, there was an error processing your quote request.';
+    const contact = errorResponse?.contact || {
+        email: window.brandConfig?.contact?.email || 'premiumlandscapesuk@gmail.com',
+        phone: window.brandConfig?.contact?.phone || '07877 934782',
+        message: 'Please contact us with your details and we\'ll create your quote manually.'
+    };
+    const errorType = errorResponse?.error?.type || 'Unknown';
+    const errorDetails = errorResponse?.error?.details || '';
     
     // Check if error result element exists, create if not
     let errorResult = document.getElementById('quoteError');
     if (!errorResult) {
-        // Create error element dynamically
         const loadingState = document.getElementById('loadingState');
         errorResult = document.createElement('div');
         errorResult.id = 'quoteError';
@@ -1432,44 +1464,101 @@ function showQuoteError(errorMessage) {
     
     errorResult.innerHTML = `
         <div class="text-center mb-6">
-            <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-exclamation-triangle text-4xl text-red-600"></i>
+            <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exclamation-triangle text-4xl text-amber-600"></i>
             </div>
-            <h2 class="font-heading font-bold text-3xl text-red-600 mb-3">Quote Request Failed</h2>
-            <p class="text-gray-600 text-lg mb-6">${errorMessage}</p>
+            <h2 class="font-heading font-bold text-2xl md:text-3xl text-gray-800 mb-3">Oops! Something Went Wrong</h2>
+            <p class="text-gray-600 text-lg mb-6">${message}</p>
         </div>
         
-        <div class="bg-red-50 p-8 rounded-2xl mb-6 border-2 border-red-200">
-            <div class="flex items-start mb-4">
-                <i class="fas fa-info-circle text-2xl text-red-500 mr-3 mt-1"></i>
-                <div>
-                    <h3 class="font-semibold text-lg text-gray-900 mb-2">What You Can Do</h3>
-                    <ul class="space-y-2 text-gray-700">
-                        <li class="flex items-start">
-                            <i class="fas fa-redo text-red-500 mr-2 mt-1"></i>
-                            <span>Try submitting your quote again in a few moments</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fas fa-phone text-red-500 mr-2 mt-1"></i>
-                            <span>Call us directly at <strong>07444 887813</strong> for immediate assistance</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fas fa-envelope text-red-500 mr-2 mt-1"></i>
-                            <span>Email us at <strong>info@premiumlandscapes.co.uk</strong></span>
-                        </li>
-                    </ul>
-                </div>
+        <div class="bg-white p-6 md:p-8 rounded-2xl mb-6 border-2 border-gray-200 shadow-lg">
+            <h3 class="font-semibold text-lg text-primary mb-4 flex items-center justify-center">
+                <i class="fas fa-headset mr-2"></i>
+                Get Help Directly
+            </h3>
+            <div class="space-y-4 text-gray-700">
+                <a href="mailto:${contact.email}" class="flex items-center justify-center p-3 bg-blue-50 rounded-xl hover:bg-blue-100 transition">
+                    <i class="fas fa-envelope text-primary mr-3"></i>
+                    <span class="font-medium">${contact.email}</span>
+                </a>
+                <a href="tel:${contact.phone.replace(/\s/g, '')}" class="flex items-center justify-center p-3 bg-green-50 rounded-xl hover:bg-green-100 transition">
+                    <i class="fas fa-phone text-green-600 mr-3"></i>
+                    <span class="font-medium">${contact.phone}</span>
+                </a>
+                <p class="text-center text-sm text-gray-500 mt-4">${contact.message}</p>
             </div>
         </div>
         
-        <button onclick="location.reload()" class="bg-primary text-white px-8 py-3 rounded-full font-semibold hover:bg-primary-dark transition">
+        <button onclick="location.reload()" class="bg-primary text-white px-8 py-3 rounded-full font-semibold hover:bg-primary-dark transition shadow-lg">
             <i class="fas fa-redo mr-2"></i>Try Again
         </button>
     `;
     
     errorResult.classList.remove('hidden');
     
-    console.error('❌ Quote request failed:', errorMessage);
+    console.error('❌ Quote request failed:', message);
+    console.error('Error type:', errorType, '| Details:', errorDetails);
+    
+    // Scroll to result
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================================
+// DISPLAY NETWORK ERROR
+// Shows error message when network/timeout error occurs
+// ============================================================================
+function showNetworkError() {
+    document.getElementById('loadingState').classList.add('hidden');
+    document.getElementById('loadingStateRedesign')?.classList.add('hidden');
+    document.getElementById('quoteResult').classList.add('hidden');
+    
+    const contactEmail = window.brandConfig?.contact?.email || 'premiumlandscapesuk@gmail.com';
+    const contactPhone = window.brandConfig?.contact?.phone || '07877 934782';
+    
+    // Check if error result element exists, create if not
+    let errorResult = document.getElementById('quoteError');
+    if (!errorResult) {
+        const loadingState = document.getElementById('loadingState');
+        errorResult = document.createElement('div');
+        errorResult.id = 'quoteError';
+        errorResult.className = 'text-center py-8';
+        loadingState.parentNode.insertBefore(errorResult, loadingState.nextSibling);
+    }
+    
+    errorResult.innerHTML = `
+        <div class="text-center mb-6">
+            <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-wifi text-4xl text-amber-600"></i>
+            </div>
+            <h2 class="font-heading font-bold text-2xl md:text-3xl text-gray-800 mb-3">Connection Error</h2>
+            <p class="text-gray-600 text-lg mb-6">We couldn't reach our quote system. Please check your internet connection and try again.</p>
+        </div>
+        
+        <div class="bg-white p-6 md:p-8 rounded-2xl mb-6 border-2 border-gray-200 shadow-lg">
+            <h3 class="font-semibold text-lg text-primary mb-4 flex items-center justify-center">
+                <i class="fas fa-headset mr-2"></i>
+                If the problem persists, contact us:
+            </h3>
+            <div class="space-y-4 text-gray-700">
+                <a href="mailto:${contactEmail}" class="flex items-center justify-center p-3 bg-blue-50 rounded-xl hover:bg-blue-100 transition">
+                    <i class="fas fa-envelope text-primary mr-3"></i>
+                    <span class="font-medium">${contactEmail}</span>
+                </a>
+                <a href="tel:${contactPhone.replace(/\s/g, '')}" class="flex items-center justify-center p-3 bg-green-50 rounded-xl hover:bg-green-100 transition">
+                    <i class="fas fa-phone text-green-600 mr-3"></i>
+                    <span class="font-medium">${contactPhone}</span>
+                </a>
+            </div>
+        </div>
+        
+        <button onclick="location.reload()" class="bg-primary text-white px-8 py-3 rounded-full font-semibold hover:bg-primary-dark transition shadow-lg">
+            <i class="fas fa-redo mr-2"></i>Try Again
+        </button>
+    `;
+    
+    errorResult.classList.remove('hidden');
+    
+    console.error('❌ Network error - could not reach quote system');
     
     // Scroll to result
     window.scrollTo({ top: 0, behavior: 'smooth' });
