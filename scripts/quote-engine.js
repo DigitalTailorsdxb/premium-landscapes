@@ -506,13 +506,11 @@ function buildMaterialSelectOptions(feature) {
         if (opt.group) {
             optionsHtml += `<optgroup label="${opt.group}">`;
             opt.options.forEach(subOpt => {
-                const priceIndicator = subOpt.price ? ` (${subOpt.price})` : '';
-                optionsHtml += `<option value="${subOpt.value}">${subOpt.label}${priceIndicator}</option>`;
+                optionsHtml += `<option value="${subOpt.value}">${subOpt.label}</option>`;
             });
             optionsHtml += '</optgroup>';
         } else {
-            const priceIndicator = opt.price ? ` (${opt.price})` : '';
-            optionsHtml += `<option value="${opt.value}">${opt.label}${priceIndicator}</option>`;
+            optionsHtml += `<option value="${opt.value}">${opt.label}</option>`;
         }
     });
     
@@ -573,11 +571,12 @@ function buildProductDetailFields() {
         let materialSelectHtml = '';
         if (subProductConfig) {
             materialSelectHtml = `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">${subProductConfig.label} <span class="text-red-500">*</span></label>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">${subProductConfig.label} <span class="text-red-500">*</span></label>
                     <select 
                         id="material-${feature}" 
-                        class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base bg-white"
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-base bg-white cursor-pointer appearance-none"
+                        style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%236b7280%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em;"
                     >
                         ${buildMaterialSelectOptions(feature)}
                     </select>
@@ -586,14 +585,17 @@ function buildProductDetailFields() {
         }
         
         const fieldHtml = `
-            <div class="bg-stone p-5 rounded-xl border-2 border-gray-200 product-detail-field" data-feature="${feature}">
-                <div class="flex justify-between items-center mb-3">
-                    <h4 class="font-semibold text-gray-900 flex items-center">
-                        <i class="fas fa-th-large text-primary mr-2"></i>
+            <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow product-detail-field" data-feature="${feature}">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
+                    <h4 class="font-bold text-gray-900 text-lg flex items-center">
+                        <span class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-th-large text-primary text-sm"></i>
+                        </span>
                         ${featureName}
                     </h4>
-                    <button type="button" onclick="removeProduct('${feature}')" class="text-red-500 hover:text-red-700 text-sm">
-                        <i class="fas fa-times mr-1"></i> Remove
+                    <button type="button" onclick="removeProduct('${feature}')" class="text-gray-400 hover:text-red-500 transition-colors text-sm flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-red-50">
+                        <i class="fas fa-times"></i>
+                        <span class="hidden sm:inline">Remove</span>
                     </button>
                 </div>
                 
@@ -601,28 +603,28 @@ function buildProductDetailFields() {
                 ${materialSelectHtml}
                 
                 <!-- Area/Size Input Field -->
-                <div class="mb-3" id="area-container-${feature}">
-                    <label class="block text-sm font-medium text-gray-700 mb-1" id="area-label-${feature}">${config.label}</label>
+                <div class="mb-4" id="area-container-${feature}">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2" id="area-label-${feature}">${config.label}</label>
                     <div class="flex gap-2">
                         <input 
                             type="number" 
                             id="area-${feature}"
                             min="1"
-                            class="flex-1 px-4 py-3 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                            class="flex-1 px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-base"
                             placeholder="${config.placeholder}"
                         />
-                        <span class="flex items-center px-3 text-gray-600 bg-gray-100 rounded-lg" id="area-unit-${feature}">${config.unit}</span>
+                        <span class="flex items-center px-4 text-gray-600 bg-gray-100 rounded-xl font-medium" id="area-unit-${feature}">${config.unit}</span>
                     </div>
                 </div>
                 
                 <!-- Additional Details Field -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Additional Notes (optional)</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Additional Notes <span class="font-normal text-gray-400">(optional)</span></label>
                     <textarea 
                         id="detail-${feature}" 
                         rows="2"
-                        class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
-                        placeholder="e.g., ${productExamples[feature] || 'Add details...'}"
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-base resize-none"
+                        placeholder="e.g., ${productExamples[feature] || 'Add any specific requirements...'}"
                     ></textarea>
                 </div>
             </div>
