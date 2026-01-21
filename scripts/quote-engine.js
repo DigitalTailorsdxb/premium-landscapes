@@ -8,6 +8,7 @@ let quoteData = {
     features: [],
     productDetails: {}, // Stores details for each product
     productAreas: {}, // Stores area/size for each product
+    productMaterials: {}, // Stores selected sub-product/material for each product
     additionalNotes: '',
     designVisionNotes: '', // Design vision & requirements for full redesign
     area: 40,
@@ -223,16 +224,190 @@ function stopProgressAnimation() {
     progressState.timeouts = [];
 }
 
-// Product examples for suggestions
+// Sub-products configuration - matches n8n pricing workflow allocation keys
+const subProducts = {
+    'patio': {
+        label: 'Paving Material',
+        options: [
+            { value: 'indian_sandstone', label: 'Indian Sandstone', price: '££' },
+            { value: 'limestone_paving', label: 'Limestone', price: '£££' },
+            { value: 'granite_paving', label: 'Granite', price: '£££' },
+            { value: 'slate_paving', label: 'Slate', price: '£££' },
+            { value: 'york_stone', label: 'York Stone', price: '££££' },
+            { value: 'travertine', label: 'Travertine', price: '£££' },
+            { value: 'quartzite', label: 'Quartzite', price: '£££' },
+            { value: 'porcelain_20mm', label: 'Porcelain Tiles', price: '£££' },
+            { value: 'concrete_paving', label: 'Concrete Paving', price: '££' },
+            { value: 'block_paving', label: 'Block Paving', price: '££' },
+            { value: 'resin_bound', label: 'Resin Bound', price: '££££' },
+            { value: 'granite_setts', label: 'Granite Setts', price: '££' },
+            { value: 'sandstone_setts', label: 'Sandstone Setts', price: '££' },
+            { value: 'cobblestones', label: 'Cobblestones', price: '££' }
+        ]
+    },
+    'decking': {
+        label: 'Decking Type',
+        options: [
+            { value: 'composite_deck', label: 'Composite Decking', price: '£££' },
+            { value: 'softwood_deck', label: 'Softwood (Treated)', price: '££' },
+            { value: 'hardwood_deck', label: 'Hardwood', price: '££££' }
+        ]
+    },
+    'turf': {
+        label: 'Lawn Type',
+        options: [
+            { value: 'natural_turf', label: 'Natural Rolled Turf', price: '£' },
+            { value: 'artificial_turf', label: 'Artificial Turf (35-40mm)', price: '££' }
+        ]
+    },
+    'driveway': {
+        label: 'Driveway Material',
+        options: [
+            { value: 'block_paving', label: 'Block Paving', price: '££' },
+            { value: 'resin_bound', label: 'Resin Bound', price: '££££' },
+            { value: 'decorative_gravel', label: 'Gravel Driveway', price: '£' },
+            { value: 'indian_sandstone', label: 'Indian Sandstone', price: '££' },
+            { value: 'porcelain_20mm', label: 'Porcelain Tiles', price: '£££' },
+            { value: 'concrete_paving', label: 'Concrete Paving', price: '££' }
+        ]
+    },
+    'fencing': {
+        label: 'Fencing Type',
+        options: [
+            { value: 'closeboard_featheredge', label: 'Closeboard / Featheredge', price: '££' },
+            { value: 'panel_fencing', label: 'Panel Fencing', price: '££' },
+            { value: 'composite_fencing', label: 'Composite Fencing', price: '£££' },
+            { value: 'trellis_panels', label: 'Trellis Panels', price: '££' }
+        ]
+    },
+    'lighting': {
+        label: 'Lighting Type',
+        options: [
+            { value: 'lighting_fittings', label: 'LED Garden Lighting', price: '££' }
+        ]
+    },
+    'other': {
+        label: 'Product Type',
+        options: [
+            { value: '', label: '-- Select a product --', price: '' },
+            { group: 'Steps', options: [
+                { value: 'sandstone_step', label: 'Sandstone Steps', price: '£££' },
+                { value: 'granite_step', label: 'Granite Steps', price: '££££' },
+                { value: 'limestone_step', label: 'Limestone Steps', price: '£££' },
+                { value: 'brick_step', label: 'Brick Steps', price: '£££' },
+                { value: 'sleeper_step', label: 'Sleeper Steps', price: '££' }
+            ]},
+            { group: 'Walls', options: [
+                { value: 'brick_wall', label: 'Brick Wall (1.2m)', price: '£££' },
+                { value: 'stone_wall', label: 'Stone Wall (1.2m)', price: '££££' },
+                { value: 'rendered_wall', label: 'Rendered Block Wall (1.2m)', price: '£££' },
+                { value: 'sleeper_wall_0_6', label: 'Sleeper Wall (0.6m)', price: '££' },
+                { value: 'sleeper_wall_1_2', label: 'Sleeper Wall (1.2m)', price: '£££' },
+                { value: 'sandstone_walling', label: 'Sandstone Walling (1.2m)', price: '£££' },
+                { value: 'limestone_walling', label: 'Limestone Walling (1.2m)', price: '££££' },
+                { value: 'granite_walling', label: 'Granite Walling (1.2m)', price: '££££' },
+                { value: 'dry_stone', label: 'Dry Stone Walling', price: '£££' }
+            ]},
+            { group: 'Water Features', options: [
+                { value: 'wall_mounted_feature', label: 'Wall-Mounted Water Feature', price: '£££' },
+                { value: 'fountain_small', label: 'Small Fountain', price: '£££' },
+                { value: 'fountain_large', label: 'Large Fountain', price: '££££' },
+                { value: 'water_rill', label: 'Water Rill', price: '£££' },
+                { value: 'cascade_waterfall', label: 'Cascade/Waterfall', price: '££££' },
+                { value: 'water_bowl', label: 'Contemporary Water Bowl', price: '££££' },
+                { value: 'corten_steel_feature', label: 'Corten Steel Feature', price: '££££' }
+            ]},
+            { group: 'Ponds', options: [
+                { value: 'small_pond', label: 'Small Garden Pond', price: '£££' },
+                { value: 'medium_pond', label: 'Medium Garden Pond', price: '££££' },
+                { value: 'large_pond', label: 'Large Garden Pond', price: '££££' },
+                { value: 'wildlife_pond', label: 'Wildlife Pond', price: '££££' },
+                { value: 'koi_pond', label: 'Koi Pond', price: '££££' }
+            ]},
+            { group: 'Pergolas & Structures', options: [
+                { value: 'pergola_timber_open', label: 'Timber Pergola (Open)', price: '£££' },
+                { value: 'pergola_timber_roofed', label: 'Timber Pergola (Roofed)', price: '££££' },
+                { value: 'pergola_aluminium', label: 'Aluminium Pergola (Modern)', price: '££££' },
+                { value: 'pergola_steel', label: 'Steel Pergola (Flat-Roof)', price: '££££' },
+                { value: 'gazebo', label: 'Gazebo', price: '££££' }
+            ]},
+            { group: 'Garden Rooms & Storage', options: [
+                { value: 'garden_room', label: 'Garden Room', price: '££££' },
+                { value: 'summer_house', label: 'Summer House', price: '££££' },
+                { value: 'greenhouse_6x8', label: 'Greenhouse (6x8)', price: '££££' },
+                { value: 'greenhouse_8x10', label: 'Greenhouse (8x10)', price: '££££' },
+                { value: 'timber_shed_6x4', label: 'Timber Shed (6x4)', price: '£££' },
+                { value: 'timber_shed_8x6', label: 'Timber Shed (8x6)', price: '£££' },
+                { value: 'metal_shed', label: 'Metal Shed (6x4)', price: '£££' }
+            ]},
+            { group: 'Fire & Seating', options: [
+                { value: 'firepit', label: 'Fire Pit', price: '£££' },
+                { value: 'seating_area', label: 'Seating Area', price: '££££' },
+                { value: 'seating_sunken', label: 'Sunken Seating Area', price: '££££' },
+                { value: 'seating_rendered', label: 'Rendered Seating', price: '££££' },
+                { value: 'seating_stone', label: 'Stone Seating', price: '££££' },
+                { value: 'firepit_seating_package', label: 'Fire Pit & Seating Package', price: '££££' }
+            ]},
+            { group: 'Outdoor Kitchens', options: [
+                { value: 'outdoor_kitchen_starter', label: 'Outdoor Kitchen (Starter)', price: '££££' },
+                { value: 'outdoor_kitchen_standard', label: 'Outdoor Kitchen (Standard)', price: '££££' },
+                { value: 'outdoor_kitchen_premium', label: 'Outdoor Kitchen (Premium)', price: '££££' },
+                { value: 'bbq_area', label: 'BBQ Area Module', price: '£££' },
+                { value: 'built_in_bbq', label: 'Built-in BBQ', price: '£££' }
+            ]},
+            { group: 'Planters & Beds', options: [
+                { value: 'planting_beds', label: 'Planting Beds', price: '£' },
+                { value: 'rendered_planter', label: 'Rendered Block Planter', price: '£££' },
+                { value: 'raised_bed', label: 'Raised Bed (Sleepers)', price: '£££' }
+            ]},
+            { group: 'Hedging & Screening', options: [
+                { value: 'native_hedging', label: 'Native Hedging', price: '£' },
+                { value: 'instant_screening', label: 'Instant Screening', price: '£££' },
+                { value: 'decorative_screen', label: 'Decorative Screen', price: '£££' }
+            ]},
+            { group: 'Drainage', options: [
+                { value: 'channel_drain', label: 'Linear Channel Drain', price: '££' },
+                { value: 'soakaway', label: 'Soakaway Crate System', price: '£££' },
+                { value: 'french_drain', label: 'French Drain', price: '££' }
+            ]},
+            { group: 'Aggregates & Gravel', options: [
+                { value: 'decorative_gravel', label: 'Decorative Gravel', price: '£' },
+                { value: 'slate_chippings', label: 'Slate Chippings', price: '££' },
+                { value: 'pebbles', label: 'Decorative Pebbles', price: '££' },
+                { value: 'boulders', label: 'Feature Boulders', price: '£££' },
+                { value: 'rockery', label: 'Rockery Stone', price: '££' }
+            ]},
+            { group: 'Pathways', options: [
+                { value: 'gravel_path', label: 'Gravel Path (Edged)', price: '££' },
+                { value: 'bark_path', label: 'Bark Path', price: '£' },
+                { value: 'stepping_stone', label: 'Stepping Stones', price: '££' }
+            ]},
+            { group: 'Edging', options: [
+                { value: 'edging', label: 'Paving Edging / Kerbs / Setts', price: '££' }
+            ]},
+            { group: 'Planting', options: [
+                { value: 'feature_tree', label: 'Feature Tree', price: '£££' },
+                { value: 'shrub_large', label: 'Large Shrubs', price: '££' },
+                { value: 'shrub_medium', label: 'Medium Shrubs', price: '£' }
+            ]},
+            { group: 'Gates', options: [
+                { value: 'timber_gate', label: 'Timber Garden Gate', price: '£££' },
+                { value: 'metal_gate', label: 'Metal Garden Gate', price: '££££' }
+            ]}
+        ]
+    }
+};
+
+// Product examples for suggestions (legacy - kept for textarea placeholders)
 const productExamples = {
-    'patio': 'Indian sandstone patio 40 sqm',
-    'decking': 'Composite decking 30 sqm',
-    'turf': 'Artificial turf 25 sqm with drainage',
-    'driveway': 'Block paving driveway 50 sqm',
-    'fencing': '20 meters close-board fencing 1.8m high',
-    'lighting': 'LED garden lighting system with 10 uplights',
+    'patio': 'Any specific requirements...',
+    'decking': 'Any specific requirements...',
+    'turf': 'Any specific requirements...',
+    'driveway': 'Any specific requirements...',
+    'fencing': 'Height requirements, gate needed, etc...',
+    'lighting': 'Specific areas to light, ambience preferences...',
     'full-redesign': 'Complete garden transformation',
-    'other': 'Additional features'
+    'other': 'Additional details...'
 };
 
 // Initialize quote engine
@@ -317,6 +492,69 @@ function initializeFeatureCards() {
     });
 }
 
+// Build material select options HTML
+function buildMaterialSelectOptions(feature) {
+    const config = subProducts[feature];
+    if (!config) return '';
+    
+    let optionsHtml = '<option value="">-- Select ' + config.label + ' --</option>';
+    
+    config.options.forEach(opt => {
+        if (opt.group) {
+            optionsHtml += `<optgroup label="${opt.group}">`;
+            opt.options.forEach(subOpt => {
+                const priceIndicator = subOpt.price ? ` (${subOpt.price})` : '';
+                optionsHtml += `<option value="${subOpt.value}">${subOpt.label}${priceIndicator}</option>`;
+            });
+            optionsHtml += '</optgroup>';
+        } else {
+            const priceIndicator = opt.price ? ` (${opt.price})` : '';
+            optionsHtml += `<option value="${opt.value}">${opt.label}${priceIndicator}</option>`;
+        }
+    });
+    
+    return optionsHtml;
+}
+
+// Get unit configuration for a product based on its material selection
+function getUnitConfig(feature, material) {
+    const baseConfig = {
+        'fencing': { label: 'Length (metres)', placeholder: '25', unit: 'm' },
+        'lighting': { label: 'Number of Fittings', placeholder: '8', unit: 'fittings' },
+        'full-redesign': { label: 'Total Area (m²)', placeholder: '100', unit: 'm²' },
+        'default': { label: 'Area (m²)', placeholder: '40', unit: 'm²' }
+    };
+    
+    // Special unit handling for "other" products based on material type
+    if (feature === 'other' && material) {
+        // Steps
+        if (material.includes('step')) {
+            return { label: 'Number of Steps', placeholder: '5', unit: 'steps' };
+        }
+        // Walls, hedging, edging, drainage
+        if (material.includes('wall') || material.includes('hedging') || material.includes('screening') || 
+            material.includes('edging') || material.includes('drain') || material.includes('rill') ||
+            material.includes('path')) {
+            return { label: 'Length (metres)', placeholder: '10', unit: 'm' };
+        }
+        // Individual items (pergolas, sheds, fire pits, etc.)
+        if (material.includes('pergola') || material.includes('gazebo') || material.includes('shed') || 
+            material.includes('greenhouse') || material.includes('summer_house') || material.includes('garden_room') ||
+            material.includes('firepit') || material.includes('seating') || material.includes('pond') ||
+            material.includes('fountain') || material.includes('feature') || material.includes('kitchen') ||
+            material.includes('bbq') || material.includes('screen') || material.includes('soakaway') ||
+            material.includes('gate') || material.includes('tree') || material.includes('boulder')) {
+            return { label: 'Quantity', placeholder: '1', unit: 'qty' };
+        }
+        // Shrubs
+        if (material.includes('shrub')) {
+            return { label: 'Number of Plants', placeholder: '10', unit: 'qty' };
+        }
+    }
+    
+    return baseConfig[feature] || baseConfig['default'];
+}
+
 // Build product detail fields for Step 2
 function buildProductDetailFields() {
     const container = document.getElementById('productDetailFields');
@@ -324,16 +562,25 @@ function buildProductDetailFields() {
     
     quoteData.features.forEach((feature, index) => {
         const featureName = feature.charAt(0).toUpperCase() + feature.slice(1).replace('-', ' ');
+        const subProductConfig = subProducts[feature];
+        const savedMaterial = quoteData.productMaterials[feature] || '';
+        const config = getUnitConfig(feature, savedMaterial);
         
-        // Determine the area label and placeholder based on product type
-        const areaConfig = {
-            'fencing': { label: 'Length (meters)', placeholder: '25', unit: 'm' },
-            'lighting': { label: 'Number of Fittings', placeholder: '8', unit: 'fittings' },
-            'full-redesign': { label: 'Total Area (m²)', placeholder: '100', unit: 'm²' },
-            'default': { label: 'Area (m²)', placeholder: '40', unit: 'm²' }
-        };
-        
-        const config = areaConfig[feature] || areaConfig['default'];
+        // Build material select HTML
+        let materialSelectHtml = '';
+        if (subProductConfig) {
+            materialSelectHtml = `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">${subProductConfig.label} <span class="text-red-500">*</span></label>
+                    <select 
+                        id="material-${feature}" 
+                        class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base bg-white"
+                    >
+                        ${buildMaterialSelectOptions(feature)}
+                    </select>
+                </div>
+            `;
+        }
         
         const fieldHtml = `
             <div class="bg-stone p-5 rounded-xl border-2 border-gray-200 product-detail-field" data-feature="${feature}">
@@ -347,20 +594,12 @@ function buildProductDetailFields() {
                     </button>
                 </div>
                 
-                <!-- Material/Description Field -->
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Material & Details (optional)</label>
-                    <textarea 
-                        id="detail-${feature}" 
-                        rows="2"
-                        class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
-                        placeholder="e.g., ${productExamples[feature] || 'Add details...'}"
-                    ></textarea>
-                </div>
+                <!-- Material Selection Dropdown -->
+                ${materialSelectHtml}
                 
                 <!-- Area/Size Input Field -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">${config.label}</label>
+                <div class="mb-3" id="area-container-${feature}">
+                    <label class="block text-sm font-medium text-gray-700 mb-1" id="area-label-${feature}">${config.label}</label>
                     <div class="flex gap-2">
                         <input 
                             type="number" 
@@ -369,8 +608,19 @@ function buildProductDetailFields() {
                             class="flex-1 px-4 py-3 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
                             placeholder="${config.placeholder}"
                         />
-                        <span class="flex items-center px-3 text-gray-600 bg-gray-100 rounded-lg">${config.unit}</span>
+                        <span class="flex items-center px-3 text-gray-600 bg-gray-100 rounded-lg" id="area-unit-${feature}">${config.unit}</span>
                     </div>
+                </div>
+                
+                <!-- Additional Details Field -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Additional Notes (optional)</label>
+                    <textarea 
+                        id="detail-${feature}" 
+                        rows="2"
+                        class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base"
+                        placeholder="e.g., ${productExamples[feature] || 'Add details...'}"
+                    ></textarea>
                 </div>
             </div>
         `;
@@ -381,6 +631,7 @@ function buildProductDetailFields() {
     quoteData.features.forEach(feature => {
         const textarea = document.getElementById(`detail-${feature}`);
         const areaInput = document.getElementById(`area-${feature}`);
+        const materialSelect = document.getElementById(`material-${feature}`);
         
         // Restore values
         if (textarea && quoteData.productDetails[feature]) {
@@ -388,6 +639,9 @@ function buildProductDetailFields() {
         }
         if (areaInput && quoteData.productAreas[feature]) {
             areaInput.value = quoteData.productAreas[feature];
+        }
+        if (materialSelect && quoteData.productMaterials[feature]) {
+            materialSelect.value = quoteData.productMaterials[feature];
         }
         
         // Add event listeners
@@ -400,6 +654,23 @@ function buildProductDetailFields() {
         if (areaInput) {
             areaInput.addEventListener('input', function() {
                 quoteData.productAreas[feature] = this.value;
+                updateSummary();
+            });
+        }
+        if (materialSelect) {
+            materialSelect.addEventListener('change', function() {
+                quoteData.productMaterials[feature] = this.value;
+                
+                // Update the unit label/placeholder dynamically based on material selection
+                const newConfig = getUnitConfig(feature, this.value);
+                const areaLabel = document.getElementById(`area-label-${feature}`);
+                const areaUnit = document.getElementById(`area-unit-${feature}`);
+                const areaInputField = document.getElementById(`area-${feature}`);
+                
+                if (areaLabel) areaLabel.textContent = newConfig.label;
+                if (areaUnit) areaUnit.textContent = newConfig.unit;
+                if (areaInputField) areaInputField.placeholder = newConfig.placeholder;
+                
                 updateSummary();
             });
         }
@@ -430,6 +701,7 @@ function removeProduct(feature) {
     quoteData.features = quoteData.features.filter(f => f !== feature);
     delete quoteData.productDetails[feature];
     delete quoteData.productAreas[feature];
+    delete quoteData.productMaterials[feature];
     
     // Update Step 1 visual
     const featureCard = document.querySelector(`.feature-card[data-feature="${feature}"]`);
@@ -838,8 +1110,32 @@ function updateSummary() {
         html += '<div class="space-y-2 mt-2">';
         quoteData.features.forEach(feature => {
             const featureName = feature.charAt(0).toUpperCase() + feature.slice(1).replace('-', ' ');
-            const details = quoteData.productDetails[feature] || '';
-            const displayText = details ? details.substring(0, 30) + (details.length > 30 ? '...' : '') : featureName;
+            const selectedMaterial = quoteData.productMaterials[feature] || '';
+            const area = quoteData.productAreas[feature] || '';
+            
+            // Get material label for display
+            let materialLabel = '';
+            if (selectedMaterial && subProducts[feature]) {
+                const config = subProducts[feature];
+                for (const opt of config.options) {
+                    if (opt.group) {
+                        const found = opt.options.find(o => o.value === selectedMaterial);
+                        if (found) { materialLabel = found.label; break; }
+                    } else if (opt.value === selectedMaterial) {
+                        materialLabel = opt.label; break;
+                    }
+                }
+            }
+            
+            // Build display text
+            let displayText = featureName;
+            if (materialLabel) {
+                displayText = materialLabel;
+            }
+            if (area) {
+                const unitConfig = getUnitConfig(feature, selectedMaterial);
+                displayText += ` (${area}${unitConfig.unit})`;
+            }
             
             html += `
                 <div class="summary-item flex items-center space-x-2 bg-stone px-3 py-2 rounded-lg">
@@ -1192,32 +1488,36 @@ function prepareWebhookPayload() {
         const transformProducts = () => {
             return quoteData.features.map(feature => {
                 const description = quoteData.productDetails[feature] || '';
+                const selectedMaterial = quoteData.productMaterials[feature] || '';
                 
                 // Use dedicated area field if provided, otherwise parse from description or use default
                 const dedicatedArea = quoteData.productAreas[feature];
                 const defaultArea = Math.round(totalArea / quoteData.features.length);
                 
-                // Parse material from description
-                const extractMaterial = (text) => {
-                    const lowerText = text.toLowerCase();
+                // Get material label from subProducts config
+                const getMaterialLabel = (feature, materialKey) => {
+                    const config = subProducts[feature];
+                    if (!config) return materialKey;
                     
-                    if (lowerText.includes('porcelain')) return 'porcelain';
-                    if (lowerText.includes('sandstone') || lowerText.includes('indian')) return 'indian sandstone';
-                    if (lowerText.includes('composite')) return 'composite';
-                    if (lowerText.includes('artificial')) return 'artificial grass';
-                    if (lowerText.includes('block')) return 'block paving';
-                    if (lowerText.includes('close board') || lowerText.includes('close-board')) return 'close board';
-                    
-                    return 'standard';
+                    for (const opt of config.options) {
+                        if (opt.group) {
+                            const found = opt.options.find(o => o.value === materialKey);
+                            if (found) return found.label;
+                        } else if (opt.value === materialKey) {
+                            return opt.label;
+                        }
+                    }
+                    return materialKey;
                 };
                 
-                const material = extractMaterial(description);
+                const materialLabel = selectedMaterial ? getMaterialLabel(feature, selectedMaterial) : 'standard';
                 
-                // Base product structure
+                // Base product structure with allocation key for n8n pricing
                 const product = {
                     type: feature,
                     description: description || `${feature} installation`,
-                    material: material
+                    material: materialLabel,
+                    allocationKey: selectedMaterial // This is the key n8n pricing uses!
                 };
                 
                 // Add type-specific fields using dedicated area input
@@ -1245,6 +1545,19 @@ function prepareWebhookPayload() {
                     product.fittings = dedicatedArea ? parseInt(dedicatedArea) : 8;
                     product.wattagePerFitting = 6;
                     product.control = 'standard switch';
+                } else if (feature === 'other') {
+                    // For "other" category, determine unit type based on selected material
+                    const config = getUnitConfig(feature, selectedMaterial);
+                    if (config.unit === 'steps' || config.unit === 'qty' || config.unit === 'fittings') {
+                        product.unitType = 'qty';
+                        product.qty = dedicatedArea ? parseInt(dedicatedArea) : 1;
+                    } else if (config.unit === 'm') {
+                        product.unitType = 'm';
+                        product.length = dedicatedArea ? parseInt(dedicatedArea) : 10;
+                    } else {
+                        product.unitType = 'm2';
+                        product.area_m2 = dedicatedArea ? parseInt(dedicatedArea) : defaultArea;
+                    }
                 } else {
                     product.unitType = 'm2';
                     product.area_m2 = dedicatedArea ? parseInt(dedicatedArea) : defaultArea;

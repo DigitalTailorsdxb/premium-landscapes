@@ -1,0 +1,933 @@
+// === Premium Landscapes | Calculate Pricing v5.5 - PERGOLA VARIANTS ADDED ===
+// CHANGES FROM v5.4:
+// 1. Added 4 pergola variants (timber roofed, timber open, aluminium, steel)
+// 2. Pergola variant matching based on allocation keys
+// 3. Gazebo now maps to aluminium modern pergola
+//
+// CHANGES FROM v5.3:
+// 1. Pergola variants all map to timber_pergola_3x3 (only option)
+// 2. All premium paving materials properly matched
+// 3. Complete product range with prices synced to Build LLM Brief v4.4.1
+
+// ---------- Tunables ----------
+const CONTINGENCY_PCT = 0.05;
+const VAT_PCT = 0.20;
+const LIGHTING_MULTIPLIER = 1.5;
+const GROUNDWORKS_RATE_PER_M2 = 40;
+
+// ---------- COMPREHENSIVE PRICE LIST ----------
+const RATES = {
+  // NATURAL STONE PAVING
+  natural_stone_paving: {
+    indian_sandstone: 110,
+    limestone_paving: 135,
+    granite_paving: 150,
+    slate_paving: 140,
+    york_stone: 165,
+    travertine: 145,
+    quartzite: 155,
+  },
+  
+  // NATURAL STONE SETTS/COBBLES
+  natural_stone_setts: {
+    granite_setts: 95,
+    sandstone_setts: 85,
+    cobblestones: 75,
+  },
+  
+  // MANUFACTURED PAVING
+  manufactured_paving: {
+    porcelain_20mm: 130,
+    concrete_paving: 100,
+    block_paving: 90,
+    resin_bound: 160,
+  },
+  
+  // DECORATIVE AGGREGATES
+  aggregates: {
+    decorative_gravel: 55,
+    slate_chippings: 65,
+    pebbles_decorative: 70,
+    boulders_feature: 180,
+    rockery_stone: 85,
+  },
+  
+  // DECKING
+  decking: {
+    composite: 170,
+    softwood_treated: 110,
+    hardwood: 195,
+  },
+  
+  // TURF
+  turf: {
+    natural_rolled: 30,
+    artificial_35_40mm: 85,
+  },
+  
+  // NATURAL STONE STEPS
+  natural_stone_steps: {
+    sandstone_step: 180,
+    granite_step: 220,
+    limestone_step: 195,
+  },
+  
+  // OTHER STEPS
+  steps: {
+    brick_steps: 150,
+    sleeper_steps: 120,
+  },
+  
+  // PATHWAYS
+  pathways: {
+    gravel_path_edged: 66,
+    bark_path: 35,
+    stepping_stones: 80,
+  },
+  
+  // RAMPS
+  ramps: {
+    non_slip_ramp: 216,
+  },
+  
+  // FENCING
+  fencing: {
+    closeboard_featheredge: 65,
+    panel_fencing: 65,
+    composite_fencing: 100,
+    trellis_panels: 75,
+    concrete_posts_boards: 66,
+    timber_posts_boards: 50,
+  },
+  
+  // GATES
+  gates: {
+    timber_garden_gate: 350,
+    metal_garden_gate: 550,
+  },
+  
+  // WALLS (1.2m standard)
+  walls: {
+    brick_wall_1_2m: 290,
+    stone_wall_1_2m: 320,
+    rendered_block_wall_1_2m: 260,
+    sleeper_wall_0_6m: 90,
+    sleeper_wall_1_2m: 180,
+    sandstone_walling_1_2m: 280,
+    limestone_walling_1_2m: 320,
+    granite_walling_1_2m: 350,
+    dry_stone_walling: 240,
+  },
+  
+  // HEDGING
+  hedging: {
+    native_hedging: 45,
+    instant_screening: 165,
+  },
+  
+  // PLANTERS/RAISED BEDS
+  planters: {
+    planting_beds: 15,
+    rendered_block_planter: 216,
+    raised_bed_sleepers: 180,
+  },
+  
+  // EDGING
+  edging: {
+    paving_edging_kerbs_setts: 60,
+  },
+  
+  // DRAINAGE
+  drainage: {
+    linear_channel_drain: 55,
+    soakaway_crate: 780,
+    land_drain_pipe: 20,
+    french_drain: 45,
+  },
+  
+  // PONDS
+  ponds: {
+    small_pond: 960,
+    medium_pond: 1920,
+    large_pond: 3040,
+    wildlife_pond: 1600,
+    koi_pond: 3600,
+  },
+  
+  // WATER FEATURES
+  water_features: {
+    wall_mounted_feature: 800,
+    fountain_small: 650,
+    fountain_large: 1500,
+    water_rill: 280,
+    cascade_waterfall: 2200,
+    water_bowl_contemporary: 1800,
+    corten_steel_feature: 2800,
+    bespoke_water_feature: 1200,
+  },
+  
+  // POND EQUIPMENT
+  pond_equipment: {
+    pond_pump: 180,
+    pond_filter: 420,
+    uv_clarifier: 220,
+    pond_liner: 25,
+  },
+  
+  // STRUCTURES - PERGOLAS (4 VARIANTS)
+  structures_pergolas: {
+    timber_pergola_roofed_3x3: 1700,
+    timber_pergola_open_3x3: 1400,
+    aluminium_pergola_modern_3x3: 2800,
+    steel_pergola_flat_roof_3x3: 3200,
+  },
+  
+  // STRUCTURES - ROOMS
+  structures_rooms: {
+    garden_room: 1450,
+    summer_house: 4200,
+    greenhouse_6x8: 1800,
+    greenhouse_8x10: 2600,
+  },
+  
+  // STORAGE
+  storage: {
+    timber_shed_6x4: 850,
+    timber_shed_8x6: 1250,
+    metal_shed_6x4: 950,
+  },
+  
+  // FEATURES - FIRE & SEATING
+  features_fire_seating: {
+    sunken_firepit: 1450,
+    seating_area: 2000,
+    seating_sunken: 3500,
+    seating_rendered: 2800,
+    seating_stone: 3200,
+    sunken_firepit_seating_package: 4500,
+  },
+  
+  // FEATURES - COOKING
+  features_cooking: {
+    outdoor_kitchen_starter: 3000,
+    outdoor_kitchen_standard: 6000,
+    outdoor_kitchen_premium: 12000,
+    bbq_area_module: 950,
+    built_in_bbq: 1500,
+  },
+  
+  // DECORATIVE SCREENS
+  decorative: {
+    decorative_screen: 300,
+  },
+  
+  // PLANTING
+  planting: {
+    feature_tree: 300,
+    shrub_large: 45,
+    shrub_medium: 25,
+    topsoil_bulk: 45,
+    mulch_bark: 35,
+    membrane_weed_fabric: 8,
+  },
+  
+  // LIGHTING
+  lighting: {
+    default: 75,
+    transformer_each: 120,
+    cable_per_m: 5,
+  },
+};
+
+// ---------- Helpers ----------
+const to2 = (n) => +((Number(n) || 0).toFixed(2));
+const lc = (s) => (s || "").toLowerCase();
+const num = (v) => (v == null || v === "" ? 0 : Number(v) || 0);
+
+// ---------- COMPREHENSIVE PRODUCT VARIANT MATCHER ----------
+function matchProduct(allocationKey) {
+  const key = lc(allocationKey);
+  
+  // ========== NATURAL STONE PAVING ==========
+  if (key.includes('indian_sandstone') || key.includes('sandstone_paving')) {
+    return { type: 'Indian Sandstone', cat: 'natural_stone_paving', var: 'indian_sandstone', unit: 'm²' };
+  }
+  if (key.includes('limestone_paving') || key.includes('limestone_patio')) {
+    return { type: 'Limestone Paving', cat: 'natural_stone_paving', var: 'limestone_paving', unit: 'm²' };
+  }
+  if (key.includes('granite_paving') || key.includes('granite_patio')) {
+    return { type: 'Granite Paving', cat: 'natural_stone_paving', var: 'granite_paving', unit: 'm²' };
+  }
+  if (key.includes('slate_paving') || key.includes('slate_patio')) {
+    return { type: 'Slate Paving', cat: 'natural_stone_paving', var: 'slate_paving', unit: 'm²' };
+  }
+  if (key.includes('york_stone') || key.includes('yorkstone')) {
+    return { type: 'York Stone', cat: 'natural_stone_paving', var: 'york_stone', unit: 'm²' };
+  }
+  if (key.includes('travertine')) {
+    return { type: 'Travertine Paving', cat: 'natural_stone_paving', var: 'travertine', unit: 'm²' };
+  }
+  if (key.includes('quartzite')) {
+    return { type: 'Quartzite Paving', cat: 'natural_stone_paving', var: 'quartzite', unit: 'm²' };
+  }
+  
+  // ========== NATURAL STONE SETTS/COBBLES ==========
+  if (key.includes('granite_setts') || key.includes('granite_cobbles')) {
+    return { type: 'Granite Setts', cat: 'natural_stone_setts', var: 'granite_setts', unit: 'm²' };
+  }
+  if (key.includes('sandstone_setts')) {
+    return { type: 'Sandstone Setts', cat: 'natural_stone_setts', var: 'sandstone_setts', unit: 'm²' };
+  }
+  if (key.includes('cobblestones') || key.includes('cobbles')) {
+    return { type: 'Cobblestones', cat: 'natural_stone_setts', var: 'cobblestones', unit: 'm²' };
+  }
+  
+  // ========== MANUFACTURED PAVING ==========
+  if (key.includes('porcelain') || key.includes('tiles') || key.includes('tile')) {
+    return { type: 'Porcelain Tiles', cat: 'manufactured_paving', var: 'porcelain_20mm', unit: 'm²' };
+  }
+  if (key.includes('concrete_paving') || key.includes('concrete_patio')) {
+    return { type: 'Concrete Paving', cat: 'manufactured_paving', var: 'concrete_paving', unit: 'm²' };
+  }
+  if (key.includes('block_paving') || key.includes('blocks')) {
+    return { type: 'Block Paving', cat: 'manufactured_paving', var: 'block_paving', unit: 'm²' };
+  }
+  if (key.includes('resin') || key.includes('resinbound')) {
+    return { type: 'Resin Bound', cat: 'manufactured_paving', var: 'resin_bound', unit: 'm²' };
+  }
+  
+  // Generic patio/paving fallback
+  if (key.includes('patio_m2') || key.includes('paving_m2') || key.includes('natural_stone_patio')) {
+    return { type: 'Indian Sandstone', cat: 'natural_stone_paving', var: 'indian_sandstone', unit: 'm²' };
+  }
+  
+  // ========== DECORATIVE AGGREGATES ==========
+  if (key.includes('decorative_gravel') || key.includes('gravel_area')) {
+    return { type: 'Decorative Gravel', cat: 'aggregates', var: 'decorative_gravel', unit: 'm²' };
+  }
+  if (key.includes('slate_chippings') || key.includes('slate_chips')) {
+    return { type: 'Slate Chippings', cat: 'aggregates', var: 'slate_chippings', unit: 'm²' };
+  }
+  if (key.includes('pebbles') || key.includes('decorative_pebbles')) {
+    return { type: 'Decorative Pebbles', cat: 'aggregates', var: 'pebbles_decorative', unit: 'm²' };
+  }
+  if (key.includes('boulders') || key.includes('feature_boulder')) {
+    return { type: 'Feature Boulder', cat: 'aggregates', var: 'boulders_feature', unit: 'each' };
+  }
+  if (key.includes('rockery')) {
+    return { type: 'Rockery Stone', cat: 'aggregates', var: 'rockery_stone', unit: 'tonne' };
+  }
+  
+  // ========== DECKING ==========
+  if (key.includes('composite_deck')) {
+    return { type: 'Decking', cat: 'decking', var: 'composite', unit: 'm²', material: 'composite' };
+  }
+  if (key.includes('softwood_deck') || key.includes('timber_deck') || key.includes('wood_deck')) {
+    return { type: 'Decking', cat: 'decking', var: 'softwood_treated', unit: 'm²', material: 'softwood_treated' };
+  }
+  if (key.includes('hardwood_deck')) {
+    return { type: 'Decking', cat: 'decking', var: 'hardwood', unit: 'm²', material: 'hardwood' };
+  }
+  if (key.includes('deck')) {
+    return { type: 'Decking', cat: 'decking', var: 'composite', unit: 'm²', material: 'composite' };
+  }
+  
+  // ========== TURF ==========
+  if (key.includes('artificial_turf') || key.includes('fake_grass') || key.includes('astro')) {
+    return { type: 'Artificial Turf', cat: 'turf', var: 'artificial_35_40mm', unit: 'm²' };
+  }
+  if (key.includes('natural_turf') || key.includes('natural_lawn') || key.includes('real_grass') || key === 'lawn_m2' || key === 'turf_m2') {
+    return { type: 'Natural Lawn', cat: 'turf', var: 'natural_rolled', unit: 'm²' };
+  }
+  
+  // ========== STEPS - NATURAL STONE ==========
+  if (key.includes('sandstone_step') || key.includes('sandstone_tread')) {
+    return { type: 'Sandstone Steps', cat: 'natural_stone_steps', var: 'sandstone_step', unit: 'step' };
+  }
+  if (key.includes('granite_step') || key.includes('granite_tread')) {
+    return { type: 'Granite Steps', cat: 'natural_stone_steps', var: 'granite_step', unit: 'step' };
+  }
+  if (key.includes('limestone_step') || key.includes('limestone_tread')) {
+    return { type: 'Limestone Steps', cat: 'natural_stone_steps', var: 'limestone_step', unit: 'step' };
+  }
+  
+  // ========== STEPS - OTHER ==========
+  if (key.includes('brick_step')) {
+    return { type: 'Brick Steps', cat: 'steps', var: 'brick_steps', unit: 'step' };
+  }
+  if (key.includes('sleeper_step')) {
+    return { type: 'Sleeper Steps', cat: 'steps', var: 'sleeper_steps', unit: 'step' };
+  }
+  if (key.includes('steps_qty') || key.includes('step_each')) {
+    return { type: 'Sandstone Steps', cat: 'natural_stone_steps', var: 'sandstone_step', unit: 'step' };
+  }
+  
+  // ========== PATHWAYS ==========
+  if (key.includes('gravel_path') || key.includes('gravel_pathway')) {
+    return { type: 'Gravel Path', cat: 'pathways', var: 'gravel_path_edged', unit: 'm²' };
+  }
+  if (key.includes('bark_path') || key.includes('bark_pathway')) {
+    return { type: 'Bark Path', cat: 'pathways', var: 'bark_path', unit: 'm²' };
+  }
+  if (key.includes('stepping_stone')) {
+    return { type: 'Stepping Stones', cat: 'pathways', var: 'stepping_stones', unit: 'lm' };
+  }
+  
+  // ========== RAMPS ==========
+  if (key.includes('ramp') || key.includes('non_slip')) {
+    return { type: 'Non-Slip Ramp', cat: 'ramps', var: 'non_slip_ramp', unit: 'each' };
+  }
+  
+  // ========== FENCING ==========
+  if (key.includes('closeboard') || key.includes('featheredge')) {
+    return { type: 'Closeboard Fencing', cat: 'fencing', var: 'closeboard_featheredge', unit: 'lm' };
+  }
+  if (key.includes('composite_fencing')) {
+    return { type: 'Composite Fencing', cat: 'fencing', var: 'composite_fencing', unit: 'lm' };
+  }
+  if (key.includes('panel_fencing') || key.includes('fence_panel')) {
+    return { type: 'Panel Fencing', cat: 'fencing', var: 'panel_fencing', unit: 'lm' };
+  }
+  if (key.includes('trellis')) {
+    return { type: 'Trellis Panels', cat: 'fencing', var: 'trellis_panels', unit: 'lm' };
+  }
+  if (key.includes('concrete_posts') || key.includes('concrete_gravel_boards')) {
+    return { type: 'Concrete Posts & Gravel Boards', cat: 'fencing', var: 'concrete_posts_boards', unit: 'bay' };
+  }
+  if (key.includes('timber_posts') || key.includes('wooden_posts')) {
+    return { type: 'Timber Posts & Gravel Boards', cat: 'fencing', var: 'timber_posts_boards', unit: 'bay' };
+  }
+  if (key.includes('fencing_lm') || key.includes('fence_lm') || key.includes('fencing_m') || key === 'fencing') {
+    return { type: 'Panel Fencing', cat: 'fencing', var: 'panel_fencing', unit: 'lm' };
+  }
+  
+  // ========== GATES ==========
+  if (key.includes('timber_gate') || key.includes('wooden_gate') || key.includes('garden_gate')) {
+    return { type: 'Timber Garden Gate', cat: 'gates', var: 'timber_garden_gate', unit: 'each' };
+  }
+  if (key.includes('metal_gate')) {
+    return { type: 'Metal Garden Gate', cat: 'gates', var: 'metal_garden_gate', unit: 'each' };
+  }
+  
+  // ========== WALLS ==========
+  if (key.includes('brick_wall')) {
+    return { type: 'Brick Wall (1.2m)', cat: 'walls', var: 'brick_wall_1_2m', unit: 'lm' };
+  }
+  if (key.includes('stone_wall') && !key.includes('dry')) {
+    return { type: 'Stone Wall (1.2m)', cat: 'walls', var: 'stone_wall_1_2m', unit: 'lm' };
+  }
+  if (key.includes('rendered_wall') || key.includes('rendered_block')) {
+    return { type: 'Rendered Block Wall (1.2m)', cat: 'walls', var: 'rendered_block_wall_1_2m', unit: 'lm' };
+  }
+  if (key.includes('sleeper_wall_0_6') || key.includes('sleeper_retaining_low')) {
+    return { type: 'Sleeper Wall (0.6m)', cat: 'walls', var: 'sleeper_wall_0_6m', unit: 'lm' };
+  }
+  if (key.includes('sleeper_wall_1_2') || key.includes('sleeper_retaining') || key.includes('sleeper_wall')) {
+    return { type: 'Sleeper Wall (1.2m)', cat: 'walls', var: 'sleeper_wall_1_2m', unit: 'lm' };
+  }
+  if (key.includes('sandstone_walling') || key.includes('sandstone_wall')) {
+    return { type: 'Sandstone Walling (1.2m)', cat: 'walls', var: 'sandstone_walling_1_2m', unit: 'lm' };
+  }
+  if (key.includes('limestone_walling') || key.includes('limestone_wall')) {
+    return { type: 'Limestone Walling (1.2m)', cat: 'walls', var: 'limestone_walling_1_2m', unit: 'lm' };
+  }
+  if (key.includes('granite_walling') || key.includes('granite_wall')) {
+    return { type: 'Granite Walling (1.2m)', cat: 'walls', var: 'granite_walling_1_2m', unit: 'lm' };
+  }
+  if (key.includes('dry_stone') || key.includes('drystone')) {
+    return { type: 'Dry Stone Walling', cat: 'walls', var: 'dry_stone_walling', unit: 'lm' };
+  }
+  
+  // ========== HEDGING ==========
+  if (key.includes('native_hedging') || key.includes('native_hedge')) {
+    return { type: 'Native Hedging', cat: 'hedging', var: 'native_hedging', unit: 'lm' };
+  }
+  if (key.includes('instant_screening') || key.includes('instant_hedge')) {
+    return { type: 'Instant Screening', cat: 'hedging', var: 'instant_screening', unit: 'lm' };
+  }
+  if (key.includes('hedging_lm') || key.includes('hedge_lm')) {
+    return { type: 'Native Hedging', cat: 'hedging', var: 'native_hedging', unit: 'lm' };
+  }
+  
+  // ========== PLANTERS/RAISED BEDS ==========
+  if (key.includes('planting_beds') || key.includes('planting_bed') || key.includes('bed_m2')) {
+    return { type: 'Planting Beds', cat: 'planters', var: 'planting_beds', unit: 'm²' };
+  }
+  if (key.includes('rendered_planter') || key.includes('planter_m2')) {
+    return { type: 'Planter', cat: 'planters', var: 'rendered_block_planter', unit: 'm²' };
+  }
+  if (key.includes('raised_bed') || key.includes('sleeper_bed')) {
+    return { type: 'Raised Bed', cat: 'planters', var: 'raised_bed_sleepers', unit: 'm²' };
+  }
+  
+  // ========== EDGING ==========
+  if (key.includes('edging') || key.includes('kerb') || key.includes('border')) {
+    return { type: 'Paving Edging / Kerbs / Setts', cat: 'edging', var: 'paving_edging_kerbs_setts', unit: 'lm' };
+  }
+  
+  // ========== DRAINAGE ==========
+  if (key.includes('channel_drain') || key.includes('aco_drain') || key.includes('linear_drain')) {
+    return { type: 'Linear Channel Drain', cat: 'drainage', var: 'linear_channel_drain', unit: 'lm' };
+  }
+  if (key.includes('soakaway')) {
+    return { type: 'Soakaway Crate System', cat: 'drainage', var: 'soakaway_crate', unit: 'each' };
+  }
+  if (key.includes('land_drain')) {
+    return { type: 'Land Drain Pipe', cat: 'drainage', var: 'land_drain_pipe', unit: 'lm' };
+  }
+  if (key.includes('french_drain')) {
+    return { type: 'French Drain', cat: 'drainage', var: 'french_drain', unit: 'lm' };
+  }
+  
+  // ========== PONDS ==========
+  if (key.includes('small_pond') || key.includes('pond_small')) {
+    return { type: 'Small Garden Pond', cat: 'ponds', var: 'small_pond', unit: 'each' };
+  }
+  if (key.includes('medium_pond') || key.includes('pond_medium')) {
+    return { type: 'Medium Garden Pond', cat: 'ponds', var: 'medium_pond', unit: 'each' };
+  }
+  if (key.includes('large_pond') || key.includes('pond_large')) {
+    return { type: 'Large Garden Pond', cat: 'ponds', var: 'large_pond', unit: 'each' };
+  }
+  if (key.includes('wildlife_pond')) {
+    return { type: 'Wildlife Pond', cat: 'ponds', var: 'wildlife_pond', unit: 'each' };
+  }
+  if (key.includes('koi_pond')) {
+    return { type: 'Koi Pond', cat: 'ponds', var: 'koi_pond', unit: 'each' };
+  }
+  
+  // CRITICAL: Check pond_liner_m2 FIRST before generic pond matching
+  if (key === 'pond_liner_m2' || key.includes('pond_liner_m2')) {
+    return { type: 'Pond Liner', cat: 'pond_equipment', var: 'pond_liner', unit: 'm²' };
+  }
+  
+  // pond_4m2 specifically - the 4 is the SIZE not quantity!
+  if (key === 'pond_4m2' || key.includes('pond_4m2')) {
+    return { type: 'Garden Pond (4m²)', cat: 'ponds', var: 'medium_pond', unit: 'each', forceQty: 1 };
+  }
+  
+  // pond_6m2 specifically
+  if (key === 'pond_6m2' || key.includes('pond_6m2')) {
+    return { type: 'Garden Pond (6m²)', cat: 'ponds', var: 'large_pond', unit: 'each', forceQty: 1 };
+  }
+  
+  // pond_2m2 specifically
+  if (key === 'pond_2m2' || key.includes('pond_2m2')) {
+    return { type: 'Garden Pond (2m²)', cat: 'ponds', var: 'small_pond', unit: 'each', forceQty: 1 };
+  }
+  
+  // Generic pond allocations
+  if (key.includes('pond_m2') || key.includes('pond_each') || key === 'pond') {
+    return { type: 'Garden Pond', cat: 'ponds', var: 'small_pond', unit: 'each' };
+  }
+  
+  // ========== WATER FEATURES ==========
+  if (key.includes('wall_mounted') || key.includes('wall_water')) {
+    return { type: 'Wall-Mounted Water Feature', cat: 'water_features', var: 'wall_mounted_feature', unit: 'each' };
+  }
+  if (key.includes('fountain_small') || key.includes('small_fountain')) {
+    return { type: 'Small Fountain', cat: 'water_features', var: 'fountain_small', unit: 'each' };
+  }
+  if (key.includes('fountain_large') || key.includes('large_fountain')) {
+    return { type: 'Large Fountain', cat: 'water_features', var: 'fountain_large', unit: 'each' };
+  }
+  if (key.includes('fountain')) {
+    return { type: 'Small Fountain', cat: 'water_features', var: 'fountain_small', unit: 'each' };
+  }
+  if (key.includes('rill') || key.includes('water_channel')) {
+    return { type: 'Water Rill', cat: 'water_features', var: 'water_rill', unit: 'lm' };
+  }
+  if (key.includes('cascade') || key.includes('waterfall')) {
+    return { type: 'Cascade/Waterfall', cat: 'water_features', var: 'cascade_waterfall', unit: 'each' };
+  }
+  if (key.includes('water_bowl') || key.includes('contemporary_bowl')) {
+    return { type: 'Contemporary Water Bowl', cat: 'water_features', var: 'water_bowl_contemporary', unit: 'each' };
+  }
+  if (key.includes('corten') || key.includes('steel_feature')) {
+    return { type: 'Corten Steel Feature', cat: 'water_features', var: 'corten_steel_feature', unit: 'each' };
+  }
+  if (key.includes('water_feature') || key.includes('bespoke_water')) {
+    return { type: 'Modern Water Feature', cat: 'water_features', var: 'bespoke_water_feature', unit: 'each' };
+  }
+  
+  // ========== POND EQUIPMENT ==========
+  if (key.includes('pond_pump')) {
+    return { type: 'Pond Pump', cat: 'pond_equipment', var: 'pond_pump', unit: 'each' };
+  }
+  if (key.includes('pond_filter')) {
+    return { type: 'Pond Filter System', cat: 'pond_equipment', var: 'pond_filter', unit: 'each' };
+  }
+  if (key.includes('uv_clarifier') || key.includes('uv_filter')) {
+    return { type: 'UV Clarifier', cat: 'pond_equipment', var: 'uv_clarifier', unit: 'each' };
+  }
+  
+  // ========== STRUCTURES - PERGOLAS (4 VARIANTS) ==========
+  if (key.includes('pergola_timber_roofed') || key.includes('roofed_timber')) {
+    console.log(`  ✅ Pergola matched: ${key} → Roofed Timber Pergola 3x3`);
+    return { type: 'Timber Pergola 3x3 (Roofed)', cat: 'structures_pergolas', var: 'timber_pergola_roofed_3x3', unit: 'each' };
+  }
+  if (key.includes('pergola_timber_open') || key.includes('open_timber')) {
+    console.log(`  ✅ Pergola matched: ${key} → Open Timber Pergola 3x3`);
+    return { type: 'Timber Pergola 3x3 (Open)', cat: 'structures_pergolas', var: 'timber_pergola_open_3x3', unit: 'each' };
+  }
+  if (key.includes('pergola_aluminium') || key.includes('aluminium_pergola') || key.includes('modern_3x3')) {
+    console.log(`  ✅ Pergola matched: ${key} → Aluminium Pergola 3x3`);
+    return { type: 'Aluminium Pergola 3x3 (Modern)', cat: 'structures_pergolas', var: 'aluminium_pergola_modern_3x3', unit: 'each' };
+  }
+  if (key.includes('pergola_steel') || key.includes('steel_flat_roof') || key.includes('flat_roof_3x3')) {
+    console.log(`  ✅ Pergola matched: ${key} → Steel Pergola 3x3`);
+    return { type: 'Steel Pergola 3x3 (Flat-Roof)', cat: 'structures_pergolas', var: 'steel_pergola_flat_roof_3x3', unit: 'each' };
+  }
+  // Generic pergola fallback (default to timber open - most economical)
+  if (key.includes('pergola') || key === 'pergola_each' || key.includes('pergola_3x3')) {
+    console.log(`  ✅ Pergola matched: ${key} → Timber Pergola 3x3 (Open) [default]`);
+    return { type: 'Timber Pergola 3x3 (Open)', cat: 'structures_pergolas', var: 'timber_pergola_open_3x3', unit: 'each' };
+  }
+  if (key.includes('gazebo')) {
+    console.log(`  ✅ Gazebo matched: ${key} → Aluminium Pergola 3x3 (Modern)`);
+    return { type: 'Aluminium Pergola 3x3 (Modern)', cat: 'structures_pergolas', var: 'aluminium_pergola_modern_3x3', unit: 'each' };
+  }
+  
+  // ========== STRUCTURES - ROOMS ==========
+  if (key.includes('garden_room')) {
+    return { type: 'Garden Room', cat: 'structures_rooms', var: 'garden_room', unit: 'm²' };
+  }
+  if (key.includes('summer_house') || key.includes('summerhouse')) {
+    return { type: 'Summer House', cat: 'structures_rooms', var: 'summer_house', unit: 'each' };
+  }
+  if (key.includes('greenhouse_6x8') || key.includes('greenhouse_small')) {
+    return { type: 'Greenhouse (6x8)', cat: 'structures_rooms', var: 'greenhouse_6x8', unit: 'each' };
+  }
+  if (key.includes('greenhouse_8x10') || key.includes('greenhouse_large')) {
+    return { type: 'Greenhouse (8x10)', cat: 'structures_rooms', var: 'greenhouse_8x10', unit: 'each' };
+  }
+  if (key.includes('greenhouse')) {
+    return { type: 'Greenhouse (6x8)', cat: 'structures_rooms', var: 'greenhouse_6x8', unit: 'each' };
+  }
+  
+  // ========== STORAGE ==========
+  if (key.includes('timber_shed_6x4') || key.includes('shed_6x4') || key.includes('shed_small')) {
+    return { type: 'Timber Shed (6x4)', cat: 'storage', var: 'timber_shed_6x4', unit: 'each' };
+  }
+  if (key.includes('timber_shed_8x6') || key.includes('shed_8x6') || key.includes('shed_large')) {
+    return { type: 'Timber Shed (8x6)', cat: 'storage', var: 'timber_shed_8x6', unit: 'each' };
+  }
+  if (key.includes('metal_shed')) {
+    return { type: 'Metal Shed (6x4)', cat: 'storage', var: 'metal_shed_6x4', unit: 'each' };
+  }
+  if (key.includes('shed')) {
+    return { type: 'Timber Shed (6x4)', cat: 'storage', var: 'timber_shed_6x4', unit: 'each' };
+  }
+  
+  // ========== FEATURES - FIRE & SEATING ==========
+  if (key.includes('firepit_seating_package') || key.includes('sunken_package')) {
+    return { type: 'Sunken Fire Pit & Seating Package', cat: 'features_fire_seating', var: 'sunken_firepit_seating_package', unit: 'each' };
+  }
+  
+  if (key.includes('firepit') || key.includes('fire_pit') || key.includes('sunken_fire')) {
+    return { type: 'Fire Pit', cat: 'features_fire_seating', var: 'sunken_firepit', unit: 'each' };
+  }
+  
+  if (key.includes('seating_sunken') || key.includes('sunken_seating')) {
+    return { type: 'Sunken Seating Area', cat: 'features_fire_seating', var: 'seating_sunken', unit: 'each' };
+  }
+  if (key.includes('seating_rendered') || key.includes('rendered_seating')) {
+    return { type: 'Rendered Seating', cat: 'features_fire_seating', var: 'seating_rendered', unit: 'each' };
+  }
+  if (key.includes('seating_stone') || key.includes('stone_seating') || key.includes('stone_bench')) {
+    return { type: 'Stone Seating', cat: 'features_fire_seating', var: 'seating_stone', unit: 'each' };
+  }
+  if (key.includes('seating') || key.includes('bench')) {
+    return { type: 'Seating Area', cat: 'features_fire_seating', var: 'seating_area', unit: 'each' };
+  }
+  
+  // ========== FEATURES - COOKING ==========
+  if (key.includes('outdoor_kitchen_starter') || key.includes('kitchen_starter')) {
+    console.log(`  ✅ Matched outdoor_kitchen_starter: ${key}`);
+    return { type: 'Outdoor Kitchen (Starter)', cat: 'features_cooking', var: 'outdoor_kitchen_starter', unit: 'each' };
+  }
+  if (key.includes('outdoor_kitchen_standard') || key.includes('kitchen_standard')) {
+    console.log(`  ✅ Matched outdoor_kitchen_standard: ${key}`);
+    return { type: 'Outdoor Kitchen (Standard)', cat: 'features_cooking', var: 'outdoor_kitchen_standard', unit: 'each' };
+  }
+  if (key.includes('outdoor_kitchen_premium') || key.includes('kitchen_premium') || key.includes('kitchen_luxury')) {
+    console.log(`  ✅ Matched outdoor_kitchen_premium: ${key}`);
+    return { type: 'Outdoor Kitchen (Premium)', cat: 'features_cooking', var: 'outdoor_kitchen_premium', unit: 'each' };
+  }
+  if (key.includes('outdoor_kitchen')) {
+    console.log(`  ✅ Matched generic outdoor_kitchen (will use standard): ${key}`);
+    return { type: 'Outdoor Kitchen (Standard)', cat: 'features_cooking', var: 'outdoor_kitchen_standard', unit: 'each' };
+  }
+  if (key.includes('bbq_area') || key.includes('bbq_module')) {
+    return { type: 'BBQ Area Module', cat: 'features_cooking', var: 'bbq_area_module', unit: 'each' };
+  }
+  if (key.includes('built_in_bbq') || key.includes('builtin_bbq') || key.includes('bbq_each')) {
+    return { type: 'Built-in BBQ', cat: 'features_cooking', var: 'built_in_bbq', unit: 'each' };
+  }
+  
+  // ========== DECORATIVE SCREENS ==========
+  if (key.includes('decorative_screen') || key.includes('privacy_screen') || key.includes('screen')) {
+    return { type: 'Decorative Screen', cat: 'decorative', var: 'decorative_screen', unit: 'each' };
+  }
+  
+  // ========== PLANTING ==========
+  if (key.includes('feature_tree') || key.includes('tree_each')) {
+    return { type: 'Feature Tree', cat: 'planting', var: 'feature_tree', unit: 'each' };
+  }
+  if (key.includes('shrub_large') || key.includes('large_shrub')) {
+    return { type: 'Large Shrub', cat: 'planting', var: 'shrub_large', unit: 'each' };
+  }
+  if (key.includes('shrub_medium') || key.includes('medium_shrub')) {
+    return { type: 'Medium Shrub', cat: 'planting', var: 'shrub_medium', unit: 'each' };
+  }
+  if (key.includes('shrub')) {
+    return { type: 'Medium Shrub', cat: 'planting', var: 'shrub_medium', unit: 'each' };
+  }
+  if (key.includes('topsoil')) {
+    return { type: 'Topsoil (Bulk)', cat: 'planting', var: 'topsoil_bulk', unit: 'm³' };
+  }
+  if (key.includes('mulch') || key.includes('bark')) {
+    return { type: 'Mulch/Bark', cat: 'planting', var: 'mulch_bark', unit: 'm³' };
+  }
+  if (key.includes('membrane') || key.includes('weed_fabric')) {
+    return { type: 'Weed Membrane', cat: 'planting', var: 'membrane_weed_fabric', unit: 'm²' };
+  }
+  
+  // ========== LIGHTING ==========
+  if (key.includes('lighting_fittings') || key.includes('lights') || key.includes('fitting')) {
+    return { type: 'Lighting fittings', cat: 'lighting', var: 'default', unit: 'qty', material: 'spike' };
+  }
+  if (key.includes('transformer')) {
+    return { type: 'Lighting transformer', cat: 'lighting', var: 'transformer_each', unit: 'each', material: 'transformer' };
+  }
+  if (key.includes('cable')) {
+    return { type: 'Lighting cable', cat: 'lighting', var: 'cable_per_m', unit: 'lm', material: 'cable' };
+  }
+  
+  return null;
+}
+
+// ---------- Classification ----------
+function classify(item) {
+  const t = lc(item.type);
+  const cat = item.category || '';
+  
+  if (cat && RATES[cat] && RATES[cat][item.variant]) {
+    return { cat: cat, var: item.variant, base: item.unit || 'm²' };
+  }
+  
+  if (t.includes('groundworks')) return { cat: null, var: null, base: 'm²' };
+  
+  return { cat: null, var: null, base: item.unitType || '' };
+}
+
+// ---------- Rate lookup ----------
+function rateFor(item) {
+  if (item.unitRate != null && !isNaN(Number(item.unitRate))) {
+    return Number(item.unitRate);
+  }
+  
+  const cat = item.category;
+  const variant = item.variant;
+  
+  if (!cat || !variant || !RATES[cat] || RATES[cat][variant] == null) return 0;
+  
+  const base = RATES[cat][variant];
+  return cat === 'lighting' ? +(base * LIGHTING_MULTIPLIER).toFixed(2) : base;
+}
+
+// ---------- Quantity / Unit detection ----------
+function getQtyUnit(item) {
+  const ut = lc(item.unitType || item.unit || '');
+  
+  if (['m2', 'm²', 'sqm'].includes(ut)) return { qty: num(item.area_m2 || item.qty), unit: 'm²' };
+  if (ut === 'lm' || ut === 'm') return { qty: num(item.length_m || item.qty), unit: 'lm' };
+  if (ut === 'qty') return { qty: num(item.fittings ?? item.qty), unit: 'qty' };
+  if (ut === 'each') return { qty: num(item.qty) || 1, unit: 'each' };
+  if (ut === 'step') return { qty: num(item.steps ?? item.qty), unit: 'step' };
+  if (ut === 'bay') return { qty: num(item.bays ?? item.qty), unit: 'bay' };
+  if (ut === 'm³' || ut === 'tonne') return { qty: num(item.qty), unit: ut };
+  
+  return { qty: num(item.qty) || 1, unit: 'each' };
+}
+
+// ---------- Convert product → line ----------
+function lineFrom(item) {
+  const { qty, unit } = getQtyUnit(item);
+  const q = Number(qty) || 0;
+  const unitRate = Number(rateFor(item)) || 0;
+  const line = q * unitRate;
+  
+  if (q <= 0 || unitRate <= 0) return null;
+  
+  const allocationKey = item.allocationKey || '';
+  const isMandatory = mandatoryAllocations[allocationKey] === true;
+  
+  return {
+    item: item.type || '',
+    category: item.category || '',
+    variant: item.variant || '',
+    description: item.description || item.type || '',
+    qty: to2(q),
+    unit,
+    unitCost: to2(unitRate),
+    lineTotal: to2(line),
+    mandatory: isMandatory,
+  };
+}
+
+// ========== MAIN ==========
+const d = $json;
+const project = d.project || {};
+const totalArea = num(project.totalArea_m2);
+const budget = num($node['validate Input']?.json?.project?.totalBudget_gbp ?? project.totalBudget_gbp);
+
+console.log(`=== CALCULATE PRICING v5.4 - ALL VARIANTS PROPERLY MAPPED ===`);
+console.log(`Area: ${totalArea}m² | Budget: £${budget}`);
+
+const llmAllocations = d.output?.concept?.allocations || d.selectedConcept?.allocations || d.allocations || null;
+const mandatoryAllocations = d.output?.concept?.mandatoryAllocations || d.selectedConcept?.mandatoryAllocations || {};
+console.log(`📋 Mandatory allocations: ${JSON.stringify(Object.keys(mandatoryAllocations))}`);
+
+let breakdown = [];
+
+if (llmAllocations) {
+  console.log('🤖 Using LLM allocations with comprehensive product catalog');
+  
+  const products = [];
+  let matchedCount = 0;
+  let unmatchedCount = 0;
+  
+  for (const [key, value] of Object.entries(llmAllocations)) {
+    let qty = num(value);
+    if (qty <= 0) continue;
+    
+    const match = matchProduct(key);
+    if (!match) {
+      console.log(`⚠️ No match for: ${key} = ${qty}`);
+      unmatchedCount++;
+      continue;
+    }
+    
+    if (match.forceQty !== undefined) {
+      console.log(`  🔧 Forcing qty to ${match.forceQty} for ${key} (was ${qty})`);
+      qty = match.forceQty;
+    }
+    
+    const product = {
+      type: match.type,
+      unitType: match.unit,
+      unit: match.unit,
+      category: match.cat,
+      variant: match.var,
+      allocationKey: key
+    };
+    
+    if (match.unit === 'm²') {
+      product.area_m2 = qty;
+    } else if (match.unit === 'lm' || match.unit === 'm') {
+      product.length_m = qty;
+    } else if (match.unit === 'qty') {
+      product.fittings = qty;
+    } else if (match.unit === 'step') {
+      product.steps = qty;
+    } else if (match.unit === 'bay') {
+      product.bays = qty;
+    } else {
+      product.qty = qty;
+    }
+    
+    if (match.material) {
+      product.material = match.material;
+    }
+    
+    products.push(product);
+    matchedCount++;
+    console.log(`  ✅ ${key}: ${qty}${match.unit} → ${match.type}`);
+  }
+  
+  console.log(`\n📊 Allocation matching: ${matchedCount} matched, ${unmatchedCount} unmatched`);
+  
+  // GROUNDWORKS
+  if (totalArea > 0) {
+    products.push({
+      type: 'Groundworks: dig-out, machinery & waste removal',
+      unitType: 'm2',
+      unit: 'm²',
+      area_m2: totalArea,
+      unitRate: GROUNDWORKS_RATE_PER_M2,
+    });
+  }
+  
+  for (const p of products) {
+    const r = lineFrom(p);
+    if (r) breakdown.push(r);
+  }
+  
+  console.log(`Generated ${breakdown.length} line items`);
+  
+} else {
+  console.log('⚠️ No LLM allocations - using budget defaults');
+  
+  const products = [];
+  
+  if (totalArea > 0) {
+    products.push({ type: 'Porcelain Tiles', unitType: 'm2', unit: 'm²', area_m2: Math.round(totalArea * 0.5), category: 'manufactured_paving', variant: 'porcelain_20mm' });
+    products.push({ type: 'Artificial Turf', unitType: 'm2', unit: 'm²', area_m2: Math.round(totalArea * 0.3), category: 'turf', variant: 'artificial_35_40mm' });
+    products.push({ type: 'Decking', unitType: 'm2', unit: 'm²', area_m2: Math.round(totalArea * 0.2), material: 'composite', category: 'decking', variant: 'composite' });
+    
+    products.push({
+      type: 'Groundworks: dig-out, machinery & waste removal',
+      unitType: 'm2',
+      unit: 'm²',
+      area_m2: totalArea,
+      unitRate: GROUNDWORKS_RATE_PER_M2,
+    });
+    
+    products.push({ type: 'Seating Area', unitType: 'each', unit: 'each', qty: 1, category: 'features_fire_seating', variant: 'seating_area' });
+    products.push({ type: 'Fire Pit', unitType: 'each', unit: 'each', qty: 1, category: 'features_fire_seating', variant: 'sunken_firepit' });
+  }
+  
+  for (const p of products) {
+    const r = lineFrom(p);
+    if (r) breakdown.push(r);
+  }
+}
+
+// De-dupe
+const merged = new Map();
+for (const r of breakdown) {
+  const key = [r.category, r.variant, r.unitCost, r.unit].join('|');
+  if (!merged.has(key)) {
+    merged.set(key, { ...r });
+  } else {
+    const m = merged.get(key);
+    m.qty = to2(Number(m.qty) + Number(r.qty));
+    m.lineTotal = to2(Number(m.lineTotal) + Number(r.lineTotal));
+    merged.set(key, m);
+  }
+}
+breakdown = Array.from(merged.values());
+
+// Totals
+const subtotal = to2(breakdown.reduce((a, b) => a + Number(b.lineTotal || 0), 0));
+const contingency = to2(subtotal * CONTINGENCY_PCT);
+const preVat = to2(subtotal + contingency);
+const vat = to2(preVat * VAT_PCT);
+const total = to2(preVat + vat);
+
+console.log(`\nSubtotal: £${subtotal} | Total: £${total}`);
+console.log(total > budget ? `❌ OVER by £${(total - budget).toFixed(0)}` : `✅ UNDER by £${(budget - total).toFixed(0)}`);
+
+return [{
+  json: {
+    ...d,
+    pricing: {
+      breakdown,
+      subtotal,
+      contingency,
+      vat,
+      total,
+    }
+  }
+}];
