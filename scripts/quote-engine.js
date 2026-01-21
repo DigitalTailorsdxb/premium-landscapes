@@ -485,8 +485,11 @@ function initializeFeatureCards() {
             } else {
                 quoteData.features = quoteData.features.filter(f => f !== feature);
                 delete quoteData.productDetails[feature];
+                delete quoteData.productAreas[feature];
+                delete quoteData.productMaterials[feature];
             }
             
+            buildProductDetailFields();
             updateSummary();
         });
     });
