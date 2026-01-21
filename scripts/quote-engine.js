@@ -617,31 +617,17 @@ function buildProductDetailFields() {
                     </div>
                 </div>
                 
-                <!-- Additional Details Field -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Additional Notes <span class="font-normal text-gray-400">(optional)</span></label>
-                    <textarea 
-                        id="detail-${feature}" 
-                        rows="2"
-                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-base resize-none"
-                        placeholder="e.g., ${productExamples[feature] || 'Add any specific requirements...'}"
-                    ></textarea>
-                </div>
-            </div>
+                            </div>
         `;
         container.innerHTML += fieldHtml;
     });
     
-    // Restore previously entered details and add event listeners
+    // Restore previously entered values and add event listeners
     quoteData.features.forEach(feature => {
-        const textarea = document.getElementById(`detail-${feature}`);
         const areaInput = document.getElementById(`area-${feature}`);
         const materialSelect = document.getElementById(`material-${feature}`);
         
         // Restore values
-        if (textarea && quoteData.productDetails[feature]) {
-            textarea.value = quoteData.productDetails[feature];
-        }
         if (areaInput && quoteData.productAreas[feature]) {
             areaInput.value = quoteData.productAreas[feature];
         }
@@ -650,12 +636,6 @@ function buildProductDetailFields() {
         }
         
         // Add event listeners
-        if (textarea) {
-            textarea.addEventListener('input', function() {
-                quoteData.productDetails[feature] = this.value;
-                updateSummary();
-            });
-        }
         if (areaInput) {
             areaInput.addEventListener('input', function() {
                 quoteData.productAreas[feature] = this.value;
