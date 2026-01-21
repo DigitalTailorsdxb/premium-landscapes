@@ -283,7 +283,7 @@ const subProducts = {
     'lighting': {
         label: 'Lighting Type',
         options: [
-            { value: 'lighting_fittings', label: 'LED Garden Lighting', price: '££' }
+            { value: 'lighting_default', label: 'LED Garden Lighting', price: '££' }
         ]
     },
     'other': {
@@ -294,8 +294,8 @@ const subProducts = {
                 { value: 'sandstone_step', label: 'Sandstone Steps', price: '£££' },
                 { value: 'granite_step', label: 'Granite Steps', price: '££££' },
                 { value: 'limestone_step', label: 'Limestone Steps', price: '£££' },
-                { value: 'brick_step', label: 'Brick Steps', price: '£££' },
-                { value: 'sleeper_step', label: 'Sleeper Steps', price: '££' }
+                { value: 'brick_steps', label: 'Brick Steps', price: '£££' },
+                { value: 'sleeper_steps', label: 'Sleeper Steps', price: '££' }
             ]},
             { group: 'Walls', options: [
                 { value: 'brick_wall', label: 'Brick Wall (1.2m)', price: '£££' },
@@ -338,27 +338,27 @@ const subProducts = {
                 { value: 'greenhouse_8x10', label: 'Greenhouse (8x10)', price: '££££' },
                 { value: 'timber_shed_6x4', label: 'Timber Shed (6x4)', price: '£££' },
                 { value: 'timber_shed_8x6', label: 'Timber Shed (8x6)', price: '£££' },
-                { value: 'metal_shed', label: 'Metal Shed (6x4)', price: '£££' }
+                { value: 'metal_shed_6x4', label: 'Metal Shed (6x4)', price: '£££' }
             ]},
             { group: 'Fire & Seating', options: [
-                { value: 'firepit', label: 'Fire Pit', price: '£££' },
+                { value: 'sunken_firepit', label: 'Fire Pit', price: '£££' },
                 { value: 'seating_area', label: 'Seating Area', price: '££££' },
                 { value: 'seating_sunken', label: 'Sunken Seating Area', price: '££££' },
                 { value: 'seating_rendered', label: 'Rendered Seating', price: '££££' },
                 { value: 'seating_stone', label: 'Stone Seating', price: '££££' },
-                { value: 'firepit_seating_package', label: 'Fire Pit & Seating Package', price: '££££' }
+                { value: 'sunken_firepit_seating_package', label: 'Fire Pit & Seating Package', price: '££££' }
             ]},
             { group: 'Outdoor Kitchens', options: [
                 { value: 'outdoor_kitchen_starter', label: 'Outdoor Kitchen (Starter)', price: '££££' },
                 { value: 'outdoor_kitchen_standard', label: 'Outdoor Kitchen (Standard)', price: '££££' },
                 { value: 'outdoor_kitchen_premium', label: 'Outdoor Kitchen (Premium)', price: '££££' },
-                { value: 'bbq_area', label: 'BBQ Area Module', price: '£££' },
+                { value: 'bbq_area_module', label: 'BBQ Area Module', price: '£££' },
                 { value: 'built_in_bbq', label: 'Built-in BBQ', price: '£££' }
             ]},
             { group: 'Planters & Beds', options: [
                 { value: 'planting_beds', label: 'Planting Beds', price: '£' },
-                { value: 'rendered_planter', label: 'Rendered Block Planter', price: '£££' },
-                { value: 'raised_bed', label: 'Raised Bed (Sleepers)', price: '£££' }
+                { value: 'rendered_block_planter', label: 'Rendered Block Planter', price: '£££' },
+                { value: 'raised_bed_sleepers', label: 'Raised Bed (Sleepers)', price: '£££' }
             ]},
             { group: 'Hedging & Screening', options: [
                 { value: 'native_hedging', label: 'Native Hedging', price: '£' },
@@ -366,24 +366,24 @@ const subProducts = {
                 { value: 'decorative_screen', label: 'Decorative Screen', price: '£££' }
             ]},
             { group: 'Drainage', options: [
-                { value: 'channel_drain', label: 'Linear Channel Drain', price: '££' },
-                { value: 'soakaway', label: 'Soakaway Crate System', price: '£££' },
+                { value: 'linear_channel_drain', label: 'Linear Channel Drain', price: '££' },
+                { value: 'soakaway_crate', label: 'Soakaway Crate System', price: '£££' },
                 { value: 'french_drain', label: 'French Drain', price: '££' }
             ]},
             { group: 'Aggregates & Gravel', options: [
                 { value: 'decorative_gravel', label: 'Decorative Gravel', price: '£' },
                 { value: 'slate_chippings', label: 'Slate Chippings', price: '££' },
-                { value: 'pebbles', label: 'Decorative Pebbles', price: '££' },
-                { value: 'boulders', label: 'Feature Boulders', price: '£££' },
-                { value: 'rockery', label: 'Rockery Stone', price: '££' }
+                { value: 'pebbles_decorative', label: 'Decorative Pebbles', price: '££' },
+                { value: 'boulders_feature', label: 'Feature Boulders', price: '£££' },
+                { value: 'rockery_stone', label: 'Rockery Stone', price: '££' }
             ]},
             { group: 'Pathways', options: [
-                { value: 'gravel_path', label: 'Gravel Path (Edged)', price: '££' },
+                { value: 'gravel_path_edged', label: 'Gravel Path (Edged)', price: '££' },
                 { value: 'bark_path', label: 'Bark Path', price: '£' },
-                { value: 'stepping_stone', label: 'Stepping Stones', price: '££' }
+                { value: 'stepping_stones', label: 'Stepping Stones', price: '££' }
             ]},
             { group: 'Edging', options: [
-                { value: 'edging', label: 'Paving Edging / Kerbs / Setts', price: '££' }
+                { value: 'paving_edging_kerbs_setts', label: 'Paving Edging / Kerbs / Setts', price: '££' }
             ]},
             { group: 'Planting', options: [
                 { value: 'feature_tree', label: 'Feature Tree', price: '£££' },
