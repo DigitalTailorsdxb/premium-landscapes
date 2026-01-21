@@ -286,51 +286,76 @@ const subProducts = {
             { value: 'lighting_default', label: 'LED Garden Lighting', price: '££' }
         ]
     },
+    'steps': {
+        label: 'Step Material',
+        options: [
+            { value: 'sandstone_step', label: 'Sandstone Steps', price: '£££' },
+            { value: 'granite_step', label: 'Granite Steps', price: '££££' },
+            { value: 'limestone_step', label: 'Limestone Steps', price: '£££' },
+            { value: 'brick_steps', label: 'Brick Steps', price: '£££' },
+            { value: 'sleeper_steps', label: 'Sleeper Steps', price: '££' },
+            { value: 'porcelain_step', label: 'Porcelain Steps', price: '£££' },
+            { value: 'concrete_step', label: 'Concrete Steps', price: '££' }
+        ]
+    },
+    'walls': {
+        label: 'Wall Type',
+        options: [
+            { value: 'brick_wall', label: 'Brick Wall (1.2m)', price: '£££' },
+            { value: 'stone_wall', label: 'Stone Wall (1.2m)', price: '££££' },
+            { value: 'rendered_wall', label: 'Rendered Block Wall (1.2m)', price: '£££' },
+            { value: 'sleeper_wall_0_6', label: 'Sleeper Wall (0.6m)', price: '££' },
+            { value: 'sleeper_wall_1_2', label: 'Sleeper Wall (1.2m)', price: '£££' },
+            { value: 'sandstone_walling', label: 'Sandstone Walling (1.2m)', price: '£££' },
+            { value: 'limestone_walling', label: 'Limestone Walling (1.2m)', price: '££££' },
+            { value: 'granite_walling', label: 'Granite Walling (1.2m)', price: '££££' },
+            { value: 'dry_stone', label: 'Dry Stone Walling', price: '£££' }
+        ]
+    },
+    'water-features': {
+        label: 'Water Feature Type',
+        options: [
+            { value: 'wall_mounted_feature', label: 'Wall-Mounted Water Feature', price: '£££' },
+            { value: 'fountain_small', label: 'Small Fountain', price: '£££' },
+            { value: 'fountain_large', label: 'Large Fountain', price: '££££' },
+            { value: 'water_rill', label: 'Water Rill', price: '£££' },
+            { value: 'cascade_waterfall', label: 'Cascade/Waterfall', price: '££££' },
+            { value: 'water_bowl', label: 'Contemporary Water Bowl', price: '££££' },
+            { value: 'corten_steel_feature', label: 'Corten Steel Feature', price: '££££' },
+            { value: 'small_pond', label: 'Small Garden Pond', price: '£££' },
+            { value: 'medium_pond', label: 'Medium Garden Pond', price: '££££' },
+            { value: 'large_pond', label: 'Large Garden Pond', price: '££££' },
+            { value: 'wildlife_pond', label: 'Wildlife Pond', price: '££££' },
+            { value: 'koi_pond', label: 'Koi Pond', price: '££££' }
+        ]
+    },
+    'pergolas': {
+        label: 'Pergola Type',
+        options: [
+            { value: 'pergola_timber_open', label: 'Timber Pergola (Open)', price: '£££' },
+            { value: 'pergola_timber_roofed', label: 'Timber Pergola (Roofed)', price: '££££' },
+            { value: 'pergola_aluminium', label: 'Aluminium Pergola (Modern)', price: '££££' },
+            { value: 'pergola_steel', label: 'Steel Pergola (Flat-Roof)', price: '££££' },
+            { value: 'gazebo', label: 'Gazebo', price: '££££' }
+        ]
+    },
+    'planting': {
+        label: 'Planting Type',
+        options: [
+            { value: 'feature_tree', label: 'Feature Tree', price: '£££' },
+            { value: 'shrub_large', label: 'Large Shrubs', price: '££' },
+            { value: 'shrub_medium', label: 'Medium Shrubs', price: '£' },
+            { value: 'planting_beds', label: 'Planting Beds', price: '£' },
+            { value: 'rendered_block_planter', label: 'Rendered Block Planter', price: '£££' },
+            { value: 'raised_bed_sleepers', label: 'Raised Bed (Sleepers)', price: '£££' },
+            { value: 'native_hedging', label: 'Native Hedging', price: '£' },
+            { value: 'instant_screening', label: 'Instant Screening', price: '£££' }
+        ]
+    },
     'other': {
         label: 'Product Type',
         options: [
             { value: '', label: '-- Select a product --', price: '' },
-            { group: 'Steps', options: [
-                { value: 'sandstone_step', label: 'Sandstone Steps', price: '£££' },
-                { value: 'granite_step', label: 'Granite Steps', price: '££££' },
-                { value: 'limestone_step', label: 'Limestone Steps', price: '£££' },
-                { value: 'brick_steps', label: 'Brick Steps', price: '£££' },
-                { value: 'sleeper_steps', label: 'Sleeper Steps', price: '££' }
-            ]},
-            { group: 'Walls', options: [
-                { value: 'brick_wall', label: 'Brick Wall (1.2m)', price: '£££' },
-                { value: 'stone_wall', label: 'Stone Wall (1.2m)', price: '££££' },
-                { value: 'rendered_wall', label: 'Rendered Block Wall (1.2m)', price: '£££' },
-                { value: 'sleeper_wall_0_6', label: 'Sleeper Wall (0.6m)', price: '££' },
-                { value: 'sleeper_wall_1_2', label: 'Sleeper Wall (1.2m)', price: '£££' },
-                { value: 'sandstone_walling', label: 'Sandstone Walling (1.2m)', price: '£££' },
-                { value: 'limestone_walling', label: 'Limestone Walling (1.2m)', price: '££££' },
-                { value: 'granite_walling', label: 'Granite Walling (1.2m)', price: '££££' },
-                { value: 'dry_stone', label: 'Dry Stone Walling', price: '£££' }
-            ]},
-            { group: 'Water Features', options: [
-                { value: 'wall_mounted_feature', label: 'Wall-Mounted Water Feature', price: '£££' },
-                { value: 'fountain_small', label: 'Small Fountain', price: '£££' },
-                { value: 'fountain_large', label: 'Large Fountain', price: '££££' },
-                { value: 'water_rill', label: 'Water Rill', price: '£££' },
-                { value: 'cascade_waterfall', label: 'Cascade/Waterfall', price: '££££' },
-                { value: 'water_bowl', label: 'Contemporary Water Bowl', price: '££££' },
-                { value: 'corten_steel_feature', label: 'Corten Steel Feature', price: '££££' }
-            ]},
-            { group: 'Ponds', options: [
-                { value: 'small_pond', label: 'Small Garden Pond', price: '£££' },
-                { value: 'medium_pond', label: 'Medium Garden Pond', price: '££££' },
-                { value: 'large_pond', label: 'Large Garden Pond', price: '££££' },
-                { value: 'wildlife_pond', label: 'Wildlife Pond', price: '££££' },
-                { value: 'koi_pond', label: 'Koi Pond', price: '££££' }
-            ]},
-            { group: 'Pergolas & Structures', options: [
-                { value: 'pergola_timber_open', label: 'Timber Pergola (Open)', price: '£££' },
-                { value: 'pergola_timber_roofed', label: 'Timber Pergola (Roofed)', price: '££££' },
-                { value: 'pergola_aluminium', label: 'Aluminium Pergola (Modern)', price: '££££' },
-                { value: 'pergola_steel', label: 'Steel Pergola (Flat-Roof)', price: '££££' },
-                { value: 'gazebo', label: 'Gazebo', price: '££££' }
-            ]},
             { group: 'Garden Rooms & Storage', options: [
                 { value: 'garden_room', label: 'Garden Room', price: '££££' },
                 { value: 'summer_house', label: 'Summer House', price: '££££' },
@@ -355,16 +380,6 @@ const subProducts = {
                 { value: 'bbq_area_module', label: 'BBQ Area Module', price: '£££' },
                 { value: 'built_in_bbq', label: 'Built-in BBQ', price: '£££' }
             ]},
-            { group: 'Planters & Beds', options: [
-                { value: 'planting_beds', label: 'Planting Beds', price: '£' },
-                { value: 'rendered_block_planter', label: 'Rendered Block Planter', price: '£££' },
-                { value: 'raised_bed_sleepers', label: 'Raised Bed (Sleepers)', price: '£££' }
-            ]},
-            { group: 'Hedging & Screening', options: [
-                { value: 'native_hedging', label: 'Native Hedging', price: '£' },
-                { value: 'instant_screening', label: 'Instant Screening', price: '£££' },
-                { value: 'decorative_screen', label: 'Decorative Screen', price: '£££' }
-            ]},
             { group: 'Drainage', options: [
                 { value: 'linear_channel_drain', label: 'Linear Channel Drain', price: '££' },
                 { value: 'soakaway_crate', label: 'Soakaway Crate System', price: '£££' },
@@ -385,10 +400,8 @@ const subProducts = {
             { group: 'Edging', options: [
                 { value: 'paving_edging_kerbs_setts', label: 'Paving Edging / Kerbs / Setts', price: '££' }
             ]},
-            { group: 'Planting', options: [
-                { value: 'feature_tree', label: 'Feature Tree', price: '£££' },
-                { value: 'shrub_large', label: 'Large Shrubs', price: '££' },
-                { value: 'shrub_medium', label: 'Medium Shrubs', price: '£' }
+            { group: 'Screening', options: [
+                { value: 'decorative_screen', label: 'Decorative Screen', price: '£££' }
             ]},
             { group: 'Gates', options: [
                 { value: 'timber_gate', label: 'Timber Garden Gate', price: '£££' },
@@ -522,6 +535,11 @@ function getUnitConfig(feature, material) {
     const baseConfig = {
         'fencing': { label: 'Length (metres)', placeholder: '25', unit: 'm' },
         'lighting': { label: 'Number of Fittings', placeholder: '8', unit: 'fittings' },
+        'steps': { label: 'Number of Steps', placeholder: '5', unit: 'steps' },
+        'walls': { label: 'Length (metres)', placeholder: '10', unit: 'm' },
+        'water-features': { label: 'Quantity', placeholder: '1', unit: 'qty' },
+        'pergolas': { label: 'Quantity', placeholder: '1', unit: 'qty' },
+        'planting': { label: 'Quantity / Area', placeholder: '10', unit: 'qty' },
         'full-redesign': { label: 'Total Area (m²)', placeholder: '100', unit: 'm²' },
         'default': { label: 'Area (m²)', placeholder: '40', unit: 'm²' }
     };
