@@ -2124,8 +2124,8 @@ function prepareWebhookPayload() {
         
         console.log('🔑 REQUEST ID:', requestId);
         
-        // Add photo for AI design if requested (single consolidated payload)
-        if (quoteData.aiDesign) {
+        // Add photo for AI design if requested (Full Redesign mode only)
+        if (isFullRedesign && quoteData.aiDesign) {
             // Priority: AI-specific photos (Step 5) > Step 4 photos
             const photoSource = aiDesignFiles.length > 0 ? aiDesignFiles : quoteData.files;
             
