@@ -721,6 +721,7 @@ function addProductFromSearch(productId, category, value, label) {
     // Build the product detail fields
     buildProductDetailFieldsNew();
     updateSummary();
+    updateIndividualPhotoSection();
     
     // Show the selected products section
     const section = document.getElementById('selectedProductsSection');
@@ -826,6 +827,7 @@ function removeProductFromSearch(productId) {
     
     buildProductDetailFieldsNew();
     updateSummary();
+    updateIndividualPhotoSection();
 }
 
 // Initialize design vision notes field (for full redesign mode)
@@ -2117,6 +2119,28 @@ function prepareWebhookPayload() {
             }
         }
         
+        // Add individual products photos if any were uploaded
+        if (!isFullRedesign && individualProductsFiles && individualProductsFiles.length > 0) {
+            const individualPhotos = [];
+            for (const file of individualProductsFiles) {
+                try {
+                    const photoData = await convertFileToBase64(file);
+                    individualPhotos.push({
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        data: photoData
+                    });
+                } catch (photoError) {
+                    console.error('Error converting individual photo:', photoError);
+                }
+            }
+            if (individualPhotos.length > 0) {
+                payload.photos = individualPhotos;
+                console.log(`📸 ${individualPhotos.length} individual product photo(s) included in payload`);
+            }
+        }
+        
         return payload;
     });
 }
@@ -2382,6 +2406,133 @@ async function convertFileToBase64(file) {
         reader.onerror = (error) => reject(error);
         reader.readAsDataURL(file);
     });
+}
+
+// ============================================================================
+// INDIVIDUAL PRODUCTS PHOTO UPLOAD (Step 2)
+// ============================================================================
+let individualProductsFiles = [];
+let individualUploadHandlersInitialized = false;
+
+// Initialize individual products file upload handlers
+function initIndividualUploadHandlers() {
+    if (individualUploadHandlersInitialized) return;
+    
+    const dropZone = document.getElementById('individualDropZone');
+    const fileInput = document.getElementById('individualPhotoInput');
+    
+    if (!dropZone || !fileInput) return;
+    
+    // Click to browse
+    dropZone.addEventListener('click', () => fileInput.click());
+    
+    // File selection
+    fileInput.addEventListener('change', (e) => {
+        handleIndividualFiles(Array.from(e.target.files));
+    });
+    
+    // Drag and drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-primary');
+    });
+    
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-primary');
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-primary');
+        const files = Array.from(e.dataTransfer.files).filter(f => 
+            f.type.startsWith('image/') || f.type.startsWith('video/')
+        );
+        handleIndividualFiles(files);
+    });
+    
+    individualUploadHandlersInitialized = true;
+}
+
+// Handle individual products file uploads (multiple images/videos)
+function handleIndividualFiles(files) {
+    if (files.length === 0) return;
+    
+    // Add files to array (max 10 files)
+    files.forEach(file => {
+        if (individualProductsFiles.length < 10 && file.size <= 10 * 1024 * 1024) {
+            individualProductsFiles.push(file);
+        }
+    });
+    
+    displayIndividualFilePreview();
+}
+
+// Display individual file preview
+function displayIndividualFilePreview() {
+    const preview = document.getElementById('individualPhotoPreview');
+    if (!preview) return;
+    
+    if (individualProductsFiles.length === 0) {
+        preview.classList.add('hidden');
+        preview.innerHTML = '';
+        return;
+    }
+    
+    preview.classList.remove('hidden');
+    preview.innerHTML = '';
+    
+    individualProductsFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const div = document.createElement('div');
+            div.className = 'relative';
+            
+            if (file.type.startsWith('video/')) {
+                div.innerHTML = `
+                    <div class="w-full h-24 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-video text-2xl text-gray-400"></i>
+                    </div>
+                    <button 
+                        onclick="removeIndividualFile(${index})" 
+                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                    >
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                `;
+            } else {
+                div.innerHTML = `
+                    <img src="${e.target.result}" class="w-full h-24 object-cover rounded-lg">
+                    <button 
+                        onclick="removeIndividualFile(${index})" 
+                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                    >
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                `;
+            }
+            preview.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// Remove individual file
+function removeIndividualFile(index) {
+    individualProductsFiles.splice(index, 1);
+    displayIndividualFilePreview();
+}
+
+// Show/hide individual photo upload section based on selected products
+function updateIndividualPhotoSection() {
+    const section = document.getElementById('individualPhotoUploadSection');
+    if (!section) return;
+    
+    if (quoteData.selectedProducts && quoteData.selectedProducts.length > 0) {
+        section.classList.remove('hidden');
+        setTimeout(initIndividualUploadHandlers, 100);
+    } else {
+        section.classList.add('hidden');
+    }
 }
 
 // ============================================================================
