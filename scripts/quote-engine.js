@@ -438,47 +438,380 @@ document.addEventListener('DOMContentLoaded', function() {
     updateSummary();
 });
 
-// Product search keywords mapping for better search results
-const productSearchKeywords = {
-    'patio': ['patio', 'paving', 'stone', 'sandstone', 'limestone', 'granite', 'slate', 'porcelain', 'concrete', 'block', 'resin'],
-    'decking': ['decking', 'deck', 'composite', 'timber', 'wood', 'softwood', 'hardwood'],
-    'turf': ['turf', 'lawn', 'grass', 'artificial', 'natural', 'astro'],
-    'driveway': ['driveway', 'drive', 'parking', 'block paving', 'gravel', 'resin'],
-    'fencing': ['fencing', 'fence', 'panels', 'closeboard', 'trellis', 'composite', 'privacy'],
-    'lighting': ['lighting', 'lights', 'led', 'garden lights', 'outdoor lights'],
-    'steps': ['steps', 'stairs', 'staircase', 'sleeper steps', 'stone steps'],
-    'walls': ['walls', 'wall', 'retaining', 'sleeper wall', 'brick wall', 'stone wall', 'rendered'],
-    'water-features': ['water', 'fountain', 'pond', 'rill', 'waterfall', 'cascade', 'koi', 'wildlife'],
-    'pergolas': ['pergola', 'gazebo', 'canopy', 'shade', 'cover', 'aluminium', 'timber pergola'],
-    'planting': ['planting', 'plants', 'trees', 'shrubs', 'hedging', 'beds', 'planters', 'flowers', 'screening'],
-    'other': ['fire pit', 'firepit', 'seating', 'outdoor kitchen', 'bbq', 'barbecue', 'shed', 'greenhouse', 'garden room', 'summer house', 'drainage', 'gravel', 'path', 'pathway', 'edging', 'gate', 'gates', 'storage']
-};
-
-// Initialize product search functionality
-function initializeProductSearch() {
-    const searchInput = document.getElementById('productSearch');
-    if (!searchInput) return;
+// Build flat searchable product list from subProducts
+function buildSearchableProductList() {
+    const products = [];
     
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase().trim();
-        const featureCards = document.querySelectorAll('.feature-card');
-        
-        featureCards.forEach(card => {
-            const feature = card.dataset.feature;
-            const cardText = card.textContent.toLowerCase();
-            const keywords = productSearchKeywords[feature] || [];
-            
-            // Check if search term matches card text or keywords
-            const matchesText = cardText.includes(searchTerm);
-            const matchesKeywords = keywords.some(keyword => keyword.includes(searchTerm) || searchTerm.includes(keyword));
-            
-            if (searchTerm === '' || matchesText || matchesKeywords) {
-                card.style.display = '';
-            } else {
-                card.style.display = 'none';
+    // Category icons for display
+    const categoryIcons = {
+        'patio': 'fa-th-large',
+        'decking': 'fa-border-all',
+        'turf': 'fa-seedling',
+        'driveway': 'fa-car',
+        'fencing': 'fa-border-style',
+        'lighting': 'fa-lightbulb',
+        'steps': 'fa-stairs',
+        'walls': 'fa-layer-group',
+        'water-features': 'fa-water',
+        'pergolas': 'fa-archway',
+        'planting': 'fa-leaf',
+        'other': 'fa-plus-circle'
+    };
+    
+    // Category display names
+    const categoryNames = {
+        'patio': 'Patio',
+        'decking': 'Decking',
+        'turf': 'Lawn/Turf',
+        'driveway': 'Driveway',
+        'fencing': 'Fencing',
+        'lighting': 'Lighting',
+        'steps': 'Steps',
+        'walls': 'Walls',
+        'water-features': 'Water Features',
+        'pergolas': 'Pergolas',
+        'planting': 'Planting',
+        'other': 'Other'
+    };
+    
+    // Keyword synonyms for better search results
+    const keywordSynonyms = {
+        'composite_deck': 'composite timber wood plastic',
+        'softwood_deck': 'timber wood treated pine',
+        'hardwood_deck': 'timber wood oak teak',
+        'natural_turf': 'grass lawn natural real',
+        'artificial_turf': 'astro fake synthetic grass lawn',
+        'indian_sandstone': 'stone paving natural',
+        'block_paving': 'brick blocks driveway',
+        'resin_bound': 'resin gravel smooth',
+        'decorative_gravel': 'gravel stones pebbles',
+        'closeboard_featheredge': 'wooden timber privacy',
+        'composite_fencing': 'modern plastic',
+        'lighting_default': 'led lights outdoor garden',
+        'pergola_timber_open': 'wooden timber shade cover',
+        'pergola_aluminium': 'metal modern shade',
+        'gazebo': 'shelter cover outdoor',
+        'sunken_firepit': 'fire pit firepit bbq',
+        'outdoor_kitchen_starter': 'bbq barbecue cooking',
+        'outdoor_kitchen_standard': 'bbq barbecue cooking grill',
+        'outdoor_kitchen_premium': 'bbq barbecue kitchen cooking',
+        'bbq_area_module': 'barbecue grill cooking',
+        'built_in_bbq': 'barbecue grill',
+        'garden_room': 'office studio building',
+        'summer_house': 'building cabin',
+        'timber_shed_6x4': 'storage shed wooden',
+        'timber_shed_8x6': 'storage shed wooden',
+        'feature_tree': 'tree specimen plant',
+        'native_hedging': 'hedge privacy screening',
+        'instant_screening': 'privacy hedge bamboo',
+        'seating_area': 'bench seat outdoor'
+    };
+    
+    Object.keys(subProducts).forEach(category => {
+        const config = subProducts[category];
+        config.options.forEach(opt => {
+            if (opt.group) {
+                // Handle grouped options (like in 'other')
+                opt.options.forEach(subOpt => {
+                    if (subOpt.value) {
+                        const synonyms = keywordSynonyms[subOpt.value] || '';
+                        products.push({
+                            id: `${category}_${subOpt.value}`,
+                            category: category,
+                            categoryName: categoryNames[category] || category,
+                            categoryIcon: categoryIcons[category] || 'fa-cube',
+                            value: subOpt.value,
+                            label: subOpt.label,
+                            group: opt.group,
+                            searchText: `${subOpt.label} ${opt.group} ${categoryNames[category]} ${synonyms}`.toLowerCase()
+                        });
+                    }
+                });
+            } else if (opt.value) {
+                const synonyms = keywordSynonyms[opt.value] || '';
+                products.push({
+                    id: `${category}_${opt.value}`,
+                    category: category,
+                    categoryName: categoryNames[category] || category,
+                    categoryIcon: categoryIcons[category] || 'fa-cube',
+                    value: opt.value,
+                    label: opt.label,
+                    group: null,
+                    searchText: `${opt.label} ${categoryNames[category]} ${synonyms}`.toLowerCase()
+                });
             }
         });
     });
+    
+    return products;
+}
+
+// Searchable product list (built once on load)
+const searchableProducts = buildSearchableProductList();
+
+// Initialize product search functionality with autocomplete
+function initializeProductSearch() {
+    const searchInput = document.getElementById('productSearch');
+    const dropdown = document.getElementById('searchResultsDropdown');
+    const toggleBtn = document.getElementById('browseCategoriesToggle');
+    const toggleContent = document.getElementById('browseCategoriesContent');
+    const toggleIcon = document.getElementById('browseCategoriesIcon');
+    
+    if (!searchInput || !dropdown) return;
+    
+    // Browse categories toggle
+    if (toggleBtn && toggleContent && toggleIcon) {
+        toggleBtn.addEventListener('click', function() {
+            const isHidden = toggleContent.classList.contains('hidden');
+            toggleContent.classList.toggle('hidden');
+            toggleIcon.style.transform = isHidden ? 'rotate(180deg)' : '';
+        });
+    }
+    
+    // Search input handler
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        
+        if (searchTerm.length < 2) {
+            dropdown.classList.add('hidden');
+            dropdown.innerHTML = '';
+            return;
+        }
+        
+        // Filter products
+        const matches = searchableProducts.filter(product => 
+            product.searchText.includes(searchTerm) || 
+            product.label.toLowerCase().includes(searchTerm)
+        ).slice(0, 15); // Limit to 15 results
+        
+        if (matches.length === 0) {
+            dropdown.innerHTML = `
+                <div class="px-4 py-6 text-center text-gray-500">
+                    <i class="fas fa-search text-2xl mb-2 opacity-50"></i>
+                    <p>No products found for "${this.value}"</p>
+                    <p class="text-sm mt-1">Try a different search term</p>
+                </div>
+            `;
+            dropdown.classList.remove('hidden');
+            return;
+        }
+        
+        // Build results HTML
+        let resultsHtml = '';
+        let currentCategory = '';
+        
+        matches.forEach(product => {
+            // Add category header if changed
+            if (product.categoryName !== currentCategory) {
+                if (currentCategory !== '') {
+                    resultsHtml += '</div>';
+                }
+                currentCategory = product.categoryName;
+                resultsHtml += `
+                    <div class="px-3 py-2 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center">
+                        <i class="fas ${product.categoryIcon} mr-2 text-primary"></i>
+                        ${product.categoryName}
+                    </div>
+                    <div>
+                `;
+            }
+            
+            // Check if already selected
+            const isSelected = quoteData.selectedProducts && quoteData.selectedProducts.some(p => p.id === product.id);
+            
+            resultsHtml += `
+                <div class="search-result-item group px-4 py-3 hover:bg-primary/5 cursor-pointer flex items-center justify-between transition-colors ${isSelected ? 'bg-green-50' : ''}"
+                     data-product-id="${product.id}"
+                     data-category="${product.category}"
+                     data-value="${product.value}"
+                     data-label="${product.label}">
+                    <div>
+                        <span class="font-medium text-gray-900">${product.label}</span>
+                        ${product.group ? `<span class="text-xs text-gray-400 ml-2">${product.group}</span>` : ''}
+                    </div>
+                    ${isSelected 
+                        ? '<span class="text-green-600 text-sm"><i class="fas fa-check-circle"></i> Added</span>' 
+                        : '<span class="text-primary text-sm opacity-0 group-hover:opacity-100"><i class="fas fa-plus-circle"></i> Add</span>'}
+                </div>
+            `;
+        });
+        
+        if (currentCategory !== '') {
+            resultsHtml += '</div>';
+        }
+        
+        dropdown.innerHTML = resultsHtml;
+        dropdown.classList.remove('hidden');
+        
+        // Add click handlers to results
+        dropdown.querySelectorAll('.search-result-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                const category = this.dataset.category;
+                const value = this.dataset.value;
+                const label = this.dataset.label;
+                
+                addProductFromSearch(productId, category, value, label);
+                
+                // Clear search and close dropdown
+                searchInput.value = '';
+                dropdown.classList.add('hidden');
+                dropdown.innerHTML = '';
+            });
+        });
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+    
+    // Focus shows dropdown if there's text
+    searchInput.addEventListener('focus', function() {
+        if (this.value.length >= 2) {
+            this.dispatchEvent(new Event('input'));
+        }
+    });
+}
+
+// Add product from search selection
+function addProductFromSearch(productId, category, value, label) {
+    // Initialize selectedProducts array if needed
+    if (!quoteData.selectedProducts) {
+        quoteData.selectedProducts = [];
+    }
+    
+    // Check if already added
+    if (quoteData.selectedProducts.some(p => p.id === productId)) {
+        return; // Already added
+    }
+    
+    // Add to selected products
+    quoteData.selectedProducts.push({
+        id: productId,
+        category: category,
+        value: value,
+        label: label
+    });
+    
+    // Also add to features for compatibility
+    if (!quoteData.features.includes(category)) {
+        quoteData.features.push(category);
+    }
+    
+    // Set the material for this category
+    quoteData.productMaterials[category] = value;
+    
+    // Build the product detail fields
+    buildProductDetailFieldsNew();
+    updateSummary();
+    
+    // Show the selected products section
+    const section = document.getElementById('selectedProductsSection');
+    if (section) {
+        section.classList.remove('hidden');
+    }
+}
+
+// New product detail fields builder for search-based selection
+function buildProductDetailFieldsNew() {
+    const container = document.getElementById('productDetailFields');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (!quoteData.selectedProducts || quoteData.selectedProducts.length === 0) {
+        const section = document.getElementById('selectedProductsSection');
+        if (section) {
+            section.classList.add('hidden');
+        }
+        return;
+    }
+    
+    quoteData.selectedProducts.forEach((product, index) => {
+        const config = getUnitConfig(product.category, product.value);
+        
+        const fieldHtml = `
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow product-detail-field" data-product-id="${product.id}">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
+                    <h4 class="font-bold text-gray-900 text-base flex items-center">
+                        <span class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-check text-green-600 text-sm"></i>
+                        </span>
+                        ${product.label}
+                    </h4>
+                    <button type="button" onclick="removeProductFromSearch('${product.id}')" class="text-gray-400 hover:text-red-500 transition-colors text-sm flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-red-50">
+                        <i class="fas fa-times"></i>
+                        <span class="hidden sm:inline">Remove</span>
+                    </button>
+                </div>
+                
+                <!-- Size/Quantity Input -->
+                <div id="area-container-${product.id}">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2" id="area-label-${product.id}">${config.label}</label>
+                    <div class="flex gap-2">
+                        <input 
+                            type="number" 
+                            id="area-${product.id}"
+                            min="1"
+                            class="flex-1 px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-base"
+                            placeholder="${config.placeholder}"
+                            value="${quoteData.productAreas[product.id] || ''}"
+                        />
+                        <span class="flex items-center px-4 text-gray-600 bg-gray-100 rounded-xl font-medium" id="area-unit-${product.id}">${config.unit}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.innerHTML += fieldHtml;
+    });
+    
+    // Add event listeners for area inputs
+    quoteData.selectedProducts.forEach(product => {
+        const areaInput = document.getElementById(`area-${product.id}`);
+        if (areaInput) {
+            areaInput.addEventListener('input', function() {
+                quoteData.productAreas[product.id] = this.value;
+                updateSummary();
+            });
+        }
+    });
+}
+
+// Remove product from search selection
+function removeProductFromSearch(productId) {
+    if (!quoteData.selectedProducts) return;
+    
+    // Find and remove the product
+    const index = quoteData.selectedProducts.findIndex(p => p.id === productId);
+    if (index > -1) {
+        const removedProduct = quoteData.selectedProducts[index];
+        quoteData.selectedProducts.splice(index, 1);
+        
+        // Remove from areas (keyed by product.id)
+        delete quoteData.productAreas[productId];
+        
+        // Check if category still has products
+        const categoryStillHasProducts = quoteData.selectedProducts.some(p => p.category === removedProduct.category);
+        
+        if (!categoryStillHasProducts) {
+            // No more products in this category - remove from features
+            quoteData.features = quoteData.features.filter(f => f !== removedProduct.category);
+            delete quoteData.productMaterials[removedProduct.category];
+        } else {
+            // Update productMaterials to reflect remaining products in this category
+            const remainingInCategory = quoteData.selectedProducts.filter(p => p.category === removedProduct.category);
+            if (remainingInCategory.length > 0) {
+                // Use the first remaining product's value as the category material
+                quoteData.productMaterials[removedProduct.category] = remainingInCategory[0].value;
+            }
+        }
+    }
+    
+    buildProductDetailFieldsNew();
+    updateSummary();
 }
 
 // Initialize design vision notes field (for full redesign mode)
@@ -529,25 +862,38 @@ function initializeQuoteModeCards() {
 // Feature card selection (for individual products in Step 2)
 function initializeFeatureCards() {
     const featureCards = document.querySelectorAll('.feature-card');
+    const searchInput = document.getElementById('productSearch');
+    
     featureCards.forEach(card => {
         card.addEventListener('click', function() {
             const feature = this.dataset.feature;
-            this.classList.toggle('selected');
             
-            if (this.classList.contains('selected')) {
-                if (!quoteData.features.includes(feature)) {
-                    quoteData.features.push(feature);
-                    quoteData.productDetails[feature] = ''; // Initialize with empty details
-                }
-            } else {
-                quoteData.features = quoteData.features.filter(f => f !== feature);
-                delete quoteData.productDetails[feature];
-                delete quoteData.productAreas[feature];
-                delete quoteData.productMaterials[feature];
+            // Get the category display name
+            const categoryNames = {
+                'patio': 'Patio',
+                'decking': 'Decking',
+                'turf': 'Turf',
+                'driveway': 'Driveway',
+                'fencing': 'Fencing',
+                'lighting': 'Lighting',
+                'steps': 'Steps',
+                'walls': 'Walls',
+                'water-features': 'Water',
+                'pergolas': 'Pergola',
+                'planting': 'Planting',
+                'other': ''
+            };
+            
+            // Pre-fill search with category name to show all products in that category
+            if (searchInput) {
+                const searchTerm = categoryNames[feature] || feature;
+                searchInput.value = searchTerm;
+                searchInput.focus();
+                searchInput.dispatchEvent(new Event('input'));
+                
+                // Scroll to search
+                searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-            
-            buildProductDetailFields();
-            updateSummary();
         });
     });
 }
@@ -1152,8 +1498,30 @@ function updateSummary() {
         `;
     }
     
-    // Show selected products for individual mode
-    if (quoteData.quoteMode === 'individual-products' && quoteData.features.length > 0) {
+    // Show selected products for individual mode (new search-based selection)
+    if (quoteData.quoteMode === 'individual-products' && quoteData.selectedProducts && quoteData.selectedProducts.length > 0) {
+        html += '<div class="space-y-2 mt-2">';
+        quoteData.selectedProducts.forEach(product => {
+            const area = quoteData.productAreas[product.id] || '';
+            const unitConfig = getUnitConfig(product.category, product.value);
+            
+            // Build display text
+            let displayText = product.label;
+            if (area) {
+                displayText += ` (${area}${unitConfig.unit})`;
+            }
+            
+            html += `
+                <div class="summary-item flex items-center space-x-2 bg-stone px-3 py-2 rounded-lg">
+                    <i class="fas fa-check-circle text-green-500"></i>
+                    <span class="text-sm font-semibold">${displayText}</span>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+    // Fallback: Show selected products for legacy category-based selection
+    else if (quoteData.quoteMode === 'individual-products' && quoteData.features.length > 0) {
         html += '<div class="space-y-2 mt-2">';
         quoteData.features.forEach(feature => {
             const featureName = feature.charAt(0).toUpperCase() + feature.slice(1).replace('-', ' ');
