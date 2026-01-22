@@ -954,10 +954,10 @@ function getUnitConfig(feature, material) {
         if (material.includes('step')) {
             return { label: 'Number of Steps', placeholder: '5', unit: 'steps' };
         }
-        // Walls, hedging, edging, drainage
+        // Walls, hedging, edging, drainage, raised beds
         if (material.includes('wall') || material.includes('hedging') || material.includes('screening') || 
             material.includes('edging') || material.includes('drain') || material.includes('rill') ||
-            material.includes('path')) {
+            material.includes('path') || material.includes('raised_bed')) {
             return { label: 'Length (metres)', placeholder: '10', unit: 'm' };
         }
         // Individual items (pergolas, sheds, fire pits, etc.)
