@@ -2090,6 +2090,23 @@ function prepareWebhookPayload() {
             console.log('🎨 Full Garden Design data included:', payload.project.gardenDesign);
         }
         
+        // Add items array for individual products (n8n expected format)
+        if (!isFullRedesign && quoteData.selectedProducts && quoteData.selectedProducts.length > 0) {
+            payload.items = quoteData.selectedProducts.map(product => {
+                const quantity = parseInt(quoteData.productAreas[product.id]) || 1;
+                const unitConfig = getUnitConfig(product.category, product.value);
+                
+                return {
+                    category: product.category,
+                    product: product.value,
+                    productLabel: product.label,
+                    quantity: quantity,
+                    unit: unitConfig?.unit || 'm²'
+                };
+            });
+            console.log('📦 Individual products items array:', payload.items);
+        }
+        
         // Add metadata for n8n workflow tracking
         // Generate unique request ID to trace duplicates
         const requestId = 'REQ-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8);
