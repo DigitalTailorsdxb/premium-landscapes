@@ -1329,9 +1329,27 @@ function nextStep() {
     }
     
     // Step 2: Validate products selected for individual-products mode
-    if (currentStep === 2 && quoteData.quoteMode === 'individual-products' && quoteData.features.length === 0) {
-        alert('Please select at least one product');
-        return;
+    if (currentStep === 2 && quoteData.quoteMode === 'individual-products') {
+        // Check at least one product selected
+        if (!quoteData.selectedProducts || quoteData.selectedProducts.length === 0) {
+            alert('Please select at least one product');
+            return;
+        }
+        
+        // Validate all products have quantities/areas filled in
+        const missingQuantities = [];
+        quoteData.selectedProducts.forEach(product => {
+            const areaInput = document.getElementById(`area-${product.id}`);
+            const value = areaInput ? parseInt(areaInput.value) : 0;
+            if (!value || value <= 0) {
+                missingQuantities.push(product.label);
+            }
+        });
+        
+        if (missingQuantities.length > 0) {
+            alert(`Please enter quantities for: ${missingQuantities.join(', ')}`);
+            return;
+        }
     }
     
     // Step 3: Garden size (m²) is mandatory for Full Garden Redesign
