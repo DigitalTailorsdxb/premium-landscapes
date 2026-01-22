@@ -241,6 +241,153 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.4; }
         }
+        
+        /* ============================================
+           MOBILE-FIRST OPTIMIZATIONS
+           ============================================ */
+        
+        /* Larger touch targets on mobile */
+        @media (max-width: 767px) {
+            /* Make all inputs larger for touch */
+            input[type="text"], 
+            input[type="email"], 
+            input[type="tel"], 
+            input[type="number"],
+            textarea,
+            select {
+                font-size: 16px !important; /* Prevents iOS zoom */
+                min-height: 52px;
+                padding: 14px 16px !important;
+            }
+            
+            /* Larger buttons for touch */
+            button {
+                min-height: 48px;
+            }
+            
+            /* Better search dropdown on mobile */
+            #searchResultsDropdown {
+                position: fixed !important;
+                top: auto !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                max-height: 70vh !important;
+                border-radius: 24px 24px 0 0 !important;
+                margin: 0 !important;
+                box-shadow: 0 -10px 40px rgba(0,0,0,0.15) !important;
+                z-index: 9999 !important;
+            }
+            
+            /* Search result items - larger touch targets */
+            .search-result-item {
+                padding: 16px !important;
+                min-height: 60px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            
+            /* Product cards in grid - larger touch targets */
+            .feature-card {
+                padding: 16px 12px !important;
+                min-height: 80px;
+            }
+            
+            /* Quote mode cards - more prominent on mobile */
+            .quote-mode-card {
+                padding: 20px !important;
+            }
+            
+            /* Selected products - easier to interact with */
+            .product-detail-field {
+                padding: 16px !important;
+            }
+            
+            /* Progress bar - fixed at top on mobile */
+            .progress-container-mobile {
+                position: sticky;
+                top: 64px;
+                z-index: 40;
+                background: white;
+                padding: 12px 16px;
+                margin: -16px -16px 16px -16px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            
+            /* Hide summary panel on mobile until later steps */
+            .summary-panel-mobile {
+                display: none;
+            }
+            
+            /* Summary panel as slide-up on mobile */
+            .summary-toggle-btn {
+                display: flex !important;
+                position: fixed;
+                bottom: 80px;
+                right: 16px;
+                background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 50px;
+                box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
+                z-index: 50;
+                font-weight: 600;
+            }
+            
+            /* Main content - more padding for touch */
+            .quote-form-container {
+                padding: 16px !important;
+            }
+            
+            /* Step headings - clearer on mobile */
+            .step-container h2 {
+                font-size: 1.25rem !important;
+                line-height: 1.4;
+            }
+            
+            /* Spacing improvements */
+            .space-y-4 > * + * {
+                margin-top: 1.25rem;
+            }
+            
+            /* Remove button - easier to tap */
+            .remove-product-btn {
+                padding: 8px 16px !important;
+                font-size: 14px !important;
+            }
+            
+            /* Category grid - 2 columns on small phones */
+            @media (max-width: 380px) {
+                #productGrid {
+                    grid-template-columns: repeat(2, 1fr) !important;
+                }
+            }
+        }
+        
+        /* Tablet optimizations */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .quote-form-container {
+                padding: 24px;
+            }
+        }
+        
+        /* Hide summary toggle on desktop */
+        .summary-toggle-btn {
+            display: none;
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Active states for touch feedback */
+        button:active, 
+        .feature-card:active, 
+        .quote-mode-card:active,
+        .search-result-item:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body class="bg-white text-gray-800">
@@ -463,29 +610,33 @@
                                                 <i class="fas fa-seedling text-2xl text-primary mb-1"></i>
                                                 <p class="font-medium text-sm">Lawn/Turf</p>
                                             </div>
-                                            <div class="feature-card cursor-pointer p-3 border border-gray-200 rounded-lg text-center hover:shadow-md hover:border-primary transition-all" data-feature="driveway">
-                                                <i class="fas fa-car text-2xl text-primary mb-1"></i>
-                                                <p class="font-medium text-sm">Driveway</p>
-                                            </div>
                                             <div class="feature-card cursor-pointer p-3 border border-gray-200 rounded-lg text-center hover:shadow-md hover:border-primary transition-all" data-feature="fencing">
                                                 <i class="fas fa-border-style text-2xl text-primary mb-1"></i>
                                                 <p class="font-medium text-sm">Fencing</p>
                                             </div>
-                                            <div class="feature-card cursor-pointer p-3 border border-gray-200 rounded-lg text-center hover:shadow-md hover:border-primary transition-all" data-feature="lighting">
-                                                <i class="fas fa-lightbulb text-2xl text-primary mb-1"></i>
-                                                <p class="font-medium text-sm">Lighting</p>
-                                            </div>
-                                            <div class="feature-card cursor-pointer p-3 border border-gray-200 rounded-lg text-center hover:shadow-md hover:border-primary transition-all" data-feature="steps">
-                                                <i class="fas fa-stairs text-2xl text-primary mb-1"></i>
-                                                <p class="font-medium text-sm">Steps</p>
+                                            <div class="feature-card cursor-pointer p-3 border border-gray-200 rounded-lg text-center hover:shadow-md hover:border-primary transition-all" data-feature="hedging">
+                                                <i class="fas fa-tree text-2xl text-primary mb-1"></i>
+                                                <p class="font-medium text-sm">Hedging</p>
                                             </div>
                                             <div class="feature-card cursor-pointer p-3 border border-gray-200 rounded-lg text-center hover:shadow-md hover:border-primary transition-all" data-feature="walls">
                                                 <i class="fas fa-layer-group text-2xl text-primary mb-1"></i>
                                                 <p class="font-medium text-sm">Walls</p>
                                             </div>
+                                            <div class="feature-card cursor-pointer p-3 border border-gray-200 rounded-lg text-center hover:shadow-md hover:border-primary transition-all" data-feature="steps">
+                                                <i class="fas fa-stairs text-2xl text-primary mb-1"></i>
+                                                <p class="font-medium text-sm">Steps</p>
+                                            </div>
+                                            <div class="feature-card cursor-pointer p-3 border border-gray-200 rounded-lg text-center hover:shadow-md hover:border-primary transition-all" data-feature="aggregates">
+                                                <i class="fas fa-circle text-2xl text-primary mb-1"></i>
+                                                <p class="font-medium text-sm">Gravel</p>
+                                            </div>
                                             <div class="feature-card cursor-pointer p-3 border border-gray-200 rounded-lg text-center hover:shadow-md hover:border-primary transition-all" data-feature="water-features">
                                                 <i class="fas fa-water text-2xl text-primary mb-1"></i>
-                                                <p class="font-medium text-sm">Water Features</p>
+                                                <p class="font-medium text-sm">Water</p>
+                                            </div>
+                                            <div class="feature-card cursor-pointer p-3 border border-gray-200 rounded-lg text-center hover:shadow-md hover:border-primary transition-all" data-feature="ponds">
+                                                <i class="fas fa-fish text-2xl text-primary mb-1"></i>
+                                                <p class="font-medium text-sm">Ponds</p>
                                             </div>
                                             <div class="feature-card cursor-pointer p-3 border border-gray-200 rounded-lg text-center hover:shadow-md hover:border-primary transition-all" data-feature="pergolas">
                                                 <i class="fas fa-archway text-2xl text-primary mb-1"></i>
@@ -494,6 +645,14 @@
                                             <div class="feature-card cursor-pointer p-3 border border-gray-200 rounded-lg text-center hover:shadow-md hover:border-primary transition-all" data-feature="planting">
                                                 <i class="fas fa-leaf text-2xl text-primary mb-1"></i>
                                                 <p class="font-medium text-sm">Planting</p>
+                                            </div>
+                                            <div class="feature-card cursor-pointer p-3 border border-gray-200 rounded-lg text-center hover:shadow-md hover:border-primary transition-all" data-feature="lighting">
+                                                <i class="fas fa-lightbulb text-2xl text-primary mb-1"></i>
+                                                <p class="font-medium text-sm">Lighting</p>
+                                            </div>
+                                            <div class="feature-card cursor-pointer p-3 border border-gray-200 rounded-lg text-center hover:shadow-md hover:border-primary transition-all" data-feature="drainage">
+                                                <i class="fas fa-tint text-2xl text-primary mb-1"></i>
+                                                <p class="font-medium text-sm">Drainage</p>
                                             </div>
                                             <div class="feature-card cursor-pointer p-3 border border-gray-200 rounded-lg text-center hover:shadow-md hover:border-primary transition-all" data-feature="other">
                                                 <i class="fas fa-plus-circle text-2xl text-primary mb-1"></i>
