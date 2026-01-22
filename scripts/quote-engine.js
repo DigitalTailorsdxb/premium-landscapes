@@ -1400,6 +1400,12 @@ function nextStep() {
     // Show next step
     currentStep++;
     
+    // Skip step 3 (Project Size & Budget) for individual products mode
+    // since users already specify quantities for each product
+    if (currentStep === 3 && quoteData.quoteMode === 'individual-products') {
+        currentStep++;
+    }
+    
     // Special handling for Step 2: detect Full Redesign mode
     if (currentStep === 2) {
         updateStep2Mode();
@@ -1467,6 +1473,12 @@ function prevStep() {
     
     // Show previous step
     currentStep--;
+    
+    // Skip step 3 (Project Size & Budget) for individual products mode when going back
+    if (currentStep === 3 && quoteData.quoteMode === 'individual-products') {
+        currentStep--;
+    }
+    
     document.getElementById(`step${currentStep}`).classList.remove('hidden');
     
     // Update progress
