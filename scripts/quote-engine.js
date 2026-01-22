@@ -1425,6 +1425,16 @@ function nextStep() {
     // Update AI design visibility when entering step 5
     if (currentStep === 5) {
         updateAIDesignVisibility();
+        
+        // Update button text - "Submit Quote" for individual products, "Continue" for full redesign
+        const step5Btn = document.getElementById('step5ContinueBtn');
+        if (step5Btn) {
+            if (quoteData.quoteMode === 'individual-products') {
+                step5Btn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> Get My Quote';
+            } else {
+                step5Btn.innerHTML = 'Continue <i class="fas fa-arrow-right ml-2"></i>';
+            }
+        }
     }
     
     // Initialize AI upload handlers when entering step 6
