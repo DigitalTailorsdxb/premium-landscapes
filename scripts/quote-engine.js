@@ -586,19 +586,22 @@ function initializeProductSearch() {
         
         if (matches.length === 0) {
             dropdown.innerHTML = `
-                <div class="px-4 py-6 text-center text-gray-500">
-                    <i class="fas fa-search text-2xl mb-2 opacity-50"></i>
-                    <p>No products found for "${this.value}"</p>
-                    <p class="text-sm mt-1">Try a different search term</p>
+                <div class="px-6 py-8 text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                        <i class="fas fa-search text-2xl text-gray-400"></i>
+                    </div>
+                    <p class="text-gray-600 font-medium">No products found for "${this.value}"</p>
+                    <p class="text-sm text-gray-400 mt-2">Try searching for "patio", "decking", or "bbq"</p>
                 </div>
             `;
             dropdown.classList.remove('hidden');
             return;
         }
         
-        // Build results HTML
-        let resultsHtml = '';
+        // Build results HTML with modern styling
+        let resultsHtml = '<div class="py-2">';
         let currentCategory = '';
+        let itemIndex = 0;
         
         matches.forEach(product => {
             // Add category header if changed
@@ -608,30 +611,40 @@ function initializeProductSearch() {
                 }
                 currentCategory = product.categoryName;
                 resultsHtml += `
-                    <div class="px-3 py-2 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center">
-                        <i class="fas ${product.categoryIcon} mr-2 text-primary"></i>
-                        ${product.categoryName}
+                    <div class="sticky top-0 px-4 py-3 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 flex items-center gap-3 z-10">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+                            <i class="fas ${product.categoryIcon} text-primary text-sm"></i>
+                        </div>
+                        <span class="font-bold text-gray-700 text-sm uppercase tracking-wide">${product.categoryName}</span>
                     </div>
-                    <div>
+                    <div class="divide-y divide-gray-50">
                 `;
             }
             
             // Check if already selected
             const isSelected = quoteData.selectedProducts && quoteData.selectedProducts.some(p => p.id === product.id);
+            itemIndex++;
             
             resultsHtml += `
-                <div class="search-result-item group px-4 py-3 hover:bg-primary/5 cursor-pointer flex items-center justify-between transition-colors ${isSelected ? 'bg-green-50' : ''}"
+                <div class="search-result-item group px-4 py-3.5 cursor-pointer flex items-center justify-between transition-all duration-200 ${isSelected ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500' : 'hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5 border-l-4 border-transparent hover:border-primary'}"
                      data-product-id="${product.id}"
                      data-category="${product.category}"
                      data-value="${product.value}"
                      data-label="${product.label}">
-                    <div>
-                        <span class="font-medium text-gray-900">${product.label}</span>
-                        ${product.group ? `<span class="text-xs text-gray-400 ml-2">${product.group}</span>` : ''}
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl ${isSelected ? 'bg-gradient-to-br from-green-400 to-emerald-500' : 'bg-gradient-to-br from-gray-100 to-gray-200 group-hover:from-primary/20 group-hover:to-accent/20'} flex items-center justify-center transition-all duration-200">
+                            <i class="fas ${isSelected ? 'fa-check text-white' : product.categoryIcon + ' text-gray-500 group-hover:text-primary'} text-sm"></i>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-gray-800 block">${product.label}</span>
+                            ${product.group ? `<span class="text-xs text-gray-400">${product.group}</span>` : ''}
+                        </div>
                     </div>
-                    ${isSelected 
-                        ? '<span class="text-green-600 text-sm"><i class="fas fa-check-circle"></i> Added</span>' 
-                        : '<span class="text-primary text-sm opacity-0 group-hover:opacity-100"><i class="fas fa-plus-circle"></i> Add</span>'}
+                    <div class="flex items-center gap-2">
+                        ${isSelected 
+                            ? '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500 text-white text-xs font-bold shadow-sm"><i class="fas fa-check"></i> Added</span>' 
+                            : '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-plus"></i> Add</span>'}
+                    </div>
                 </div>
             `;
         });
@@ -639,6 +652,7 @@ function initializeProductSearch() {
         if (currentCategory !== '') {
             resultsHtml += '</div>';
         }
+        resultsHtml += '</div>';
         
         dropdown.innerHTML = resultsHtml;
         dropdown.classList.remove('hidden');
