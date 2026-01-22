@@ -404,8 +404,21 @@
                             
                             <!-- Standard Mode Content (for individual products) -->
                             <div id="step2Standard">
+                                <!-- Product Search Bar -->
+                                <div class="mb-6">
+                                    <div class="relative">
+                                        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                        <input 
+                                            type="text" 
+                                            id="productSearch" 
+                                            placeholder="Search products (e.g. patio, pergola, fire pit...)" 
+                                            class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-base"
+                                        />
+                                    </div>
+                                </div>
+
                                 <!-- Product Selection Grid -->
-                                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                                <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                                     <div class="feature-card cursor-pointer p-4 border-2 border-gray-200 rounded-xl text-center hover:shadow-lg transition-all" data-feature="patio">
                                         <i class="fas fa-th-large text-4xl text-primary mb-2"></i>
                                         <p class="font-semibold">Patio</p>

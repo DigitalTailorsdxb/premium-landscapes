@@ -427,6 +427,7 @@ const productExamples = {
 document.addEventListener('DOMContentLoaded', function() {
     initializeQuoteModeCards();
     initializeFeatureCards();
+    initializeProductSearch();
     initializeAreaSlider();
     initializeBudgetOptions();
     initializeFileUpload();
@@ -436,6 +437,49 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeDesignVisionNotes();
     updateSummary();
 });
+
+// Product search keywords mapping for better search results
+const productSearchKeywords = {
+    'patio': ['patio', 'paving', 'stone', 'sandstone', 'limestone', 'granite', 'slate', 'porcelain', 'concrete', 'block', 'resin'],
+    'decking': ['decking', 'deck', 'composite', 'timber', 'wood', 'softwood', 'hardwood'],
+    'turf': ['turf', 'lawn', 'grass', 'artificial', 'natural', 'astro'],
+    'driveway': ['driveway', 'drive', 'parking', 'block paving', 'gravel', 'resin'],
+    'fencing': ['fencing', 'fence', 'panels', 'closeboard', 'trellis', 'composite', 'privacy'],
+    'lighting': ['lighting', 'lights', 'led', 'garden lights', 'outdoor lights'],
+    'steps': ['steps', 'stairs', 'staircase', 'sleeper steps', 'stone steps'],
+    'walls': ['walls', 'wall', 'retaining', 'sleeper wall', 'brick wall', 'stone wall', 'rendered'],
+    'water-features': ['water', 'fountain', 'pond', 'rill', 'waterfall', 'cascade', 'koi', 'wildlife'],
+    'pergolas': ['pergola', 'gazebo', 'canopy', 'shade', 'cover', 'aluminium', 'timber pergola'],
+    'planting': ['planting', 'plants', 'trees', 'shrubs', 'hedging', 'beds', 'planters', 'flowers', 'screening'],
+    'other': ['fire pit', 'firepit', 'seating', 'outdoor kitchen', 'bbq', 'barbecue', 'shed', 'greenhouse', 'garden room', 'summer house', 'drainage', 'gravel', 'path', 'pathway', 'edging', 'gate', 'gates', 'storage']
+};
+
+// Initialize product search functionality
+function initializeProductSearch() {
+    const searchInput = document.getElementById('productSearch');
+    if (!searchInput) return;
+    
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        const featureCards = document.querySelectorAll('.feature-card');
+        
+        featureCards.forEach(card => {
+            const feature = card.dataset.feature;
+            const cardText = card.textContent.toLowerCase();
+            const keywords = productSearchKeywords[feature] || [];
+            
+            // Check if search term matches card text or keywords
+            const matchesText = cardText.includes(searchTerm);
+            const matchesKeywords = keywords.some(keyword => keyword.includes(searchTerm) || searchTerm.includes(keyword));
+            
+            if (searchTerm === '' || matchesText || matchesKeywords) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+}
 
 // Initialize design vision notes field (for full redesign mode)
 function initializeDesignVisionNotes() {
