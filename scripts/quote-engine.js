@@ -224,11 +224,12 @@ function stopProgressAnimation() {
     progressState.timeouts = [];
 }
 
-// Sub-products configuration - matches n8n pricing workflow allocation keys
+// Sub-products configuration - matches n8n pricing workflow allocation keys EXACTLY
 const subProducts = {
     'patio': {
         label: 'Paving Material',
         options: [
+            // Natural Stone Paving
             { value: 'indian_sandstone', label: 'Indian Sandstone', price: '££' },
             { value: 'limestone_paving', label: 'Limestone', price: '£££' },
             { value: 'granite_paving', label: 'Granite', price: '£££' },
@@ -236,13 +237,15 @@ const subProducts = {
             { value: 'york_stone', label: 'York Stone', price: '££££' },
             { value: 'travertine', label: 'Travertine', price: '£££' },
             { value: 'quartzite', label: 'Quartzite', price: '£££' },
-            { value: 'porcelain_20mm', label: 'Porcelain Tiles', price: '£££' },
-            { value: 'concrete_paving', label: 'Concrete Paving', price: '££' },
-            { value: 'block_paving', label: 'Block Paving', price: '££' },
-            { value: 'resin_bound', label: 'Resin Bound', price: '££££' },
+            // Natural Stone Setts
             { value: 'granite_setts', label: 'Granite Setts', price: '££' },
             { value: 'sandstone_setts', label: 'Sandstone Setts', price: '££' },
-            { value: 'cobblestones', label: 'Cobblestones', price: '££' }
+            { value: 'cobblestones', label: 'Cobblestones', price: '££' },
+            // Manufactured Paving
+            { value: 'porcelain_patio', label: 'Porcelain Tiles', price: '£££' },
+            { value: 'concrete_paving', label: 'Concrete Paving', price: '££' },
+            { value: 'block_paving', label: 'Block Paving', price: '££' },
+            { value: 'resin_bound', label: 'Resin Bound', price: '££££' }
         ]
     },
     'decking': {
@@ -260,22 +263,11 @@ const subProducts = {
             { value: 'artificial_turf', label: 'Artificial Turf (35-40mm)', price: '££' }
         ]
     },
-    'driveway': {
-        label: 'Driveway Material',
-        options: [
-            { value: 'block_paving', label: 'Block Paving', price: '££' },
-            { value: 'resin_bound', label: 'Resin Bound', price: '££££' },
-            { value: 'decorative_gravel', label: 'Gravel Driveway', price: '£' },
-            { value: 'indian_sandstone', label: 'Indian Sandstone', price: '££' },
-            { value: 'porcelain_20mm', label: 'Porcelain Tiles', price: '£££' },
-            { value: 'concrete_paving', label: 'Concrete Paving', price: '££' }
-        ]
-    },
     'fencing': {
         label: 'Fencing Type',
         options: [
-            { value: 'closeboard_featheredge', label: 'Closeboard / Featheredge', price: '££' },
             { value: 'panel_fencing', label: 'Panel Fencing', price: '££' },
+            { value: 'closeboard_fencing', label: 'Closeboard Fencing', price: '££' },
             { value: 'composite_fencing', label: 'Composite Fencing', price: '£££' },
             { value: 'trellis_panels', label: 'Trellis Panels', price: '££' }
         ]
@@ -283,7 +275,10 @@ const subProducts = {
     'lighting': {
         label: 'Lighting Type',
         options: [
-            { value: 'lighting_default', label: 'LED Garden Lighting', price: '££' }
+            { value: 'lighting_fitting', label: 'Lighting Fitting', price: '££' },
+            { value: 'lighting_transformer', label: 'Lighting Transformer', price: '££' },
+            { value: 'lighting_cable', label: 'Lighting Cable', price: '£' },
+            { value: 'lighting_kit_10', label: 'Lighting Kit (10 fittings)', price: '££££' }
         ]
     },
     'steps': {
@@ -292,120 +287,137 @@ const subProducts = {
             { value: 'sandstone_step', label: 'Sandstone Steps', price: '£££' },
             { value: 'granite_step', label: 'Granite Steps', price: '££££' },
             { value: 'limestone_step', label: 'Limestone Steps', price: '£££' },
-            { value: 'brick_steps', label: 'Brick Steps', price: '£££' },
-            { value: 'sleeper_steps', label: 'Sleeper Steps', price: '££' },
-            { value: 'porcelain_step', label: 'Porcelain Steps', price: '£££' },
-            { value: 'concrete_step', label: 'Concrete Steps', price: '££' }
+            { value: 'brick_step', label: 'Brick Steps', price: '£££' },
+            { value: 'sleeper_step', label: 'Sleeper Steps', price: '££' }
         ]
     },
     'walls': {
         label: 'Wall Type',
         options: [
-            { value: 'brick_wall', label: 'Brick Wall (1.2m)', price: '£££' },
-            { value: 'stone_wall', label: 'Stone Wall (1.2m)', price: '££££' },
-            { value: 'rendered_wall', label: 'Rendered Block Wall (1.2m)', price: '£££' },
-            { value: 'sleeper_wall_0_6', label: 'Sleeper Wall (0.6m)', price: '££' },
-            { value: 'sleeper_wall_1_2', label: 'Sleeper Wall (1.2m)', price: '£££' },
-            { value: 'sandstone_walling', label: 'Sandstone Walling (1.2m)', price: '£££' },
-            { value: 'limestone_walling', label: 'Limestone Walling (1.2m)', price: '££££' },
-            { value: 'granite_walling', label: 'Granite Walling (1.2m)', price: '££££' },
-            { value: 'dry_stone', label: 'Dry Stone Walling', price: '£££' }
+            { value: 'brick_wall', label: 'Brick Wall', price: '£££' },
+            { value: 'stone_wall', label: 'Stone Wall', price: '££££' },
+            { value: 'rendered_wall', label: 'Rendered Block Wall', price: '£££' },
+            { value: 'sleeper_wall_single', label: 'Sleeper Wall (Single)', price: '££' },
+            { value: 'sleeper_wall_double', label: 'Sleeper Wall (Double)', price: '£££' },
+            { value: 'sleeper_wall_triple', label: 'Sleeper Wall (Triple)', price: '£££' }
         ]
     },
     'water-features': {
         label: 'Water Feature Type',
         options: [
-            { value: 'wall_mounted_feature', label: 'Wall-Mounted Water Feature', price: '£££' },
+            { value: 'water_feature', label: 'Water Feature', price: '££££' },
+            { value: 'wall_mounted_feature', label: 'Wall-Mounted Feature', price: '£££' },
             { value: 'fountain_small', label: 'Small Fountain', price: '£££' },
             { value: 'fountain_large', label: 'Large Fountain', price: '££££' },
             { value: 'water_rill', label: 'Water Rill', price: '£££' },
             { value: 'cascade_waterfall', label: 'Cascade/Waterfall', price: '££££' },
-            { value: 'water_bowl', label: 'Contemporary Water Bowl', price: '££££' },
-            { value: 'corten_steel_feature', label: 'Corten Steel Feature', price: '££££' },
+            { value: 'water_bowl_contemporary', label: 'Contemporary Water Bowl', price: '££££' },
+            { value: 'corten_steel_feature', label: 'Corten Steel Feature', price: '££££' }
+        ]
+    },
+    'ponds': {
+        label: 'Pond Type',
+        options: [
             { value: 'small_pond', label: 'Small Garden Pond', price: '£££' },
             { value: 'medium_pond', label: 'Medium Garden Pond', price: '££££' },
             { value: 'large_pond', label: 'Large Garden Pond', price: '££££' },
             { value: 'wildlife_pond', label: 'Wildlife Pond', price: '££££' },
-            { value: 'koi_pond', label: 'Koi Pond', price: '££££' }
+            { value: 'koi_pond', label: 'Koi Pond', price: '££££' },
+            { value: 'pond_liner', label: 'Pond Liner', price: '£' },
+            { value: 'pond_pump', label: 'Pond Pump', price: '££' },
+            { value: 'pond_filter', label: 'Pond Filter', price: '£££' },
+            { value: 'uv_clarifier', label: 'UV Clarifier', price: '££' }
         ]
     },
     'pergolas': {
         label: 'Pergola Type',
         options: [
-            { value: 'pergola_timber_open', label: 'Timber Pergola (Open)', price: '£££' },
-            { value: 'pergola_timber_roofed', label: 'Timber Pergola (Roofed)', price: '££££' },
-            { value: 'pergola_aluminium', label: 'Aluminium Pergola (Modern)', price: '££££' },
-            { value: 'pergola_steel', label: 'Steel Pergola (Flat-Roof)', price: '££££' },
+            { value: 'timber_pergola_open_3x3', label: 'Timber Pergola (Open 3x3)', price: '£££' },
+            { value: 'timber_pergola_roofed_3x3', label: 'Timber Pergola (Roofed 3x3)', price: '££££' },
+            { value: 'aluminium_pergola_modern_3x3', label: 'Aluminium Pergola (Modern 3x3)', price: '££££' },
+            { value: 'steel_pergola_flat_roof_3x3', label: 'Steel Pergola (Flat Roof 3x3)', price: '££££' },
+            { value: 'pergola_attached', label: 'Attached Pergola', price: '£££' },
             { value: 'gazebo', label: 'Gazebo', price: '££££' }
         ]
     },
     'planting': {
         label: 'Planting Type',
         options: [
+            { value: 'planting_beds', label: 'Planting Beds', price: '£' },
+            { value: 'rendered_planter', label: 'Rendered Planter', price: '£££' },
+            { value: 'raised_bed', label: 'Raised Bed', price: '£££' },
+            { value: 'raised_bed_sleepers', label: 'Raised Bed (Sleepers)', price: '££' },
             { value: 'feature_tree', label: 'Feature Tree', price: '£££' },
             { value: 'shrub_large', label: 'Large Shrubs', price: '££' },
             { value: 'shrub_medium', label: 'Medium Shrubs', price: '£' },
-            { value: 'planting_beds', label: 'Planting Beds', price: '£' },
-            { value: 'rendered_block_planter', label: 'Rendered Block Planter', price: '£££' },
-            { value: 'raised_bed_sleepers', label: 'Raised Bed (Sleepers)', price: '£££' },
-            { value: 'native_hedging', label: 'Native Hedging', price: '£' },
+            { value: 'topsoil', label: 'Topsoil', price: '££' },
+            { value: 'mulch_bark', label: 'Mulch/Bark', price: '£' }
+        ]
+    },
+    'hedging': {
+        label: 'Hedging Type',
+        options: [
+            { value: 'native_hedging', label: 'Native Hedging', price: '££' },
             { value: 'instant_screening', label: 'Instant Screening', price: '£££' }
+        ]
+    },
+    'aggregates': {
+        label: 'Aggregate Type',
+        options: [
+            { value: 'gravel_path', label: 'Gravel Path', price: '££' },
+            { value: 'decorative_gravel', label: 'Decorative Gravel', price: '££' },
+            { value: 'bark_path', label: 'Bark Path', price: '£' },
+            { value: 'slate_chippings', label: 'Slate Chippings', price: '££' },
+            { value: 'pebbles_decorative', label: 'Decorative Pebbles', price: '££' },
+            { value: 'stepping_stones', label: 'Stepping Stones', price: '££' }
+        ]
+    },
+    'drainage': {
+        label: 'Drainage Type',
+        options: [
+            { value: 'channel_drain', label: 'Channel Drain', price: '££' },
+            { value: 'french_drain', label: 'French Drain', price: '££' },
+            { value: 'soakaway', label: 'Soakaway', price: '£££' }
         ]
     },
     'other': {
         label: 'Product Type',
         options: [
             { value: '', label: '-- Select a product --', price: '' },
-            { group: 'Garden Rooms & Storage', options: [
-                { value: 'garden_room', label: 'Garden Room', price: '££££' },
-                { value: 'summer_house', label: 'Summer House', price: '££££' },
-                { value: 'greenhouse_6x8', label: 'Greenhouse (6x8)', price: '££££' },
-                { value: 'greenhouse_8x10', label: 'Greenhouse (8x10)', price: '££££' },
-                { value: 'timber_shed_6x4', label: 'Timber Shed (6x4)', price: '£££' },
-                { value: 'timber_shed_8x6', label: 'Timber Shed (8x6)', price: '£££' },
-                { value: 'metal_shed_6x4', label: 'Metal Shed (6x4)', price: '£££' }
-            ]},
             { group: 'Fire & Seating', options: [
-                { value: 'sunken_firepit', label: 'Fire Pit', price: '£££' },
-                { value: 'seating_area', label: 'Seating Area', price: '££££' },
+                { value: 'seating_area_basic', label: 'Seating Area (Basic)', price: '££££' },
                 { value: 'seating_sunken', label: 'Sunken Seating Area', price: '££££' },
                 { value: 'seating_rendered', label: 'Rendered Seating', price: '££££' },
                 { value: 'seating_stone', label: 'Stone Seating', price: '££££' },
+                { value: 'sunken_firepit', label: 'Sunken Fire Pit', price: '£££' },
                 { value: 'sunken_firepit_seating_package', label: 'Fire Pit & Seating Package', price: '££££' }
             ]},
             { group: 'Outdoor Kitchens', options: [
                 { value: 'outdoor_kitchen_starter', label: 'Outdoor Kitchen (Starter)', price: '££££' },
                 { value: 'outdoor_kitchen_standard', label: 'Outdoor Kitchen (Standard)', price: '££££' },
                 { value: 'outdoor_kitchen_premium', label: 'Outdoor Kitchen (Premium)', price: '££££' },
-                { value: 'bbq_area_module', label: 'BBQ Area Module', price: '£££' },
+                { value: 'bbq_area', label: 'BBQ Area', price: '£££' },
                 { value: 'built_in_bbq', label: 'Built-in BBQ', price: '£££' }
             ]},
-            { group: 'Drainage', options: [
-                { value: 'linear_channel_drain', label: 'Linear Channel Drain', price: '££' },
-                { value: 'soakaway_crate', label: 'Soakaway Crate System', price: '£££' },
-                { value: 'french_drain', label: 'French Drain', price: '££' }
-            ]},
-            { group: 'Aggregates & Gravel', options: [
-                { value: 'decorative_gravel', label: 'Decorative Gravel', price: '£' },
-                { value: 'slate_chippings', label: 'Slate Chippings', price: '££' },
-                { value: 'pebbles_decorative', label: 'Decorative Pebbles', price: '££' },
-                { value: 'boulders_feature', label: 'Feature Boulders', price: '£££' },
-                { value: 'rockery_stone', label: 'Rockery Stone', price: '££' }
-            ]},
-            { group: 'Pathways', options: [
-                { value: 'gravel_path_edged', label: 'Gravel Path (Edged)', price: '££' },
-                { value: 'bark_path', label: 'Bark Path', price: '£' },
-                { value: 'stepping_stones', label: 'Stepping Stones', price: '££' }
+            { group: 'Garden Rooms & Storage', options: [
+                { value: 'shed', label: 'Shed', price: '£££' },
+                { value: 'shed_large', label: 'Shed (Large)', price: '£££' },
+                { value: 'summer_house', label: 'Summer House', price: '££££' },
+                { value: 'greenhouse_small', label: 'Greenhouse (Small)', price: '££££' },
+                { value: 'greenhouse_medium', label: 'Greenhouse (Medium)', price: '££££' },
+                { value: 'greenhouse_large', label: 'Greenhouse (Large)', price: '££££' },
+                { value: 'garden_room', label: 'Garden Room', price: '££££' }
             ]},
             { group: 'Edging', options: [
-                { value: 'paving_edging_kerbs_setts', label: 'Paving Edging / Kerbs / Setts', price: '££' }
+                { value: 'edging_concrete', label: 'Concrete Edging', price: '£' },
+                { value: 'edging_steel', label: 'Steel Edging', price: '££' },
+                { value: 'edging_aluminium', label: 'Aluminium Edging', price: '££' },
+                { value: 'edging_plastic', label: 'Plastic Edging', price: '£' }
             ]},
-            { group: 'Screening', options: [
-                { value: 'decorative_screen', label: 'Decorative Screen', price: '£££' }
-            ]},
-            { group: 'Gates', options: [
-                { value: 'timber_gate', label: 'Timber Garden Gate', price: '£££' },
-                { value: 'metal_gate', label: 'Metal Garden Gate', price: '££££' }
+            { group: 'Decorative', options: [
+                { value: 'decorative_screen', label: 'Decorative Screen', price: '£££' },
+                { value: 'boulders_feature', label: 'Feature Boulders', price: '££' },
+                { value: 'non_slip_ramp', label: 'Non-Slip Ramp', price: '£££' }
             ]}
         ]
     }
@@ -416,7 +428,6 @@ const productExamples = {
     'patio': 'Any specific requirements...',
     'decking': 'Any specific requirements...',
     'turf': 'Any specific requirements...',
-    'driveway': 'Any specific requirements...',
     'fencing': 'Height requirements, gate needed, etc...',
     'lighting': 'Specific areas to light, ambience preferences...',
     'full-redesign': 'Complete garden transformation',
@@ -447,30 +458,36 @@ function buildSearchableProductList() {
         'patio': 'fa-th-large',
         'decking': 'fa-border-all',
         'turf': 'fa-seedling',
-        'driveway': 'fa-car',
         'fencing': 'fa-border-style',
         'lighting': 'fa-lightbulb',
         'steps': 'fa-stairs',
         'walls': 'fa-layer-group',
         'water-features': 'fa-water',
+        'ponds': 'fa-fish',
         'pergolas': 'fa-archway',
         'planting': 'fa-leaf',
+        'hedging': 'fa-tree',
+        'aggregates': 'fa-circle',
+        'drainage': 'fa-tint',
         'other': 'fa-plus-circle'
     };
     
     // Category display names
     const categoryNames = {
-        'patio': 'Patio',
+        'patio': 'Patio/Paving',
         'decking': 'Decking',
         'turf': 'Lawn/Turf',
-        'driveway': 'Driveway',
         'fencing': 'Fencing',
         'lighting': 'Lighting',
         'steps': 'Steps',
         'walls': 'Walls',
         'water-features': 'Water Features',
+        'ponds': 'Ponds',
         'pergolas': 'Pergolas',
         'planting': 'Planting',
+        'hedging': 'Hedging',
+        'aggregates': 'Aggregates/Gravel',
+        'drainage': 'Drainage',
         'other': 'Other'
     };
     
@@ -480,29 +497,41 @@ function buildSearchableProductList() {
         'softwood_deck': 'timber wood treated pine',
         'hardwood_deck': 'timber wood oak teak',
         'natural_turf': 'grass lawn natural real',
-        'artificial_turf': 'astro fake synthetic grass lawn',
+        'artificial_turf': 'astro fake synthetic grass lawn turf',
         'indian_sandstone': 'stone paving natural',
-        'block_paving': 'brick blocks driveway',
+        'porcelain_patio': 'porcelain tiles paving modern',
+        'block_paving': 'brick blocks paving',
         'resin_bound': 'resin gravel smooth',
-        'decorative_gravel': 'gravel stones pebbles',
-        'closeboard_featheredge': 'wooden timber privacy',
-        'composite_fencing': 'modern plastic',
-        'lighting_default': 'led lights outdoor garden',
-        'pergola_timber_open': 'wooden timber shade cover',
-        'pergola_aluminium': 'metal modern shade',
-        'gazebo': 'shelter cover outdoor',
-        'sunken_firepit': 'fire pit firepit bbq',
-        'outdoor_kitchen_starter': 'bbq barbecue cooking',
-        'outdoor_kitchen_standard': 'bbq barbecue cooking grill',
-        'outdoor_kitchen_premium': 'bbq barbecue kitchen cooking',
-        'bbq_area_module': 'barbecue grill cooking',
-        'built_in_bbq': 'barbecue grill',
-        'garden_room': 'office studio building',
-        'summer_house': 'building cabin',
-        'timber_shed_6x4': 'storage shed wooden',
-        'timber_shed_8x6': 'storage shed wooden',
+        'decorative_gravel': 'gravel stones pebbles aggregate',
+        'gravel_path': 'pathway walkway gravel',
+        'panel_fencing': 'fence panels wooden timber',
+        'closeboard_fencing': 'featheredge wooden timber privacy fence',
+        'composite_fencing': 'modern plastic fence',
+        'lighting_fitting': 'led lights outdoor garden fitting',
+        'lighting_kit_10': 'led lights outdoor garden kit',
+        'timber_pergola_open_3x3': 'wooden timber shade cover pergola',
+        'aluminium_pergola_modern_3x3': 'metal modern shade pergola',
+        'gazebo': 'shelter cover outdoor structure',
+        'sunken_firepit': 'fire pit firepit',
+        'outdoor_kitchen_starter': 'bbq barbecue cooking kitchen',
+        'outdoor_kitchen_standard': 'bbq barbecue cooking grill kitchen',
+        'outdoor_kitchen_premium': 'bbq barbecue kitchen cooking premium',
+        'bbq_area': 'barbecue grill cooking bbq',
+        'built_in_bbq': 'barbecue grill built-in',
+        'garden_room': 'office studio building room',
+        'summer_house': 'building cabin summerhouse',
+        'shed': 'storage shed wooden',
+        'shed_large': 'storage shed wooden large',
         'feature_tree': 'tree specimen plant',
-        'native_hedging': 'hedge privacy screening',
+        'native_hedging': 'hedge privacy screening hedging',
+        'instant_screening': 'privacy hedge screening instant',
+        'raised_bed_sleepers': 'raised bed sleeper timber',
+        'channel_drain': 'drainage channel linear',
+        'french_drain': 'drainage french land',
+        'soakaway': 'drainage soak away water',
+        'small_pond': 'pond water fish garden',
+        'koi_pond': 'pond koi fish japanese',
+        'wildlife_pond': 'pond wildlife natural',
         'instant_screening': 'privacy hedge bamboo',
         'seating_area': 'bench seat outdoor'
     };
@@ -934,15 +963,33 @@ function buildMaterialSelectOptions(feature) {
     return optionsHtml;
 }
 
+// LM Products - these always use linear metres (from n8n pricing)
+const LM_PRODUCTS = [
+    'panel_fencing', 'closeboard_fencing', 'composite_fencing', 'trellis_panels',
+    'edging_concrete', 'edging_steel', 'edging_aluminium', 'edging_plastic',
+    'sleeper_wall_single', 'sleeper_wall_double', 'sleeper_wall_triple', 'raised_bed_sleepers',
+    'native_hedging', 'instant_screening',
+    'channel_drain', 'french_drain', 'water_rill'
+];
+
 // Get unit configuration for a product based on its material selection
 function getUnitConfig(feature, material) {
+    // Check if this specific product requires linear metres
+    if (material && LM_PRODUCTS.includes(material)) {
+        return { label: 'Length (metres)', placeholder: '10', unit: 'lm' };
+    }
+    
     const baseConfig = {
-        'fencing': { label: 'Length (metres)', placeholder: '25', unit: 'm' },
+        'fencing': { label: 'Length (metres)', placeholder: '25', unit: 'lm' },
+        'hedging': { label: 'Length (metres)', placeholder: '10', unit: 'lm' },
         'lighting': { label: 'Number of Fittings', placeholder: '8', unit: 'fittings' },
         'steps': { label: 'Number of Steps', placeholder: '5', unit: 'steps' },
-        'walls': { label: 'Length (metres)', placeholder: '10', unit: 'm' },
+        'walls': { label: 'Length (metres)', placeholder: '10', unit: 'lm' },
+        'drainage': { label: 'Length (metres)', placeholder: '10', unit: 'lm' },
         'water-features': { label: 'Quantity', placeholder: '1', unit: 'qty' },
+        'ponds': { label: 'Quantity', placeholder: '1', unit: 'qty' },
         'pergolas': { label: 'Quantity', placeholder: '1', unit: 'qty' },
+        'aggregates': { label: 'Area (m²)', placeholder: '20', unit: 'm²' },
         'planting': { label: 'Quantity / Area', placeholder: '10', unit: 'qty' },
         'full-redesign': { label: 'Total Area (m²)', placeholder: '100', unit: 'm²' },
         'default': { label: 'Area (m²)', placeholder: '40', unit: 'm²' }
@@ -950,28 +997,17 @@ function getUnitConfig(feature, material) {
     
     // Special unit handling for "other" products based on material type
     if (feature === 'other' && material) {
-        // Steps
-        if (material.includes('step')) {
-            return { label: 'Number of Steps', placeholder: '5', unit: 'steps' };
-        }
-        // Walls, hedging, edging, drainage, raised beds
-        if (material.includes('wall') || material.includes('hedging') || material.includes('screening') || 
-            material.includes('edging') || material.includes('drain') || material.includes('rill') ||
-            material.includes('path') || material.includes('raised_bed')) {
-            return { label: 'Length (metres)', placeholder: '10', unit: 'm' };
+        // Edging - linear metres
+        if (material.includes('edging')) {
+            return { label: 'Length (metres)', placeholder: '10', unit: 'lm' };
         }
         // Individual items (pergolas, sheds, fire pits, etc.)
         if (material.includes('pergola') || material.includes('gazebo') || material.includes('shed') || 
             material.includes('greenhouse') || material.includes('summer_house') || material.includes('garden_room') ||
-            material.includes('firepit') || material.includes('seating') || material.includes('pond') ||
-            material.includes('fountain') || material.includes('feature') || material.includes('kitchen') ||
-            material.includes('bbq') || material.includes('screen') || material.includes('soakaway') ||
-            material.includes('gate') || material.includes('tree') || material.includes('boulder')) {
+            material.includes('firepit') || material.includes('seating') || 
+            material.includes('kitchen') || material.includes('bbq') || material.includes('screen') || 
+            material.includes('soakaway') || material.includes('boulder') || material.includes('ramp')) {
             return { label: 'Quantity', placeholder: '1', unit: 'qty' };
-        }
-        // Shrubs
-        if (material.includes('shrub')) {
-            return { label: 'Number of Plants', placeholder: '10', unit: 'qty' };
         }
     }
     
@@ -2011,7 +2047,7 @@ function prepareWebhookPayload() {
                 };
                 
                 // Add type-specific fields using dedicated area input
-                if (feature === 'patio' || feature === 'driveway') {
+                if (feature === 'patio' || feature === 'aggregates') {
                     product.unitType = 'm2';
                     product.area_m2 = dedicatedArea ? parseInt(dedicatedArea) : defaultArea;
                     product.edging = description.toLowerCase().includes('edging') ? 'standard edging' : 'none';
@@ -2427,8 +2463,10 @@ function buildStyleDescription() {
         'patio': 'patio area',
         'decking': 'decking',
         'turf': 'lawn',
-        'driveway': 'driveway',
         'fencing': 'fencing',
+        'hedging': 'hedging',
+        'drainage': 'drainage',
+        'aggregates': 'gravel and aggregates',
         'lighting': 'garden lighting',
         'other': 'custom features'
     };

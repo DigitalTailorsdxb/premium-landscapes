@@ -1,0 +1,306 @@
+// === Individual Products Calculate Pricing v2.5 - FULL RATES + lm ENFORCED ===
+
+const j = $json;
+const items = j.items || [];
+
+// ---------- Tunables ----------
+const CONTINGENCY_PCT = 0.05;
+const VAT_PCT = 0.20;
+const GROUNDWORKS_RATE_PER_M2 = 40;
+
+// ---------- Category Rules ----------
+const GROUNDWORKS_CATEGORIES = [
+  'natural_stone_paving',
+  'manufactured_paving',
+  'natural_stone_setts',
+  'turf',
+  'aggregates',
+];
+
+const NO_GROUNDWORKS_CATEGORIES = [
+  'decking',
+  'structures_pergolas',
+  'ponds',
+  'water_features',
+  'features_fire_seating',
+  'features_cooking',
+  'fencing',
+  'walls',
+  'hedging',
+  'steps',
+  'drainage',
+  'lighting',
+  'planting',
+  'planting_items',
+  'decorative',
+];
+
+// ---------- Helpers ----------
+const lc = (s) => String(s || '').toLowerCase().trim().replace(/\s+/g, '_');
+const to2 = (n) => Math.round(n * 100) / 100;
+
+// ---------- lm PRODUCTS (AUTHORITATIVE) ----------
+const LM_PRODUCTS = [
+  // fencing
+  'panel_fencing',
+  'closeboard_fencing',
+  'composite_fencing',
+  'trellis_panels',
+
+  // edging
+  'edging_concrete',
+  'edging_steel',
+  'edging_aluminium',
+  'edging_plastic',
+
+  // sleepers / walls
+  'sleeper_wall_single',
+  'sleeper_wall_double',
+  'sleeper_wall_triple',
+  'raised_bed_sleepers',
+
+  // hedging
+  'native_hedging',
+  'instant_screening',
+];
+
+// ---------- Category Normalisation ----------
+function normaliseCategory(rawCategory) {
+  const cat = lc(rawCategory);
+  if (['patio', 'paving', 'porcelain', 'block_paving', 'resin'].includes(cat))
+    return 'manufactured_paving';
+  if (['sandstone', 'limestone', 'slate', 'granite'].includes(cat))
+    return 'natural_stone_paving';
+  return cat;
+}
+
+function requiresGroundworks(category) {
+  if (NO_GROUNDWORKS_CATEGORIES.includes(category)) return false;
+  return GROUNDWORKS_CATEGORIES.includes(category);
+}
+
+// ---------- FULL RATE TABLE (UNCHANGED) ----------
+const RATES = {
+  natural_stone_paving: {
+    indian_sandstone: 110,
+    limestone_paving: 135,
+    granite_paving: 150,
+    slate_paving: 140,
+    york_stone: 165,
+    travertine: 145,
+    quartzite: 155,
+  },
+  natural_stone_setts: {
+    granite_setts: 95,
+    sandstone_setts: 85,
+    cobblestones: 75,
+  },
+  manufactured_paving: {
+    porcelain_patio: 130,
+    concrete_paving: 100,
+    block_paving: 90,
+    resin_bound: 160,
+  },
+  decking: {
+    composite_deck: 170,
+    softwood_deck: 110,
+    hardwood_deck: 195,
+  },
+  turf: {
+    artificial_turf: 85,
+    natural_turf: 30,
+  },
+  aggregates: {
+    gravel_path: 66,
+    decorative_gravel: 55,
+    bark_path: 35,
+    slate_chippings: 65,
+    pebbles_decorative: 70,
+    stepping_stones: 80,
+  },
+  planting: {
+    planting_beds: 15,
+    rendered_planter: 216,
+    raised_bed: 180,
+    raised_bed_sleepers: 85, // £ / lm
+  },
+  structures_pergolas: {
+    timber_pergola_roofed_3x3: 1700,
+    timber_pergola_open_3x3: 1400,
+    aluminium_pergola_modern_3x3: 2800,
+    steel_pergola_flat_roof_3x3: 3200,
+    pergola_attached: 1500,
+    gazebo: 2800,
+  },
+  ponds: {
+    small_pond: 960,
+    medium_pond: 1920,
+    large_pond: 3040,
+    wildlife_pond: 1600,
+    koi_pond: 3600,
+    pond_liner: 25,
+    pond_pump: 180,
+    pond_filter: 420,
+    uv_clarifier: 220,
+  },
+  water_features: {
+    water_feature: 1200,
+    wall_mounted_feature: 800,
+    fountain_small: 650,
+    fountain_large: 1500,
+    water_rill: 280,
+    cascade_waterfall: 2200,
+    water_bowl_contemporary: 1800,
+    corten_steel_feature: 2800,
+  },
+  features_fire_seating: {
+    seating_area_basic: 2000,
+    seating_sunken: 3500,
+    seating_rendered: 2800,
+    seating_stone: 3200,
+    sunken_firepit: 1450,
+    sunken_firepit_seating_package: 4500,
+  },
+  features_cooking: {
+    outdoor_kitchen_starter: 3000,
+    outdoor_kitchen_standard: 6000,
+    outdoor_kitchen_premium: 12000,
+    bbq_area: 950,
+    built_in_bbq: 1500,
+  },
+  fencing: {
+    panel_fencing: 65,
+    closeboard_fencing: 65,
+    composite_fencing: 100,
+    trellis_panels: 75,
+  },
+  walls: {
+    brick_wall: 290,
+    stone_wall: 320,
+    rendered_wall: 260,
+    sleeper_wall_single: 90,
+    sleeper_wall_double: 150,
+    sleeper_wall_triple: 180,
+  },
+  hedging: {
+    native_hedging: 45,
+    instant_screening: 165,
+  },
+  steps: {
+    sandstone_step: 180,
+    granite_step: 220,
+    limestone_step: 195,
+    brick_step: 150,
+    sleeper_step: 120,
+  },
+  drainage: {
+    channel_drain: 55,
+    french_drain: 45,
+    soakaway: 780,
+  },
+  lighting: {
+    lighting_fitting: 75,
+    lighting_transformer: 120,
+    lighting_cable: 5,
+    lighting_kit_10: 1500,
+  },
+  planting_items: {
+    feature_tree: 300,
+    shrub_large: 45,
+    shrub_medium: 25,
+    topsoil: 45,
+    mulch_bark: 35,
+  },
+  decorative: {
+    edging_concrete: 28,
+    edging_steel: 45,
+    edging_aluminium: 55,
+    edging_plastic: 18,
+    shed: 850,
+    shed_large: 1250,
+    summer_house: 4200,
+    greenhouse_small: 1800,
+    greenhouse_medium: 2200,
+    greenhouse_large: 2600,
+    garden_room: 1450,
+    decorative_screen: 300,
+    boulders_feature: 200,
+    non_slip_ramp: 450,
+  },
+};
+
+function getPrice(category, product) {
+  const prod = lc(product);
+  if (RATES[category] && RATES[category][prod] !== undefined) {
+    return RATES[category][prod];
+  }
+  return 0;
+}
+
+// ---------- Processing ----------
+const lineItems = [];
+let materialsAndLabour = 0;
+let totalGroundworks = 0;
+let totalGroundworksArea = 0;
+
+items.forEach((item) => {
+  const rawCategory = item.category || '';
+  const category = normaliseCategory(rawCategory);
+  const product = lc(item.product);
+  const quantity = Number(item.quantity) || 0;
+  let unit = lc(item.unit || 'each');
+
+  if (LM_PRODUCTS.includes(product)) unit = 'lm';
+
+  const unitPrice = getPrice(category, product);
+  const lineTotal = to2(unitPrice * quantity);
+  materialsAndLabour += lineTotal;
+
+  if (['m²', 'm2', 'sqm'].includes(unit) && requiresGroundworks(category)) {
+    totalGroundworks += to2(quantity * GROUNDWORKS_RATE_PER_M2);
+    totalGroundworksArea += quantity;
+  }
+
+  lineItems.push({
+    category: rawCategory,
+    categoryCanonical: category,
+    product: item.product,
+    quantity,
+    unit,
+    unitPrice,
+    lineTotal,
+  });
+});
+
+// ---------- Totals ----------
+const subtotalBeforeContingency = to2(materialsAndLabour + totalGroundworks);
+const contingency = to2(subtotalBeforeContingency * CONTINGENCY_PCT);
+const subtotalWithContingency = to2(subtotalBeforeContingency + contingency);
+const vat = to2(subtotalWithContingency * VAT_PCT);
+const grandTotal = to2(subtotalWithContingency + vat);
+
+return [{
+  json: {
+    ...j,
+    pricing: {
+      lineItems,
+      materialsAndLabour,
+      groundworks: totalGroundworks,
+      groundworksArea: totalGroundworksArea,
+      groundworksRate: GROUNDWORKS_RATE_PER_M2,
+      subtotal: subtotalBeforeContingency,
+      contingency,
+      contingencyPct: CONTINGENCY_PCT,
+      subtotalWithContingency,
+      vat,
+      vatPct: VAT_PCT,
+      grandTotal,
+    },
+    quote: {
+      subtotal: subtotalBeforeContingency,
+      contingency,
+      vat,
+      total: grandTotal,
+    },
+  },
+}];
