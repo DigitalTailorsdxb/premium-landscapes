@@ -64,6 +64,133 @@ const finalStepDurations = [
     2000   // Done! (2s)
 ];
 
+// ============================================================================
+// INDIVIDUAL PRODUCTS PROGRESS ANIMATION - 10 seconds total
+// ============================================================================
+let progressStateIndividual = {
+    currentStep: 0,
+    totalSteps: 5,
+    isAnimating: false,
+    webhookComplete: false,
+    webhookSuccess: false,
+    webhookResult: null,
+    timeouts: []
+};
+
+// Step timings for individual products - Total: 10 seconds
+const individualStepDurations = [
+    2000,  // 0: Reading your selections (2s)
+    2000,  // 1: Calculating quantities (2s)
+    2000,  // 2: Getting local prices (2s)
+    2500,  // 3: Preparing your quote (2.5s)
+    1500   // 4: Done! (1.5s)
+];
+
+// Reset individual products progress timeline
+function resetIndividualProgressTimeline() {
+    progressStateIndividual = {
+        currentStep: 0,
+        totalSteps: 5,
+        isAnimating: false,
+        webhookComplete: false,
+        webhookSuccess: false,
+        webhookResult: null,
+        timeouts: []
+    };
+    
+    const steps = document.querySelectorAll('#progressTimelineIndividual .progress-step-ind');
+    steps.forEach(step => {
+        step.classList.remove('active', 'completed');
+    });
+    
+    console.log('🎨 Individual products progress timeline reset');
+}
+
+// Start individual products progress animation
+function startIndividualProgressAnimation() {
+    progressStateIndividual.isAnimating = true;
+    advanceIndividualProgressStep(0);
+}
+
+// Advance individual products progress step
+function advanceIndividualProgressStep(stepIndex) {
+    if (!progressStateIndividual.isAnimating) return;
+    
+    const steps = document.querySelectorAll('#progressTimelineIndividual .progress-step-ind');
+    const totalSteps = steps.length;
+    
+    // Mark previous step as completed
+    if (stepIndex > 0 && stepIndex <= totalSteps) {
+        steps[stepIndex - 1].classList.remove('active');
+        steps[stepIndex - 1].classList.add('completed');
+    }
+    
+    // Mark current step as active
+    if (stepIndex < totalSteps) {
+        steps[stepIndex].classList.add('active');
+        progressStateIndividual.currentStep = stepIndex;
+        
+        const stepDuration = individualStepDurations[stepIndex];
+        
+        // If this is the final step, complete animation after brief pause
+        if (stepIndex === totalSteps - 1) {
+            const timeout = setTimeout(() => {
+                completeIndividualProgressAnimation();
+            }, stepDuration);
+            progressStateIndividual.timeouts.push(timeout);
+            return;
+        }
+        
+        // Schedule next step
+        const timeout = setTimeout(() => {
+            advanceIndividualProgressStep(stepIndex + 1);
+        }, stepDuration);
+        progressStateIndividual.timeouts.push(timeout);
+    }
+}
+
+// Called when webhook completes for individual products
+function onIndividualWebhookComplete(success, result) {
+    progressStateIndividual.webhookComplete = true;
+    progressStateIndividual.webhookSuccess = success;
+    progressStateIndividual.webhookResult = result;
+    
+    if (success) {
+        console.log('✅ Individual products webhook completed successfully');
+    } else {
+        console.warn('⚠️ Individual products webhook returned error:', result?.error || result?.message);
+    }
+}
+
+// Complete the individual products progress animation
+function completeIndividualProgressAnimation() {
+    progressStateIndividual.isAnimating = false;
+    
+    // Clear any remaining timeouts
+    progressStateIndividual.timeouts.forEach(t => clearTimeout(t));
+    progressStateIndividual.timeouts = [];
+    
+    // Mark final step as completed
+    const steps = document.querySelectorAll('#progressTimelineIndividual .progress-step-ind');
+    if (steps.length > 0) {
+        steps[steps.length - 1].classList.remove('active');
+        steps[steps.length - 1].classList.add('completed');
+    }
+    
+    // Hide loading state and show success result
+    document.getElementById('loadingState').classList.add('hidden');
+    
+    // Show success - the quote was submitted
+    showQuoteResult(progressStateIndividual.webhookResult || { success: true });
+}
+
+// Stop individual products progress animation (for errors)
+function stopIndividualProgressAnimation() {
+    progressStateIndividual.isAnimating = false;
+    progressStateIndividual.timeouts.forEach(t => clearTimeout(t));
+    progressStateIndividual.timeouts = [];
+}
+
 // Reset progress timeline to initial state
 function resetProgressTimeline() {
     const aiDesignEnabled = quoteData.aiDesign === true;
@@ -1825,8 +1952,10 @@ async function submitQuote() {
         resetProgressTimeline();
         startProgressAnimation();
     } else {
-        // Show standard loading spinner for individual products
+        // Show animated progress for individual products (10 seconds)
         document.getElementById('loadingState').classList.remove('hidden');
+        resetIndividualProgressTimeline();
+        startIndividualProgressAnimation();
     }
     
     // ============================================================================
@@ -1939,6 +2068,7 @@ async function submitQuote() {
                 
             } catch (error) {
                 console.error('❌ Network Error:', error);
+                stopIndividualProgressAnimation();
                 document.getElementById('loadingState').classList.add('hidden');
                 // Network/timeout error - show with default contact info
                 showNetworkError();
@@ -1952,6 +2082,7 @@ async function submitQuote() {
             // For full redesign, let animation continue - email will arrive
             console.warn('Payload preparation error, webhook may not have sent');
         } else {
+            stopIndividualProgressAnimation();
             document.getElementById('loadingState').classList.add('hidden');
             showNetworkError();
         }
@@ -2241,6 +2372,7 @@ function prepareWebhookPayload() {
 // Shows confirmation message - actual quote sent via email from n8n
 // ============================================================================
 async function showQuoteResult(data) {
+    stopIndividualProgressAnimation();
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('quoteResult').classList.remove('hidden');
     
@@ -2294,6 +2426,7 @@ async function showQuoteResult(data) {
 // Accepts full response object from n8n with contact info
 // ============================================================================
 function showQuoteError(errorResponse) {
+    stopIndividualProgressAnimation();
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('loadingStateRedesign')?.classList.add('hidden');
     document.getElementById('quoteResult').classList.add('hidden');
@@ -2364,6 +2497,7 @@ function showQuoteError(errorResponse) {
 // Shows error message when network/timeout error occurs
 // ============================================================================
 function showNetworkError() {
+    stopIndividualProgressAnimation();
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('loadingStateRedesign')?.classList.add('hidden');
     document.getElementById('quoteResult').classList.add('hidden');

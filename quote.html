@@ -388,6 +388,42 @@
             transform: scale(0.98);
             opacity: 0.9;
         }
+        
+        /* Individual Products Progress Step States */
+        .progress-step-ind.active .step-icon {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            animation: pulse-glow 1.5s infinite;
+        }
+        .progress-step-ind.active .step-icon i {
+            color: white;
+        }
+        .progress-step-ind.active .step-label {
+            color: #1e40af;
+            font-weight: 600;
+        }
+        .progress-step-ind.active .step-status i {
+            color: #2563eb;
+            animation: pulse 1s infinite;
+        }
+        
+        .progress-step-ind.completed .step-icon {
+            background: #10b981;
+        }
+        .progress-step-ind.completed .step-icon i {
+            color: white;
+        }
+        .progress-step-ind.completed .step-label {
+            color: #059669;
+        }
+        .progress-step-ind.completed .step-status i {
+            display: none;
+        }
+        .progress-step-ind.completed .step-status::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: #10b981;
+        }
     </style>
 </head>
 <body class="bg-white text-gray-800">
@@ -1050,18 +1086,81 @@
                             </div>
                         </div>
                         
-                        <!-- Loading State - Standard (Individual Products) -->
-                        <div id="loadingState" class="hidden text-center py-12">
-                            <div class="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-accent mx-auto mb-4"></div>
-                            <h3 class="font-heading font-bold text-xl text-primary mb-2">Analysing your project...</h3>
-                            <p class="text-gray-600 mb-6">Calculating local material and labour prices</p>
-                            
-                            <!-- Price Accuracy Disclaimer -->
-                            <div class="max-w-xl mx-auto bg-blue-50 border border-blue-200 rounded-xl p-4 mt-6">
-                                <div class="flex items-start text-left">
-                                    <i class="fas fa-info-circle text-blue-600 mr-3 mt-1 flex-shrink-0"></i>
-                                    <div class="text-sm text-gray-700">
-                                        <p class="font-semibold text-gray-900 mb-1">About Your Quote</p>
+                        <!-- Loading State - Standard (Individual Products) - Animated Progress -->
+                        <div id="loadingState" class="hidden py-12">
+                            <div class="max-w-lg mx-auto">
+                                <h3 class="font-heading font-bold text-2xl text-primary mb-2 text-center">Processing Your Quote</h3>
+                                <p class="text-gray-600 mb-8 text-center">Calculating prices for your selected products</p>
+                                
+                                <!-- Progress Timeline for Individual Products -->
+                                <div id="progressTimelineIndividual" class="space-y-4">
+                                    <div class="progress-step-ind flex items-center" data-step="0">
+                                        <div class="step-icon w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4 transition-all duration-300">
+                                            <i class="fas fa-clipboard-check text-gray-400"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="step-label font-medium text-gray-400 transition-all duration-300">Reading your selections...</p>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-circle text-gray-300 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="progress-step-ind flex items-center" data-step="1">
+                                        <div class="step-icon w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4 transition-all duration-300">
+                                            <i class="fas fa-calculator text-gray-400"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="step-label font-medium text-gray-400 transition-all duration-300">Calculating quantities...</p>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-circle text-gray-300 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="progress-step-ind flex items-center" data-step="2">
+                                        <div class="step-icon w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4 transition-all duration-300">
+                                            <i class="fas fa-sterling-sign text-gray-400"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="step-label font-medium text-gray-400 transition-all duration-300">Getting local prices...</p>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-circle text-gray-300 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="progress-step-ind flex items-center" data-step="3">
+                                        <div class="step-icon w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4 transition-all duration-300">
+                                            <i class="fas fa-file-invoice text-gray-400"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="step-label font-medium text-gray-400 transition-all duration-300">Preparing your quote...</p>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-circle text-gray-300 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="progress-step-ind flex items-center" data-step="4">
+                                        <div class="step-icon w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4 transition-all duration-300">
+                                            <i class="fas fa-check-circle text-gray-400"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="step-label font-medium text-gray-400 transition-all duration-300">Done!</p>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-circle text-gray-300 text-xs"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Price Accuracy Disclaimer -->
+                                <div class="max-w-xl mx-auto bg-blue-50 border border-blue-200 rounded-xl p-4 mt-8">
+                                    <div class="flex items-start text-left">
+                                        <i class="fas fa-info-circle text-blue-600 mr-3 mt-1 flex-shrink-0"></i>
+                                        <div class="text-sm text-gray-700">
+                                            <p class="font-semibold text-gray-900 mb-1">About Your Quote</p>
                                         <p>We generate quotes as accurately as possible using live market data and local pricing. However, final prices may vary based on site conditions, material availability, and project complexity. This is an estimate that we strive to make as precise as possible.</p>
                                     </div>
                                 </div>
