@@ -69,11 +69,26 @@
         }
         
         .mobile-menu {
-            transition: transform 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .mobile-menu.active {
-            transform: translateX(0);
+            transform: translateX(0) !important;
+        }
+        
+        .mobile-menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 99;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
         }
         
         /* Ensure gradient headers are fully visible on mobile */
@@ -455,18 +470,33 @@
             </button>
         </nav>
         
-        <div id="mobileMenu" class="mobile-menu fixed top-0 right-0 h-full w-64 bg-white shadow-2xl transform translate-x-full md:hidden z-50">
-            <div class="p-6">
-                <button id="closeMobileMenu" class="text-primary text-2xl mb-8">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div class="flex flex-col space-y-6">
-                    <a href="index.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Home</a>
-                    <a href="quote.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link flex items-center">AI-Powered Quote &amp; Design <span class="ml-2 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">FREE</span></a>
-                    <a href="about.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">About</a>
-                    <a href="services.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Services</a>
-                    <a href="gallery.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Gallery</a>
-                    <a href="contact.html" class="text-primary font-semibold transition text-lg mobile-menu-link">Contact</a>
+        <div id="mobileMenu" class="mobile-menu fixed inset-0 bg-white transform translate-x-full md:hidden z-[100]">
+            <div class="flex flex-col h-full">
+                <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                    <a href="index.html">
+                        <img src="images/logo.png" alt="Premium Landscapes" class="h-12">
+                    </a>
+                    <button id="closeMobileMenu" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-6">
+                    <div class="flex flex-col space-y-1">
+                        <a href="index.html" class="text-gray-700 hover:bg-gray-50 transition text-lg py-3 px-4 rounded-xl mobile-menu-link">Home</a>
+                        <a href="quote.html" class="text-primary bg-blue-50 font-semibold transition text-lg py-3 px-4 rounded-xl mobile-menu-link flex items-center justify-between">
+                            AI-Powered Quote & Design 
+                            <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">FREE</span>
+                        </a>
+                        <a href="about.html" class="text-gray-700 hover:bg-gray-50 transition text-lg py-3 px-4 rounded-xl mobile-menu-link">About</a>
+                        <a href="services.html" class="text-gray-700 hover:bg-gray-50 transition text-lg py-3 px-4 rounded-xl mobile-menu-link">Services</a>
+                        <a href="gallery.html" class="text-gray-700 hover:bg-gray-50 transition text-lg py-3 px-4 rounded-xl mobile-menu-link">Gallery</a>
+                        <a href="contact.html" class="text-gray-700 hover:bg-gray-50 transition text-lg py-3 px-4 rounded-xl mobile-menu-link">Contact</a>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-gray-100">
+                    <a href="quote.html" class="block w-full py-4 bg-primary text-white text-center rounded-xl font-semibold text-lg">
+                        Get Free Quote <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
                 </div>
             </div>
         </div>
@@ -534,7 +564,8 @@
                                             <i class="fas fa-magic text-3xl md:text-5xl text-accent"></i>
                                         </div>
                                         <div class="flex-1 text-center md:text-left">
-                                            <h3 class="font-bold text-lg md:text-xl text-primary mb-1 md:mb-2">Full Garden Makeover <span class="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full ml-1">INCLUDES DESIGN</span></h3>
+                                            <h3 class="font-bold text-lg md:text-xl text-primary mb-1 md:mb-2">Full Garden Makeover</h3>
+                                            <span class="inline-block text-xs bg-green-500 text-white px-3 py-1 rounded-full mb-2">INCLUDES DESIGN</span>
                                             <p class="text-sm text-gray-700 mb-2">We design, quote & provide AI-powered garden visualisation for your complete transformation</p>
                                             <div class="flex items-start gap-2 text-xs text-gray-600 bg-white bg-opacity-60 p-2 md:p-3 rounded-lg text-left">
                                                 <i class="fas fa-info-circle text-accent mt-0.5 flex-shrink-0"></i>
@@ -599,12 +630,14 @@
                                     <p class="text-gray-600 text-sm mb-4">Type to find products instantly - select multiple items for your quote</p>
                                     
                                     <div class="relative">
-                                        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                        <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-search text-primary text-sm"></i>
+                                        </div>
                                         <input 
                                             type="text" 
                                             id="productSearch" 
-                                            placeholder="Start typing... e.g. sandstone, pergola, fire pit, composite deck" 
-                                            class="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-base bg-white shadow-sm"
+                                            placeholder="Search products... e.g. patio, decking, turf" 
+                                            class="w-full pl-14 pr-4 py-4 rounded-2xl border-2 border-primary/20 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-base bg-gradient-to-r from-blue-50/50 to-white shadow-md"
                                             autocomplete="off"
                                         />
                                         <!-- Search Results Dropdown - Modern Design -->

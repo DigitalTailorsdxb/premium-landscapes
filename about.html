@@ -109,18 +109,33 @@
             </button>
         </nav>
         
-        <div id="mobileMenu" class="mobile-menu fixed top-0 right-0 h-full w-64 bg-white shadow-2xl transform translate-x-full md:hidden z-50">
-            <div class="p-6">
-                <button id="closeMobileMenu" class="text-primary text-2xl mb-8">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div class="flex flex-col space-y-6">
-                    <a href="index.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Home</a>
-                    <a href="quote.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link flex items-center">AI-Powered Quote &amp; Design <span class="ml-2 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">FREE</span></a>
-                    <a href="about.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">About</a>
-                    <a href="services.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Services</a>
-                    <a href="gallery.html" class="text-gray-700 hover:text-primary transition text-lg mobile-menu-link">Gallery</a>
-                    <a href="contact.html" class="text-primary font-semibold transition text-lg mobile-menu-link">Contact</a>
+        <div id="mobileMenu" class="mobile-menu fixed inset-0 bg-white transform translate-x-full md:hidden z-[100]">
+            <div class="flex flex-col h-full">
+                <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                    <a href="index.html">
+                        <img src="images/logo.png" alt="Premium Landscapes" class="h-12">
+                    </a>
+                    <button id="closeMobileMenu" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-6">
+                    <div class="flex flex-col space-y-1">
+                        <a href="index.html" class="text-gray-700 hover:bg-gray-50 transition text-lg py-3 px-4 rounded-xl mobile-menu-link">Home</a>
+                        <a href="quote.html" class="text-gray-700 hover:bg-gray-50 transition text-lg py-3 px-4 rounded-xl mobile-menu-link flex items-center justify-between">
+                            AI-Powered Quote &amp; Design 
+                            <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">FREE</span>
+                        </a>
+                        <a href="about.html" class="text-gray-700 hover:bg-gray-50 transition text-lg py-3 px-4 rounded-xl mobile-menu-link">About</a>
+                        <a href="services.html" class="text-gray-700 hover:bg-gray-50 transition text-lg py-3 px-4 rounded-xl mobile-menu-link">Services</a>
+                        <a href="gallery.html" class="text-gray-700 hover:bg-gray-50 transition text-lg py-3 px-4 rounded-xl mobile-menu-link">Gallery</a>
+                        <a href="contact.html" class="text-gray-700 hover:bg-gray-50 transition text-lg py-3 px-4 rounded-xl mobile-menu-link">Contact</a>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-gray-100">
+                    <a href="quote.html" class="block w-full py-4 bg-primary text-white text-center rounded-xl font-semibold text-lg">
+                        Get Free Quote <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
                 </div>
             </div>
         </div>
