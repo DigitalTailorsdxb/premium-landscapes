@@ -903,6 +903,13 @@ function buildProductDetailFieldsNew() {
     quoteData.selectedProducts.forEach((product, index) => {
         const config = getUnitConfig(product.category, product.value);
         
+        // Auto-populate quantity to 1 for singular products (water features, pergolas, etc.)
+        let defaultValue = quoteData.productAreas[product.id] || '';
+        if (!defaultValue && isSingularProduct(product.value)) {
+            defaultValue = '1';
+            quoteData.productAreas[product.id] = '1';
+        }
+        
         const fieldHtml = `
             <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow product-detail-field" data-product-id="${product.id}">
                 <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
@@ -928,7 +935,7 @@ function buildProductDetailFieldsNew() {
                             min="1"
                             class="flex-1 px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-base"
                             placeholder="${config.placeholder}"
-                            value="${quoteData.productAreas[product.id] || ''}"
+                            value="${defaultValue}"
                         />
                         <span class="flex items-center px-4 text-gray-600 bg-gray-100 rounded-xl font-medium" id="area-unit-${product.id}">${config.unit}</span>
                     </div>
@@ -1099,34 +1106,49 @@ const LM_PRODUCTS = [
     'channel_drain', 'french_drain', 'water_rill'
 ];
 
+// Products that typically only have 1 (auto-populate quantity)
+const SINGULAR_PRODUCTS = [
+    'water_feature', 'pond', 'koi_pond', 'wildlife_pond', 'ornamental_pond',
+    'pergola', 'timber_pergola', 'aluminium_pergola', 'louvered_pergola',
+    'gazebo', 'pavilion', 'seating_area', 'firepit', 'fire_pit',
+    'outdoor_kitchen', 'bbq_area', 'garden_room', 'summer_house', 'shed',
+    'greenhouse', 'hot_tub_base', 'soakaway', 'ramp'
+];
+
+// Check if a product should auto-populate with 1
+function isSingularProduct(material) {
+    if (!material) return false;
+    return SINGULAR_PRODUCTS.some(singular => material.includes(singular));
+}
+
 // Get unit configuration for a product based on its material selection
 function getUnitConfig(feature, material) {
     // Check if this specific product requires linear metres
     if (material && LM_PRODUCTS.includes(material)) {
-        return { label: 'Length (metres)', placeholder: '10', unit: 'lm' };
+        return { label: 'Length (metres)', placeholder: '', unit: 'lm' };
     }
     
     const baseConfig = {
-        'fencing': { label: 'Length (metres)', placeholder: '25', unit: 'lm' },
-        'hedging': { label: 'Length (metres)', placeholder: '10', unit: 'lm' },
-        'lighting': { label: 'Number of Fittings', placeholder: '8', unit: 'fittings' },
-        'steps': { label: 'Number of Steps', placeholder: '5', unit: 'steps' },
-        'walls': { label: 'Length (metres)', placeholder: '10', unit: 'lm' },
-        'drainage': { label: 'Length (metres)', placeholder: '10', unit: 'lm' },
-        'water-features': { label: 'Quantity', placeholder: '1', unit: 'qty' },
-        'ponds': { label: 'Quantity', placeholder: '1', unit: 'qty' },
-        'pergolas': { label: 'Quantity', placeholder: '1', unit: 'qty' },
-        'aggregates': { label: 'Area (m²)', placeholder: '20', unit: 'm²' },
-        'planting': { label: 'Quantity / Area', placeholder: '10', unit: 'qty' },
-        'full-redesign': { label: 'Total Area (m²)', placeholder: '100', unit: 'm²' },
-        'default': { label: 'Area (m²)', placeholder: '40', unit: 'm²' }
+        'fencing': { label: 'Length (metres)', placeholder: '', unit: 'lm' },
+        'hedging': { label: 'Length (metres)', placeholder: '', unit: 'lm' },
+        'lighting': { label: 'Number of Fittings', placeholder: '', unit: 'fittings' },
+        'steps': { label: 'Number of Steps', placeholder: '', unit: 'steps' },
+        'walls': { label: 'Length (metres)', placeholder: '', unit: 'lm' },
+        'drainage': { label: 'Length (metres)', placeholder: '', unit: 'lm' },
+        'water-features': { label: 'Quantity', placeholder: '', unit: 'qty' },
+        'ponds': { label: 'Quantity', placeholder: '', unit: 'qty' },
+        'pergolas': { label: 'Quantity', placeholder: '', unit: 'qty' },
+        'aggregates': { label: 'Area (m²)', placeholder: '', unit: 'm²' },
+        'planting': { label: 'Quantity / Area', placeholder: '', unit: 'qty' },
+        'full-redesign': { label: 'Total Area (m²)', placeholder: '', unit: 'm²' },
+        'default': { label: 'Area (m²)', placeholder: '', unit: 'm²' }
     };
     
     // Special unit handling for "other" products based on material type
     if (feature === 'other' && material) {
         // Edging - linear metres
         if (material.includes('edging')) {
-            return { label: 'Length (metres)', placeholder: '10', unit: 'lm' };
+            return { label: 'Length (metres)', placeholder: '', unit: 'lm' };
         }
         // Individual items (pergolas, sheds, fire pits, etc.)
         if (material.includes('pergola') || material.includes('gazebo') || material.includes('shed') || 
@@ -1134,7 +1156,7 @@ function getUnitConfig(feature, material) {
             material.includes('firepit') || material.includes('seating') || 
             material.includes('kitchen') || material.includes('bbq') || material.includes('screen') || 
             material.includes('soakaway') || material.includes('boulder') || material.includes('ramp')) {
-            return { label: 'Quantity', placeholder: '1', unit: 'qty' };
+            return { label: 'Quantity', placeholder: '', unit: 'qty' };
         }
     }
     
