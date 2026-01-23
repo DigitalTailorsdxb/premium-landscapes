@@ -2003,6 +2003,9 @@ async function submitQuote() {
     // Hide form - step6 is the AI Design step
     document.getElementById('step6').classList.add('hidden');
     
+    // Scroll to top so user can see the loading animation (especially important on mobile)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
     // Check if this is a full redesign to determine which loading state to show
     const isFullRedesignMode = quoteData.quoteMode === 'full-redesign';
     
