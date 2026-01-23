@@ -13,10 +13,11 @@ The website utilizes a multi-page architecture (`index.html`, `quote.html`, `abo
 
 ### UI/UX Decisions
 - **Visual Style:** Modern SaaS design with white backgrounds for a clean, professional, and minimal aesthetic.
+- **Liquid Glass Design System:** Inspired by Apple iOS 26 (2025), featuring translucent glass-like materials with backdrop blur, subtle refraction highlights, and smooth transitions. Applied to navigation, cards, buttons, and progress indicators via `styles/liquid-glass.css`.
 - **Color Palette:** Primary vibrant blue (`#2563eb`), secondary light blue (`#3b82f6`), accent purple (`#8b5cf6`), and very light blue (`#f0f9ff`).
 - **Typography:** Headings use Inter or Poppins; body text uses Open Sans or Lato.
 - **Responsiveness:** Fully responsive, mobile-first design across all devices.
-- **Components:** Reusable CTA buttons, mobile hamburger menu, modular forms, cards, and popups.
+- **Components:** Reusable CTA buttons, mobile hamburger menu, modular forms, cards, and popups. Glass-effect variants available via CSS classes.
 - **White-labeling:** Designed for quick rebranding by swapping logos, primary colors, company name, contact details, pricing sheet URLs, and WhatsApp numbers.
 
 ### Technical Implementations
