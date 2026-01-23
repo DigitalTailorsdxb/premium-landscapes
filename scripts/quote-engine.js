@@ -177,11 +177,16 @@ function completeIndividualProgressAnimation() {
         steps[steps.length - 1].classList.add('completed');
     }
     
-    // Hide loading state and show success result
+    // Hide loading state
     document.getElementById('loadingState').classList.add('hidden');
     
-    // Show success - the quote was submitted
-    showQuoteResult(progressStateIndividual.webhookResult || { success: true });
+    // Show result based on webhook response
+    const result = progressStateIndividual.webhookResult || { success: true };
+    if (progressStateIndividual.webhookSuccess === false && result.success === false) {
+        showQuoteError(result);
+    } else {
+        showQuoteResult(result);
+    }
 }
 
 // Stop individual products progress animation (for errors)
@@ -2017,16 +2022,15 @@ async function submitQuote() {
             console.log('Standard quotes: /webhook/premium-landscapes-quote');
             console.log('Full redesign: /webhook/premium-landscapes-full-redesign');
             
-            // Demo mode: Simulate webhook completion after delay
+            // Demo mode: Simulate webhook completion - animation will run its full duration
             if (isFullRedesignMode) {
                 // Let animation run then complete
                 setTimeout(() => {
                     onWebhookComplete(true, { demo: true });
                 }, 8000); // Allow time for animation
             } else {
-                setTimeout(() => {
-                    showQuoteResult();
-                }, 2000);
+                // For individual products, store demo result - animation will handle completion
+                onIndividualWebhookComplete(true, { demo: true });
             }
             return;
         }
@@ -2085,11 +2089,21 @@ async function submitQuote() {
                 
                 // Check response based on success flag
                 if (result.success === false) {
-                    // Error response from n8n
-                    showQuoteError(result);
+                    // Error response from n8n - store result for when animation completes
+                    if (isFullRedesignMode) {
+                        onWebhookComplete(false, result);
+                    } else {
+                        // For individual products, store result and let animation finish
+                        onIndividualWebhookComplete(false, result);
+                    }
                 } else {
-                    // Success - show confirmation with quote ref if available
-                    showQuoteResult(result);
+                    // Success - store result for when animation completes
+                    if (isFullRedesignMode) {
+                        onWebhookComplete(true, result);
+                    } else {
+                        // For individual products, store result and let animation finish
+                        onIndividualWebhookComplete(true, result);
+                    }
                 }
                 
             } catch (error) {
