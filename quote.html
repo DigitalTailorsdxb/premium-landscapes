@@ -644,7 +644,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Selected Products Display - Mobile Optimised -->
+                                <!-- Selected Products Display - Always Visible -->
                                 <div id="selectedProductsSection" class="mb-4 hidden">
                                     <div class="bg-green-50 border border-green-200 rounded-xl p-3 mb-3">
                                         <div class="flex items-center justify-between">
@@ -652,16 +652,12 @@
                                                 <i class="fas fa-check-circle text-green-500 mr-2"></i>
                                                 <span id="selectedProductsCount">0</span> Products Added
                                             </h3>
-                                            <button type="button" id="toggleProductDetails" class="text-sm text-primary font-medium flex items-center">
-                                                <span id="toggleProductDetailsText">Show</span>
-                                                <i class="fas fa-chevron-down ml-1 text-xs transition-transform" id="toggleProductDetailsIcon"></i>
-                                            </button>
+                                            <span class="text-xs text-green-600">Edit quantities below</span>
                                         </div>
-                                        <p class="text-green-600 text-xs mt-1">Tap "Show" to edit quantities</p>
                                     </div>
                                     
-                                    <!-- Collapsible Product Detail Fields -->
-                                    <div id="productDetailsCollapsible" class="hidden">
+                                    <!-- Product Detail Fields - Always Visible -->
+                                    <div id="productDetailsCollapsible">
                                         <div id="productDetailFields" class="space-y-3"></div>
                                     </div>
                                 </div>
