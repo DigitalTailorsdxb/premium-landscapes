@@ -512,12 +512,13 @@ const subProducts = {
         options: [
             { value: '', label: '-- Select a product --', price: '' },
             { group: 'Fire & Seating', options: [
+                { value: 'fire_pit', label: 'Fire Pit', price: '£££' },
+                { value: 'sunken_firepit', label: 'Sunken Fire Pit', price: '£££' },
+                { value: 'sunken_firepit_seating_package', label: 'Fire Pit & Seating Package', price: '££££' },
                 { value: 'seating_area_basic', label: 'Seating Area (Basic)', price: '££££' },
                 { value: 'seating_sunken', label: 'Sunken Seating Area', price: '££££' },
                 { value: 'seating_rendered', label: 'Rendered Seating', price: '££££' },
-                { value: 'seating_stone', label: 'Stone Seating', price: '££££' },
-                { value: 'sunken_firepit', label: 'Sunken Fire Pit', price: '£££' },
-                { value: 'sunken_firepit_seating_package', label: 'Fire Pit & Seating Package', price: '££££' }
+                { value: 'seating_stone', label: 'Stone Seating', price: '££££' }
             ]},
             { group: 'Outdoor Kitchens', options: [
                 { value: 'outdoor_kitchen_starter', label: 'Outdoor Kitchen (Starter)', price: '££££' },
@@ -639,7 +640,8 @@ function buildSearchableProductList() {
         'timber_pergola_open_3x3': 'wooden timber shade cover pergola',
         'aluminium_pergola_modern_3x3': 'metal modern shade pergola',
         'gazebo': 'shelter cover outdoor structure',
-        'sunken_firepit': 'fire pit firepit',
+        'fire_pit': 'fire firepit pit outdoor fire',
+        'sunken_firepit': 'fire pit firepit sunken',
         'outdoor_kitchen_starter': 'bbq barbecue cooking kitchen',
         'outdoor_kitchen_standard': 'bbq barbecue cooking grill kitchen',
         'outdoor_kitchen_premium': 'bbq barbecue kitchen cooking premium',
@@ -1108,11 +1110,13 @@ const LM_PRODUCTS = [
 
 // Products that typically only have 1 (auto-populate quantity)
 const SINGULAR_PRODUCTS = [
-    'water_feature', 'pond', 'koi_pond', 'wildlife_pond', 'ornamental_pond',
-    'pergola', 'timber_pergola', 'aluminium_pergola', 'louvered_pergola',
-    'gazebo', 'pavilion', 'seating_area', 'firepit', 'fire_pit',
-    'outdoor_kitchen', 'bbq_area', 'garden_room', 'summer_house', 'shed',
-    'greenhouse', 'hot_tub_base', 'soakaway', 'ramp'
+    'water_feature', 'wall_mounted_feature', 'fountain', 'cascade_waterfall', 'water_bowl', 'corten_steel',
+    'pond', 'small_pond', 'medium_pond', 'large_pond', 'koi_pond', 'wildlife_pond',
+    'pergola', 'timber_pergola', 'aluminium_pergola', 'steel_pergola', 'pergola_attached', 'gazebo',
+    'fire_pit', 'sunken_firepit', 'sunken_firepit_seating',
+    'seating_area', 'seating_sunken', 'seating_rendered', 'seating_stone',
+    'outdoor_kitchen', 'bbq_area', 'built_in_bbq',
+    'garden_room', 'summer_house', 'shed', 'greenhouse', 'soakaway', 'non_slip_ramp'
 ];
 
 // Check if a product should auto-populate with 1
