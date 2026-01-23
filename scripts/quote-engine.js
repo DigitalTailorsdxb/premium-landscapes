@@ -580,8 +580,32 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeAddProductButtons();
     initializePostcodeLookup();
     initializeDesignVisionNotes();
+    initializeProductDetailsToggle();
     updateSummary();
 });
+
+function initializeProductDetailsToggle() {
+    const toggleBtn = document.getElementById('toggleProductDetails');
+    const collapsible = document.getElementById('productDetailsCollapsible');
+    const toggleText = document.getElementById('toggleProductDetailsText');
+    const toggleIcon = document.getElementById('toggleProductDetailsIcon');
+    
+    if (toggleBtn && collapsible) {
+        toggleBtn.addEventListener('click', function() {
+            const isHidden = collapsible.classList.contains('hidden');
+            collapsible.classList.toggle('hidden');
+            if (toggleText) toggleText.textContent = isHidden ? 'Hide' : 'Show';
+            if (toggleIcon) toggleIcon.style.transform = isHidden ? 'rotate(180deg)' : '';
+        });
+    }
+}
+
+function updateSelectedProductsCount() {
+    const countEl = document.getElementById('selectedProductsCount');
+    if (countEl && quoteData.selectedProducts) {
+        countEl.textContent = quoteData.selectedProducts.length;
+    }
+}
 
 // Build flat searchable product list from subProducts
 function buildSearchableProductList() {
@@ -885,6 +909,7 @@ function addProductFromSearch(productId, category, value, label) {
     // Build the product detail fields
     buildProductDetailFieldsNew();
     updateSummary();
+    updateSelectedProductsCount();
     
     // Show the selected products section
     const section = document.getElementById('selectedProductsSection');
@@ -905,8 +930,11 @@ function buildProductDetailFieldsNew() {
         if (section) {
             section.classList.add('hidden');
         }
+        updateSelectedProductsCount();
         return;
     }
+    
+    updateSelectedProductsCount();
     
     quoteData.selectedProducts.forEach((product, index) => {
         const config = getUnitConfig(product.category, product.value);
