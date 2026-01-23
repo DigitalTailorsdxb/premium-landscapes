@@ -69,7 +69,7 @@ const finalStepDurations = [
 // ============================================================================
 let progressStateIndividual = {
     currentStep: 0,
-    totalSteps: 5,
+    totalSteps: 6,
     isAnimating: false,
     webhookComplete: false,
     webhookSuccess: false,
@@ -79,18 +79,19 @@ let progressStateIndividual = {
 
 // Step timings for individual products - Total: 10 seconds
 const individualStepDurations = [
-    2000,  // 0: Reading your selections (2s)
-    2000,  // 1: Calculating quantities (2s)
+    1500,  // 0: Reading your selections (1.5s)
+    1500,  // 1: Calculating quantities (1.5s)
     2000,  // 2: Getting local prices (2s)
-    2500,  // 3: Preparing your quote (2.5s)
-    1500   // 4: Done! (1.5s)
+    2000,  // 3: Preparing your quote (2s)
+    2000,  // 4: Sending email (2s)
+    1000   // 5: Done! (1s)
 ];
 
 // Reset individual products progress timeline
 function resetIndividualProgressTimeline() {
     progressStateIndividual = {
         currentStep: 0,
-        totalSteps: 5,
+        totalSteps: 6,
         isAnimating: false,
         webhookComplete: false,
         webhookSuccess: false,
