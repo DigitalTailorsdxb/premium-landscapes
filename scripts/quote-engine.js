@@ -2045,16 +2045,33 @@ async function submitQuote() {
     const isFullRedesignMode = quoteData.quoteMode === 'full-redesign';
     
     // Hide step6 form for both modes
-    document.getElementById('step6').classList.add('hidden');
+    const step6El = document.getElementById('step6');
+    console.log('📋 step6 element:', step6El);
+    if (step6El) {
+        step6El.classList.add('hidden');
+        console.log('📋 step6 hidden successfully');
+    }
     
     if (isFullRedesignMode) {
         // Show animated progress for full redesign
-        document.getElementById('loadingStateRedesign').classList.remove('hidden');
+        const loadingEl = document.getElementById('loadingStateRedesign');
+        console.log('🔄 loadingStateRedesign element:', loadingEl);
+        if (loadingEl) {
+            loadingEl.classList.remove('hidden');
+            console.log('🔄 loadingStateRedesign shown - classList:', loadingEl.classList.toString());
+        } else {
+            console.error('❌ loadingStateRedesign element NOT FOUND!');
+        }
         resetProgressTimeline();
         startProgressAnimation();
     } else {
         // Show animated progress for individual products
-        document.getElementById('loadingState').classList.remove('hidden');
+        const loadingEl = document.getElementById('loadingState');
+        console.log('🔄 loadingState element:', loadingEl);
+        if (loadingEl) {
+            loadingEl.classList.remove('hidden');
+            console.log('🔄 loadingState shown');
+        }
         resetIndividualProgressTimeline();
         startIndividualProgressAnimation();
     }
