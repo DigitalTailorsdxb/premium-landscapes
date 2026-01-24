@@ -12,12 +12,14 @@ const SubmissionOverlay = {
     totalSteps: 6,
     stepTimers: [],
     
-    // Progress steps WITH AI design (90 seconds total)
+    // Progress steps WITH AI design (90 seconds total - 8 steps @ 11.25s each)
     stepsWithDesign: [
         { icon: 'fa-clipboard-list', label: 'Reading your requirements...' },
-        { icon: 'fa-drafting-compass', label: 'Analysing your garden photo...' },
+        { icon: 'fa-image', label: 'Analysing your garden photo...' },
+        { icon: 'fa-brain', label: 'Understanding your space...' },
         { icon: 'fa-wand-magic-sparkles', label: 'AI creating your design...' },
         { icon: 'fa-palette', label: 'Rendering visualisation...' },
+        { icon: 'fa-sparkles', label: 'Adding finishing touches...' },
         { icon: 'fa-file-pdf', label: 'Preparing your quote...' },
         { icon: 'fa-envelope', label: 'Sending to your email...' }
     ],
@@ -74,15 +76,15 @@ const SubmissionOverlay = {
         const steps = this.hasImage ? this.stepsWithDesign : this.stepsQuoteOnly;
         
         container.innerHTML = steps.map((step, i) => `
-            <div class="overlay-step flex items-center" data-step="${i}">
-                <div class="step-icon w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4 transition-all duration-300">
-                    <i class="fas ${step.icon} text-gray-400"></i>
+            <div class="overlay-step flex items-center py-2" data-step="${i}">
+                <div class="step-icon w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mr-4 transition-all duration-300">
+                    <i class="fas ${step.icon} text-gray-400 text-lg"></i>
                 </div>
                 <div class="flex-1">
                     <p class="step-label font-medium text-gray-400 transition-all duration-300">${step.label}</p>
                 </div>
-                <div class="step-status">
-                    <i class="fas fa-circle text-gray-300 text-xs"></i>
+                <div class="step-status w-8 h-8 flex items-center justify-center">
+                    <i class="fas fa-circle text-gray-200 text-sm"></i>
                 </div>
             </div>
         `).join('');
@@ -90,8 +92,8 @@ const SubmissionOverlay = {
     
     animateSteps() {
         const steps = this.hasImage ? this.stepsWithDesign : this.stepsQuoteOnly;
-        // 90 seconds with image (15s per step), 15 seconds for quote only (2.5s per step)
-        const stepDuration = this.hasImage ? 15000 : 2500;
+        // 90 seconds with image (8 steps @ 11.25s each), 15 seconds for quote only (6 steps @ 2.5s each)
+        const stepDuration = this.hasImage ? 11250 : 2500;
         
         console.log(`⏱️ OVERLAY: Animation duration - ${this.hasImage ? '90s (with design)' : '30s (quote only)'}`);
         
@@ -115,10 +117,10 @@ const SubmissionOverlay = {
         if (stepEl) {
             const icon = stepEl.querySelector('.step-icon');
             const label = stepEl.querySelector('.step-label');
-            const status = stepEl.querySelector('.step-status i');
+            const statusContainer = stepEl.querySelector('.step-status');
             
             // Activate this step
-            icon.classList.remove('bg-gray-200');
+            icon.classList.remove('bg-gray-100');
             icon.classList.add('bg-primary', 'shadow-lg');
             icon.querySelector('i').classList.remove('text-gray-400');
             icon.querySelector('i').classList.add('text-white');
@@ -126,8 +128,8 @@ const SubmissionOverlay = {
             label.classList.remove('text-gray-400');
             label.classList.add('text-gray-800', 'font-semibold');
             
-            status.classList.remove('fa-circle', 'text-gray-300');
-            status.classList.add('fa-check-circle', 'text-green-500');
+            // Replace with bigger green tick
+            statusContainer.innerHTML = '<i class="fas fa-check-circle text-green-500 text-2xl"></i>';
         }
         
         console.log(`🔄 OVERLAY: Step ${stepIndex + 1} activated`);
