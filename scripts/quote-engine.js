@@ -2408,8 +2408,8 @@ function prepareWebhookPayload() {
                 totalBudget_gbp: totalBudget,
                 layoutType: 'standard',
                 sunlight: 'partial sun',
-                stylePreference: 'contemporary',
-                maintenanceLevel: 'low maintenance',
+                stylePreference: detectStylePreference(),
+                maintenanceLevel: detectMaintenanceLevel(),
                 siteConditions: {
                     access: 'standard access',
                     soilType: 'loam',
@@ -2750,6 +2750,51 @@ function buildStyleDescription() {
     
     const features = quoteData.features.map(f => productNames[f] || f).join(', ');
     return `Garden with ${features}`;
+}
+
+// Helper: Detect style preference from user's design vision notes
+function detectStylePreference() {
+    const notes = (quoteData.designVisionNotes || quoteData.additionalNotes || '').toLowerCase();
+    
+    // Style keywords to detect (ordered by specificity)
+    const stylePatterns = [
+        { keywords: ['traditional', 'classic', 'heritage', 'period', 'victorian', 'edwardian'], style: 'traditional' },
+        { keywords: ['cottage', 'country', 'rustic', 'farmhouse', 'natural', 'wildflower'], style: 'cottage' },
+        { keywords: ['mediterranean', 'spanish', 'tuscan', 'italian', 'terracotta'], style: 'mediterranean' },
+        { keywords: ['japanese', 'zen', 'oriental', 'asian', 'minimalist zen'], style: 'japanese' },
+        { keywords: ['tropical', 'exotic', 'lush', 'jungle', 'palm'], style: 'tropical' },
+        { keywords: ['formal', 'symmetrical', 'structured', 'parterre', 'geometric formal'], style: 'formal' },
+        { keywords: ['modern', 'contemporary', 'sleek', 'minimalist', 'clean lines', 'architectural'], style: 'contemporary' },
+        { keywords: ['low maintenance', 'easy care', 'minimal upkeep'], style: 'low-maintenance' }
+    ];
+    
+    for (const pattern of stylePatterns) {
+        for (const keyword of pattern.keywords) {
+            if (notes.includes(keyword)) {
+                console.log(`🎨 Style detected: "${pattern.style}" from keyword "${keyword}"`);
+                return pattern.style;
+            }
+        }
+    }
+    
+    // Default to 'not specified' so LLM can infer from other details
+    console.log('🎨 No specific style detected - letting AI infer from description');
+    return 'not specified - infer from customer description';
+}
+
+// Helper: Detect maintenance level from user's notes
+function detectMaintenanceLevel() {
+    const notes = (quoteData.designVisionNotes || quoteData.additionalNotes || '').toLowerCase();
+    
+    if (notes.includes('low maintenance') || notes.includes('easy care') || notes.includes('minimal upkeep') || notes.includes('no maintenance')) {
+        return 'low maintenance';
+    }
+    if (notes.includes('high maintenance') || notes.includes('formal garden') || notes.includes('manicured')) {
+        return 'high maintenance';
+    }
+    
+    // Default - let AI decide based on design
+    return 'moderate - as appropriate for design';
 }
 
 // Helper: Format budget for design workflow
