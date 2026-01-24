@@ -356,6 +356,14 @@ function completeProgressAnimation() {
 // Show redesign-specific success result
 function showQuoteResultRedesign(data) {
     console.log('🎨 showQuoteResultRedesign called - showing success UI');
+    
+    // Hide step6 entirely to make room for success UI
+    const step6 = document.getElementById('step6');
+    if (step6) {
+        step6.classList.add('hidden');
+        console.log('🎨 step6 hidden');
+    }
+    
     const resultElement = document.getElementById('quoteResultRedesign');
     console.log('🎨 quoteResultRedesign element found:', resultElement);
     if (resultElement) {
