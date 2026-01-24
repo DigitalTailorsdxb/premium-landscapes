@@ -818,3 +818,225 @@
     .modern-header-blue .decorative-dots .dot-violet { background: #a78bfa; }
     .modern-header-blue .decorative-dots .dot-blue-light { background: #93c5fd; }
 }
+
+/* ============================================
+   MODERN GLOW BUTTONS
+   Pill-shaped buttons with gradient glow borders
+   ============================================ */
+
+/* Base button wrapper */
+.modern-btn {
+    position: relative;
+    display: inline-block;
+    padding: 3px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #3b82f6, #6366f1, #8b5cf6);
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.modern-btn::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(135deg, #3b82f6, #6366f1, #8b5cf6);
+    border-radius: 9999px;
+    opacity: 0.5;
+    filter: blur(8px);
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.modern-btn:hover::before {
+    opacity: 0.8;
+}
+
+/* White background variant (primary) */
+.modern-btn-white {
+    position: relative;
+    display: inline-block;
+    padding: 3px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #3b82f6, #6366f1, #8b5cf6);
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.modern-btn-white::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    background: linear-gradient(135deg, #3b82f6, #6366f1, #8b5cf6);
+    border-radius: 9999px;
+    opacity: 0.4;
+    filter: blur(10px);
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.modern-btn-white:hover::before {
+    opacity: 0.7;
+}
+
+.modern-btn-white .btn-inner {
+    display: block;
+    padding: 1rem 2.5rem;
+    background: white;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: #3b82f6;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.modern-btn-white:hover .btn-inner {
+    background: #f8fafc;
+}
+
+/* Filled gradient variant */
+.modern-btn-filled {
+    position: relative;
+    display: inline-block;
+    padding: 3px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.modern-btn-filled::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    background: linear-gradient(135deg, #3b82f6, #6366f1, #8b5cf6);
+    border-radius: 9999px;
+    opacity: 0.4;
+    filter: blur(10px);
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.modern-btn-filled:hover::before {
+    opacity: 0.7;
+}
+
+.modern-btn-filled .btn-inner {
+    display: block;
+    padding: 1rem 2.5rem;
+    background: linear-gradient(135deg, #3b82f6, #6366f1, #8b5cf6);
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: white;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.modern-btn-filled:hover .btn-inner {
+    background: linear-gradient(135deg, #2563eb, #4f46e5, #7c3aed);
+}
+
+/* Teal variant - white background */
+.modern-btn-teal-white {
+    position: relative;
+    display: inline-block;
+    padding: 3px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #10b981, #14b8a6, #06b6d4);
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.modern-btn-teal-white::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    background: linear-gradient(135deg, #10b981, #14b8a6, #06b6d4);
+    border-radius: 9999px;
+    opacity: 0.4;
+    filter: blur(10px);
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.modern-btn-teal-white:hover::before {
+    opacity: 0.7;
+}
+
+.modern-btn-teal-white .btn-inner {
+    display: block;
+    padding: 1rem 2.5rem;
+    background: white;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: #10b981;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.modern-btn-teal-white:hover .btn-inner {
+    background: #f8fafc;
+}
+
+/* Teal variant - filled */
+.modern-btn-teal-filled {
+    position: relative;
+    display: inline-block;
+    padding: 3px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(20, 184, 166, 0.3), rgba(6, 182, 212, 0.3));
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.modern-btn-teal-filled::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    background: linear-gradient(135deg, #10b981, #14b8a6, #06b6d4);
+    border-radius: 9999px;
+    opacity: 0.4;
+    filter: blur(10px);
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.modern-btn-teal-filled:hover::before {
+    opacity: 0.7;
+}
+
+.modern-btn-teal-filled .btn-inner {
+    display: block;
+    padding: 1rem 2.5rem;
+    background: linear-gradient(135deg, #10b981, #14b8a6, #06b6d4);
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: white;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.modern-btn-teal-filled:hover .btn-inner {
+    background: linear-gradient(135deg, #059669, #0d9488, #0891b2);
+}
+
+/* Small button variants */
+.modern-btn-white.btn-sm .btn-inner,
+.modern-btn-filled.btn-sm .btn-inner,
+.modern-btn-teal-white.btn-sm .btn-inner,
+.modern-btn-teal-filled.btn-sm .btn-inner {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+}
+
+/* Large button variants */
+.modern-btn-white.btn-lg .btn-inner,
+.modern-btn-filled.btn-lg .btn-inner,
+.modern-btn-teal-white.btn-lg .btn-inner,
+.modern-btn-teal-filled.btn-lg .btn-inner {
+    padding: 1.25rem 3rem;
+    font-size: 1.25rem;
+}
