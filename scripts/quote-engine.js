@@ -76,15 +76,15 @@ const SubmissionOverlay = {
         const steps = this.hasImage ? this.stepsWithDesign : this.stepsQuoteOnly;
         
         container.innerHTML = steps.map((step, i) => `
-            <div class="overlay-step flex items-center py-2" data-step="${i}">
-                <div class="step-icon w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mr-4 transition-all duration-300">
-                    <i class="fas ${step.icon} text-gray-400 text-lg"></i>
+            <div class="overlay-step flex items-center py-1" data-step="${i}">
+                <div class="step-icon w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3 transition-all duration-300">
+                    <i class="fas ${step.icon} text-gray-400"></i>
                 </div>
                 <div class="flex-1">
-                    <p class="step-label font-medium text-gray-400 transition-all duration-300">${step.label}</p>
+                    <p class="step-label text-sm font-medium text-gray-400 transition-all duration-300">${step.label}</p>
                 </div>
-                <div class="step-status w-8 h-8 flex items-center justify-center">
-                    <i class="fas fa-circle text-gray-200 text-sm"></i>
+                <div class="step-status w-7 h-7 flex items-center justify-center">
+                    <i class="fas fa-circle text-gray-200 text-xs"></i>
                 </div>
             </div>
         `).join('');
@@ -128,8 +128,8 @@ const SubmissionOverlay = {
             label.classList.remove('text-gray-400');
             label.classList.add('text-gray-800', 'font-semibold');
             
-            // Replace with bigger green tick
-            statusContainer.innerHTML = '<i class="fas fa-check-circle text-green-500 text-2xl"></i>';
+            // Replace with green tick
+            statusContainer.innerHTML = '<i class="fas fa-check-circle text-green-500 text-xl"></i>';
         }
         
         console.log(`🔄 OVERLAY: Step ${stepIndex + 1} activated`);
