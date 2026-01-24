@@ -355,7 +355,13 @@ function completeProgressAnimation() {
 
 // Show redesign-specific success result
 function showQuoteResultRedesign(data) {
-    document.getElementById('quoteResultRedesign').classList.remove('hidden');
+    console.log('🎨 showQuoteResultRedesign called - showing success UI');
+    const resultElement = document.getElementById('quoteResultRedesign');
+    console.log('🎨 quoteResultRedesign element found:', resultElement);
+    if (resultElement) {
+        resultElement.classList.remove('hidden');
+        console.log('🎨 quoteResultRedesign hidden class removed');
+    }
     
     console.log('✅ Full Garden Redesign request submitted successfully!');
     console.log('Customer will receive design proposal via email from n8n workflow');
