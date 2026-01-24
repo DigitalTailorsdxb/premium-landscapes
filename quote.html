@@ -264,26 +264,134 @@
            MOBILE-FIRST OPTIMIZATIONS
            ============================================ */
         
-        /* Larger touch targets on mobile */
+        /* Mobile slide-up summary panel */
+        .mobile-summary-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .mobile-summary-panel.active {
+            transform: translateY(0);
+        }
+        .mobile-summary-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 99;
+        }
+        .mobile-summary-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Floating summary button */
+        .mobile-summary-fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 6px 24px rgba(37, 99, 235, 0.5);
+            z-index: 90;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+        }
+        .mobile-summary-fab:active {
+            transform: scale(0.95);
+        }
+        .mobile-summary-fab .badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #10b981;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+        
+        @media (max-width: 1023px) {
+            .mobile-summary-fab {
+                display: flex;
+            }
+            
+            /* Compact hero on mobile */
+            #quoteHero {
+                padding-top: 80px !important;
+                padding-bottom: 12px !important;
+            }
+            #quoteHero h1 {
+                font-size: 1.5rem !important;
+            }
+            #quoteHero p {
+                font-size: 0.875rem !important;
+            }
+            
+            /* Form card - less padding on mobile */
+            .quote-form-column > div {
+                padding: 16px !important;
+                border-radius: 16px !important;
+            }
+            
+            /* Step headers - more compact */
+            .step-container .bg-gradient-to-r {
+                padding: 12px 16px !important;
+                margin-left: -16px !important;
+                margin-right: -16px !important;
+                border-radius: 0 !important;
+            }
+            .step-container .bg-gradient-to-r h2 {
+                font-size: 1.125rem !important;
+            }
+            .step-container .bg-gradient-to-r p {
+                font-size: 0.75rem !important;
+            }
+        }
+        
+        /* Touch-friendly inputs */
         @media (max-width: 767px) {
-            /* Make all inputs larger for touch */
             input[type="text"], 
             input[type="email"], 
             input[type="tel"], 
             input[type="number"],
             textarea,
             select {
-                font-size: 16px !important; /* Prevents iOS zoom */
+                font-size: 16px !important;
                 min-height: 52px;
                 padding: 14px 16px !important;
             }
             
-            /* Larger buttons for touch */
             button {
                 min-height: 48px;
             }
             
-            /* Better search dropdown on mobile */
+            /* Full-width search dropdown */
             #searchResultsDropdown {
                 position: fixed !important;
                 top: auto !important;
@@ -297,94 +405,36 @@
                 z-index: 9999 !important;
             }
             
-            /* Search result items - larger touch targets */
             .search-result-item {
                 padding: 16px !important;
                 min-height: 60px;
-                border-bottom: 1px solid #f0f0f0;
             }
             
-            /* Product cards in grid - larger touch targets */
             .feature-card {
-                padding: 16px 12px !important;
-                min-height: 80px;
+                padding: 14px 10px !important;
             }
             
-            /* Quote mode cards - more prominent on mobile */
             .quote-mode-card {
-                padding: 20px !important;
-            }
-            
-            /* Selected products - easier to interact with */
-            .product-detail-field {
                 padding: 16px !important;
             }
             
-            /* Progress bar - fixed at top on mobile */
-            .progress-container-mobile {
-                position: sticky;
-                top: 64px;
-                z-index: 40;
-                background: white;
-                padding: 12px 16px;
-                margin: -16px -16px 16px -16px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            /* Navigation buttons - full width stack on very small */
+            .step-container .flex.gap-2 {
+                flex-direction: column;
             }
-            
-            /* Hide summary panel on mobile until later steps */
-            .summary-panel-mobile {
-                display: none;
-            }
-            
-            /* Summary panel as slide-up on mobile */
-            .summary-toggle-btn {
-                display: flex !important;
-                position: fixed;
-                bottom: 80px;
-                right: 16px;
-                background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
-                color: white;
-                padding: 12px 20px;
-                border-radius: 50px;
-                box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
-                z-index: 50;
-                font-weight: 600;
-            }
-            
-            /* Main content - more padding for touch */
-            .quote-form-container {
-                padding: 16px !important;
-            }
-            
-            /* Step headings - clearer on mobile */
-            .step-container h2 {
-                font-size: 1.25rem !important;
-                line-height: 1.4;
-            }
-            
-            /* Spacing improvements */
-            .space-y-4 > * + * {
-                margin-top: 1.25rem;
-            }
-            
-            /* Remove button - easier to tap */
-            .remove-product-btn {
-                padding: 8px 16px !important;
-                font-size: 14px !important;
-            }
-            
-            /* Category grid - 2 columns on small phones */
-            @media (max-width: 380px) {
-                #productGrid {
-                    grid-template-columns: repeat(2, 1fr) !important;
-                }
+            .step-container .flex.gap-2 button {
+                width: 100%;
             }
         }
         
-        /* Tablet optimizations */
-        @media (min-width: 768px) and (max-width: 1023px) {
-            .quote-form-container {
-                padding: 24px;
+        /* Two column nav buttons on larger mobile */
+        @media (min-width: 400px) and (max-width: 767px) {
+            .step-container .flex.gap-2 {
+                flex-direction: row;
+            }
+            .step-container .flex.gap-2 button:first-child {
+                width: auto;
+                flex-shrink: 0;
             }
         }
         
@@ -398,14 +448,9 @@
             }
         }
         
-        /* Hide summary toggle on desktop */
+        /* Hide old summary toggle */
         .summary-toggle-btn {
-            display: none;
-        }
-        @media (max-width: 1023px) {
-            .summary-toggle-btn {
-                display: flex;
-            }
+            display: none !important;
         }
         
         /* Smooth scrolling */
@@ -1634,6 +1679,52 @@
             </div>
         </div>
     </section>
+    
+    <!-- Mobile Summary Floating Action Button -->
+    <button class="mobile-summary-fab" id="mobileSummaryFab" onclick="toggleMobileSummary()">
+        <i class="fas fa-clipboard-list"></i>
+        <span class="badge" id="summaryBadge">0</span>
+    </button>
+    
+    <!-- Mobile Summary Overlay -->
+    <div class="mobile-summary-overlay" id="mobileSummaryOverlay" onclick="toggleMobileSummary()"></div>
+    
+    <!-- Mobile Summary Panel -->
+    <div class="mobile-summary-panel" id="mobileSummaryPanel">
+        <div class="p-6">
+            <!-- Handle bar -->
+            <div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
+                        <i class="fas fa-robot text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-heading font-bold text-lg text-primary">Your Project</h3>
+                        <p class="text-xs text-gray-500">Live summary</p>
+                    </div>
+                </div>
+                <button onclick="toggleMobileSummary()" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                    <i class="fas fa-times text-gray-600"></i>
+                </button>
+            </div>
+            
+            <!-- Summary Content -->
+            <div id="mobileSummaryContent" class="space-y-3 mb-6">
+                <p class="text-gray-500 text-sm italic text-center py-8">Select features to see your summary...</p>
+            </div>
+            
+            <!-- Footer -->
+            <div class="pt-4 border-t border-gray-100">
+                <p class="text-xs text-gray-400 text-center">
+                    <i class="fas fa-bolt text-accent mr-1"></i>
+                    Powered by <a href="https://tradeengine.io" target="_blank" class="text-accent hover:underline">Trade Engine</a>
+                </p>
+            </div>
+        </div>
+    </div>
     
     <!-- Footer -->
     <footer class="bg-gray-900 text-white py-12 px-4">

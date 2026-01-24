@@ -2158,6 +2158,58 @@ function updateSummary() {
     }
     
     summaryContent.innerHTML = html;
+    
+    // Sync with mobile summary panel
+    const mobileSummaryContent = document.getElementById('mobileSummaryContent');
+    if (mobileSummaryContent) {
+        mobileSummaryContent.innerHTML = html;
+    }
+    
+    // Update mobile summary badge count
+    updateMobileSummaryBadge();
+}
+
+// Toggle mobile summary panel
+function toggleMobileSummary() {
+    const panel = document.getElementById('mobileSummaryPanel');
+    const overlay = document.getElementById('mobileSummaryOverlay');
+    
+    if (panel && overlay) {
+        panel.classList.toggle('active');
+        overlay.classList.toggle('active');
+        
+        // Prevent body scroll when panel is open
+        if (panel.classList.contains('active')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }
+}
+
+// Update mobile summary badge with item count
+function updateMobileSummaryBadge() {
+    const badge = document.getElementById('summaryBadge');
+    if (!badge) return;
+    
+    let count = 0;
+    
+    // Count selected products
+    if (quoteData.selectedProducts && quoteData.selectedProducts.length > 0) {
+        count += quoteData.selectedProducts.length;
+    } else if (quoteData.features && quoteData.features.length > 0) {
+        count += quoteData.features.length;
+    }
+    
+    // Count other filled fields
+    if (quoteData.area) count++;
+    if (quoteData.budget) count++;
+    if (quoteData.postcode) count++;
+    if (quoteData.files && quoteData.files.length > 0) count++;
+    if (quoteData.designVisionNotes && quoteData.designVisionNotes.trim()) count++;
+    
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
 }
 
 // Submit quote
