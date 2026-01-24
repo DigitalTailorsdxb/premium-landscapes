@@ -557,3 +557,264 @@
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ============================================
+   MODERN HEADER BUTTONS
+   Glowing gradient border with morphing icons
+   ============================================ */
+
+/* Teal/Emerald Variant */
+.modern-header-teal {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.modern-header-teal .glow-border {
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(to right, #10b981, #14b8a6, #06b6d4);
+    border-radius: 1.5rem;
+    opacity: 0.75;
+    filter: blur(4px);
+    transition: opacity 0.5s;
+}
+
+.modern-header-teal:hover .glow-border {
+    opacity: 1;
+}
+
+.modern-header-teal .header-content {
+    position: relative;
+    background: white;
+    padding: 1.25rem 1.5rem;
+    border-radius: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modern-header-teal .icon-morph {
+    width: 3.5rem;
+    height: 3.5rem;
+    position: relative;
+}
+
+.modern-header-teal .icon-morph .bg-layer-1 {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom right, #34d399, #14b8a6);
+    border-radius: 1rem;
+    transform: rotate(6deg);
+    transition: transform 0.3s;
+}
+
+.modern-header-teal:hover .icon-morph .bg-layer-1 {
+    transform: rotate(12deg);
+}
+
+.modern-header-teal .icon-morph .bg-layer-2 {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom right, #2dd4bf, #06b6d4);
+    border-radius: 1rem;
+    transform: rotate(-6deg);
+    opacity: 0.6;
+    transition: transform 0.3s;
+}
+
+.modern-header-teal:hover .icon-morph .bg-layer-2 {
+    transform: rotate(-12deg);
+}
+
+.modern-header-teal .icon-morph .icon-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: white;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modern-header-teal .icon-morph .icon-inner i {
+    font-size: 1.5rem;
+    background: linear-gradient(to right, #10b981, #14b8a6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.modern-header-teal .header-text h2,
+.modern-header-teal .header-text h3 {
+    font-weight: 700;
+    background: linear-gradient(to right, #1f2937, #4b5563);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.modern-header-teal .header-text p {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.modern-header-teal .decorative-dots {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .modern-header-teal .decorative-dots {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+        margin-left: auto;
+        margin-right: 0.5rem;
+    }
+    
+    .modern-header-teal .decorative-dots .dot-row {
+        display: flex;
+        gap: 0.375rem;
+    }
+    
+    .modern-header-teal .decorative-dots .dot {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+    }
+    
+    .modern-header-teal .decorative-dots .dot-emerald { background: #34d399; }
+    .modern-header-teal .decorative-dots .dot-teal { background: #2dd4bf; }
+    .modern-header-teal .decorative-dots .dot-cyan { background: #22d3ee; }
+    .modern-header-teal .decorative-dots .dot-emerald-light { background: #6ee7b7; }
+}
+
+/* Blue Variant */
+.modern-header-blue {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.modern-header-blue .glow-border {
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(to right, #3b82f6, #6366f1, #8b5cf6);
+    border-radius: 1.5rem;
+    opacity: 0.75;
+    filter: blur(4px);
+    transition: opacity 0.5s;
+}
+
+.modern-header-blue:hover .glow-border {
+    opacity: 1;
+}
+
+.modern-header-blue .header-content {
+    position: relative;
+    background: white;
+    padding: 1.25rem 1.5rem;
+    border-radius: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modern-header-blue .icon-morph {
+    width: 3.5rem;
+    height: 3.5rem;
+    position: relative;
+}
+
+.modern-header-blue .icon-morph .bg-layer-1 {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom right, #60a5fa, #818cf8);
+    border-radius: 1rem;
+    transform: rotate(6deg);
+    transition: transform 0.3s;
+}
+
+.modern-header-blue:hover .icon-morph .bg-layer-1 {
+    transform: rotate(12deg);
+}
+
+.modern-header-blue .icon-morph .bg-layer-2 {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom right, #818cf8, #a78bfa);
+    border-radius: 1rem;
+    transform: rotate(-6deg);
+    opacity: 0.6;
+    transition: transform 0.3s;
+}
+
+.modern-header-blue:hover .icon-morph .bg-layer-2 {
+    transform: rotate(-12deg);
+}
+
+.modern-header-blue .icon-morph .icon-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: white;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modern-header-blue .icon-morph .icon-inner i {
+    font-size: 1.5rem;
+    background: linear-gradient(to right, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.modern-header-blue .header-text h2,
+.modern-header-blue .header-text h3 {
+    font-weight: 700;
+    background: linear-gradient(to right, #1f2937, #4b5563);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.modern-header-blue .header-text p {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.modern-header-blue .decorative-dots {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .modern-header-blue .decorative-dots {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+        margin-left: auto;
+        margin-right: 0.5rem;
+    }
+    
+    .modern-header-blue .decorative-dots .dot-row {
+        display: flex;
+        gap: 0.375rem;
+    }
+    
+    .modern-header-blue .decorative-dots .dot {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+    }
+    
+    .modern-header-blue .decorative-dots .dot-blue { background: #60a5fa; }
+    .modern-header-blue .decorative-dots .dot-indigo { background: #818cf8; }
+    .modern-header-blue .decorative-dots .dot-violet { background: #a78bfa; }
+    .modern-header-blue .decorative-dots .dot-blue-light { background: #93c5fd; }
+}
