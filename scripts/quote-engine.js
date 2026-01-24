@@ -2210,37 +2210,13 @@ async function submitQuote() {
         }
     }
     
-    // Check if this is a full redesign to determine which loading state to show
+    // Determine quote mode
     const isFullRedesignMode = quoteData.quoteMode === 'full-redesign';
     console.log('🚀 SUBMIT QUOTE - Mode:', isFullRedesignMode ? 'FULL REDESIGN' : 'INDIVIDUAL PRODUCTS');
     
-    // Hide ALL step containers first
-    document.querySelectorAll('.step-container').forEach(el => el.classList.add('hidden'));
-    
-    // Get the correct loading element
-    const loadingId = isFullRedesignMode ? 'loadingStateRedesign' : 'loadingState';
-    const loadingEl = document.getElementById(loadingId);
-    
-    if (loadingEl) {
-        // Force display the loading state
-        loadingEl.classList.remove('hidden');
-        loadingEl.style.display = 'block';
-        console.log('✅ Loading state shown:', loadingId);
-        
-        // Scroll to top so user can see the loading animation
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-        // Start the appropriate animation
-        if (isFullRedesignMode) {
-            resetProgressTimeline();
-            startProgressAnimation();
-        } else {
-            resetIndividualProgressTimeline();
-            startIndividualProgressAnimation();
-        }
-    } else {
-        console.error('❌ Loading element NOT FOUND:', loadingId);
-    }
+    // SHOW THE SUBMISSION OVERLAY IMMEDIATELY
+    // This is a full-screen overlay that cannot be missed
+    SubmissionOverlay.show(isFullRedesignMode);
     
     // ============================================================================
     // WEBHOOK INTEGRATION POINT - Ready for Make.com/n8n Connection
