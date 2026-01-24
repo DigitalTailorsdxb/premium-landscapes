@@ -3129,14 +3129,16 @@ function updateStep2Mode() {
         return;
     }
     
-    // Update the header title and subtitle
+    // Update the header title, subtitle, and icon
     const step2Title = document.getElementById('step2Title');
     const step2Subtitle = document.getElementById('step2Subtitle');
+    const step2Icon = document.getElementById('step2Icon');
     
     if (isFullRedesign) {
         // Update header for full redesign mode
         if (step2Title) step2Title.textContent = 'Full Garden Makeover';
         if (step2Subtitle) step2Subtitle.textContent = "We'll create a complete custom design and quote based on your vision and budget";
+        if (step2Icon) step2Icon.innerHTML = '<i class="fas fa-wand-magic-sparkles text-xl text-white"></i>';
         
         // Show full redesign mode
         console.log('🎨 Showing Full Redesign mode...');
@@ -3170,6 +3172,7 @@ function updateStep2Mode() {
         // Update header for standard mode
         if (step2Title) step2Title.textContent = 'Select Your Products';
         if (step2Subtitle) step2Subtitle.textContent = "Choose the products you'd like quoted";
+        if (step2Icon) step2Icon.innerHTML = '<i class="fas fa-boxes-stacked text-xl text-white"></i>';
         
         // Show standard mode
         console.log('📝 Showing Standard mode...');
