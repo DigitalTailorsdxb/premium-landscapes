@@ -388,6 +388,35 @@
             }
         }
         
+        /* Quote page two-column layout */
+        .quote-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        
+        .quote-summary-column {
+            display: none;
+        }
+        
+        @media (min-width: 900px) {
+            .quote-layout {
+                flex-direction: row !important;
+                align-items: flex-start;
+            }
+            .quote-form-column {
+                flex: 1 1 65% !important;
+                min-width: 0;
+            }
+            .quote-summary-column {
+                display: block !important;
+                flex: 0 0 320px !important;
+                position: sticky;
+                top: 100px;
+                align-self: flex-start;
+            }
+        }
+        
         /* Hide summary toggle on desktop */
         .summary-toggle-btn {
             display: none;
@@ -536,10 +565,10 @@
     <!-- Main Quote Section -->
     <section class="py-8 px-4 bg-white min-h-screen">
         <div class="container mx-auto max-w-7xl">
-            <div class="flex flex-col md:flex-row gap-8">
+            <div class="quote-layout">
                 
                 <!-- Left: Multi-Step Form -->
-                <div class="flex-1 md:w-2/3">
+                <div class="quote-form-column">
                     <div class="bg-white rounded-2xl p-4 md:p-8 shadow-xl border border-gray-100">
                         
                         <!-- Step 1: Project Type -->
@@ -1594,8 +1623,8 @@
                 </div>
                 
                 <!-- Right: Live Summary (visible on desktop) -->
-                <div class="hidden md:block md:w-1/3 flex-shrink-0">
-                    <div class="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 sticky top-24">
+                <div class="quote-summary-column">
+                    <div class="bg-white rounded-2xl p-6 shadow-xl border border-gray-100">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="font-heading font-bold text-lg text-primary">Your Project</h3>
                             <div class="w-8 h-8 bg-accent bg-opacity-10 rounded-full flex items-center justify-center">
@@ -1652,9 +1681,9 @@
         </div>
     </footer>
     
-    <script src="scripts/config.js?v=1769270118"></script>
-    <script src="scripts/quote-engine.js?v=1769270118"></script>
-    <script src="scripts/main.js?v=1769270118"></script>
+    <script src="scripts/config.js?v=1769273367"></script>
+    <script src="scripts/quote-engine.js?v=1769273367"></script>
+    <script src="scripts/main.js?v=1769273367"></script>
     <!-- Floating WhatsApp Button -->
     <a href="https://wa.me/447877934782?text=Hi%2C%20I%27d%20like%20a%20quote%20for%20my%20garden" 
        target="_blank" 
