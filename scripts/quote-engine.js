@@ -357,19 +357,23 @@ function completeProgressAnimation() {
 function showQuoteResultRedesign(data) {
     console.log('🎨 showQuoteResultRedesign called - showing success UI');
     
+    console.log('🎨 showQuoteResultRedesign - Starting success UI transition');
+    
     // Hide loading animation
     const loadingState = document.getElementById('loadingStateRedesign');
     if (loadingState) {
         loadingState.classList.add('hidden');
-        console.log('🎨 loadingStateRedesign hidden');
+        loadingState.style.display = 'none';
     }
     
-    // Show success UI
+    // Show success UI with force display
     const resultElement = document.getElementById('quoteResultRedesign');
-    console.log('🎨 quoteResultRedesign element found:', resultElement);
     if (resultElement) {
         resultElement.classList.remove('hidden');
-        console.log('🎨 quoteResultRedesign shown');
+        resultElement.style.display = 'block';
+        console.log('✅ SUCCESS UI DISPLAYED: quoteResultRedesign');
+    } else {
+        console.error('❌ quoteResultRedesign element NOT FOUND!');
     }
     
     console.log('✅ Full Garden Redesign request submitted successfully!');
@@ -2038,42 +2042,36 @@ async function submitQuote() {
         }
     }
     
-    // Scroll to top so user can see the loading animation (especially important on mobile)
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
     // Check if this is a full redesign to determine which loading state to show
     const isFullRedesignMode = quoteData.quoteMode === 'full-redesign';
+    console.log('🚀 SUBMIT QUOTE - Mode:', isFullRedesignMode ? 'FULL REDESIGN' : 'INDIVIDUAL PRODUCTS');
     
-    // Hide step6 form for both modes
-    const step6El = document.getElementById('step6');
-    console.log('📋 step6 element:', step6El);
-    if (step6El) {
-        step6El.classList.add('hidden');
-        console.log('📋 step6 hidden successfully');
-    }
+    // Hide ALL step containers first
+    document.querySelectorAll('.step-container').forEach(el => el.classList.add('hidden'));
     
-    if (isFullRedesignMode) {
-        // Show animated progress for full redesign
-        const loadingEl = document.getElementById('loadingStateRedesign');
-        console.log('🔄 loadingStateRedesign element:', loadingEl);
-        if (loadingEl) {
-            loadingEl.classList.remove('hidden');
-            console.log('🔄 loadingStateRedesign shown - classList:', loadingEl.classList.toString());
+    // Get the correct loading element
+    const loadingId = isFullRedesignMode ? 'loadingStateRedesign' : 'loadingState';
+    const loadingEl = document.getElementById(loadingId);
+    
+    if (loadingEl) {
+        // Force display the loading state
+        loadingEl.classList.remove('hidden');
+        loadingEl.style.display = 'block';
+        console.log('✅ Loading state shown:', loadingId);
+        
+        // Scroll to top so user can see the loading animation
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Start the appropriate animation
+        if (isFullRedesignMode) {
+            resetProgressTimeline();
+            startProgressAnimation();
         } else {
-            console.error('❌ loadingStateRedesign element NOT FOUND!');
+            resetIndividualProgressTimeline();
+            startIndividualProgressAnimation();
         }
-        resetProgressTimeline();
-        startProgressAnimation();
     } else {
-        // Show animated progress for individual products
-        const loadingEl = document.getElementById('loadingState');
-        console.log('🔄 loadingState element:', loadingEl);
-        if (loadingEl) {
-            loadingEl.classList.remove('hidden');
-            console.log('🔄 loadingState shown');
-        }
-        resetIndividualProgressTimeline();
-        startIndividualProgressAnimation();
+        console.error('❌ Loading element NOT FOUND:', loadingId);
     }
     
     // ============================================================================
@@ -2499,9 +2497,25 @@ function prepareWebhookPayload() {
 // Shows confirmation message - actual quote sent via email from n8n
 // ============================================================================
 async function showQuoteResult(data) {
+    console.log('🎨 showQuoteResult - Starting success UI transition');
     stopIndividualProgressAnimation();
-    document.getElementById('loadingState').classList.add('hidden');
-    document.getElementById('quoteResult').classList.remove('hidden');
+    
+    // Hide loading animation
+    const loadingEl = document.getElementById('loadingState');
+    if (loadingEl) {
+        loadingEl.classList.add('hidden');
+        loadingEl.style.display = 'none';
+    }
+    
+    // Show success UI with force display
+    const resultEl = document.getElementById('quoteResult');
+    if (resultEl) {
+        resultEl.classList.remove('hidden');
+        resultEl.style.display = 'block';
+        console.log('✅ SUCCESS UI DISPLAYED: quoteResult');
+    } else {
+        console.error('❌ quoteResult element NOT FOUND!');
+    }
     
     console.log('✅ Quote request submitted successfully!');
     console.log('Customer will receive detailed PDF quote via email from n8n workflow');
