@@ -91,14 +91,50 @@
             visibility: visible;
         }
         
+        /* Desktop grid layout for quote form */
+        @media (min-width: 1024px) {
+            .quote-layout {
+                display: grid !important;
+                grid-template-columns: 1fr 300px !important;
+                gap: 2rem;
+                align-items: start;
+            }
+        }
+        
+        /* Mobile optimizations for quote form */
+        @media (max-width: 1023px) {
+            .quote-layout {
+                display: block !important;
+            }
+            .quote-form-column {
+                width: 100% !important;
+            }
+            /* Full-width cards on mobile */
+            .quote-mode-card {
+                width: 100% !important;
+            }
+            /* Touch-friendly inputs */
+            input, select, textarea {
+                min-height: 52px;
+                font-size: 16px !important;
+            }
+            /* Reduce padding on form container */
+            .quote-form-column > div {
+                padding: 1rem !important;
+            }
+        }
+        
         /* Ensure gradient headers are fully visible on mobile */
         @media (max-width: 767px) {
             .step-container {
-                padding-top: 3rem !important;
+                padding-top: 1rem !important;
             }
             .step-container .bg-gradient-to-r {
                 padding-top: 1rem;
                 padding-bottom: 0.875rem;
+                margin-left: -1rem;
+                margin-right: -1rem;
+                border-radius: 0.75rem;
             }
             .step-container .bg-gradient-to-r h2 {
                 font-size: 1.25rem;
@@ -107,6 +143,10 @@
             /* Hide spacer divs since we're using padding instead */
             .mobile-step-spacer {
                 display: none;
+            }
+            /* Product grid - 2 columns on mobile */
+            #productGrid {
+                grid-template-columns: repeat(2, 1fr) !important;
             }
         }
         
@@ -596,10 +636,10 @@
     <!-- Main Quote Section -->
     <section class="py-8 px-4 bg-white min-h-screen">
         <div class="container mx-auto max-w-5xl">
-            <div class="quote-layout" style="display: grid !important; grid-template-columns: 1fr 300px !important; gap: 32px; align-items: start;">
+            <div class="quote-layout block lg:grid lg:gap-8" style="--lg-grid-cols: 1fr 300px;">
                 
                 <!-- Right: Live Summary Panel (desktop only) -->
-                <aside id="desktopSummary" class="hidden lg:block" style="grid-column: 2; grid-row: 1;">
+                <aside id="desktopSummary" class="hidden lg:block lg:col-start-2 lg:row-start-1">
                     <div class="bg-white rounded-2xl p-6 shadow-xl border border-gray-100 sticky top-24">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="font-heading font-bold text-lg text-primary">Your Project</h3>
@@ -622,7 +662,7 @@
                 </aside>
                 
                 <!-- Left: Multi-Step Form -->
-                <div class="quote-form-column" style="grid-column: 1; grid-row: 1;">
+                <div class="quote-form-column lg:col-start-1 lg:row-start-1">
                     <div class="bg-white rounded-2xl p-4 md:p-8 shadow-xl border border-gray-100">
                         
                         <!-- Step 1: Project Type -->
