@@ -90,8 +90,8 @@ const SubmissionOverlay = {
     
     animateSteps() {
         const steps = this.hasImage ? this.stepsWithDesign : this.stepsQuoteOnly;
-        // 90 seconds with image (15s per step), 30 seconds without (5s per step)
-        const stepDuration = this.hasImage ? 15000 : 5000;
+        // 90 seconds with image (15s per step), 15 seconds for quote only (2.5s per step)
+        const stepDuration = this.hasImage ? 15000 : 2500;
         
         console.log(`⏱️ OVERLAY: Animation duration - ${this.hasImage ? '90s (with design)' : '30s (quote only)'}`);
         
