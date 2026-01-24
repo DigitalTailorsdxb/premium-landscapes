@@ -357,18 +357,19 @@ function completeProgressAnimation() {
 function showQuoteResultRedesign(data) {
     console.log('🎨 showQuoteResultRedesign called - showing success UI');
     
-    // Hide step6 entirely to make room for success UI
-    const step6 = document.getElementById('step6');
-    if (step6) {
-        step6.classList.add('hidden');
-        console.log('🎨 step6 hidden');
+    // Hide loading animation
+    const loadingState = document.getElementById('loadingStateRedesign');
+    if (loadingState) {
+        loadingState.classList.add('hidden');
+        console.log('🎨 loadingStateRedesign hidden');
     }
     
+    // Show success UI
     const resultElement = document.getElementById('quoteResultRedesign');
     console.log('🎨 quoteResultRedesign element found:', resultElement);
     if (resultElement) {
         resultElement.classList.remove('hidden');
-        console.log('🎨 quoteResultRedesign hidden class removed');
+        console.log('🎨 quoteResultRedesign shown');
     }
     
     console.log('✅ Full Garden Redesign request submitted successfully!');
@@ -2037,14 +2038,14 @@ async function submitQuote() {
         }
     }
     
-    // Hide form - step6 is the AI Design step
-    document.getElementById('step6').classList.add('hidden');
-    
     // Scroll to top so user can see the loading animation (especially important on mobile)
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
     // Check if this is a full redesign to determine which loading state to show
     const isFullRedesignMode = quoteData.quoteMode === 'full-redesign';
+    
+    // Hide step6 form for both modes
+    document.getElementById('step6').classList.add('hidden');
     
     if (isFullRedesignMode) {
         // Show animated progress for full redesign
@@ -2052,7 +2053,7 @@ async function submitQuote() {
         resetProgressTimeline();
         startProgressAnimation();
     } else {
-        // Show animated progress for individual products (10 seconds)
+        // Show animated progress for individual products
         document.getElementById('loadingState').classList.remove('hidden');
         resetIndividualProgressTimeline();
         startIndividualProgressAnimation();
