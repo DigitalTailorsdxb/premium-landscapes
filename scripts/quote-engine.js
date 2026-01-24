@@ -1,6 +1,174 @@
 // Premium Landscapes - Instant Quote Engine
 // Multi-step conversational quote system
 
+// ============================================================================
+// SUBMISSION OVERLAY CONTROLLER - Simple, bulletproof UI transitions
+// ============================================================================
+
+const SubmissionOverlay = {
+    isRedesign: false,
+    currentStep: 0,
+    totalSteps: 6,
+    stepTimers: [],
+    
+    // Progress steps for each mode
+    stepsRedesign: [
+        { icon: 'fa-clipboard-list', label: 'Reading your requirements...' },
+        { icon: 'fa-drafting-compass', label: 'Planning design structure...' },
+        { icon: 'fa-pencil-ruler', label: 'Creating your design...' },
+        { icon: 'fa-palette', label: 'Generating AI visualisation...' },
+        { icon: 'fa-file-pdf', label: 'Preparing your quote...' },
+        { icon: 'fa-envelope', label: 'Sending to your email...' }
+    ],
+    stepsProducts: [
+        { icon: 'fa-clipboard-check', label: 'Reading your selections...' },
+        { icon: 'fa-calculator', label: 'Calculating quantities...' },
+        { icon: 'fa-sterling-sign', label: 'Getting local prices...' },
+        { icon: 'fa-file-invoice', label: 'Building your quote...' },
+        { icon: 'fa-envelope', label: 'Sending to your email...' },
+        { icon: 'fa-check-circle', label: 'Complete!' }
+    ],
+    
+    // Show the overlay immediately
+    show(isRedesign) {
+        console.log('🎯 OVERLAY: Showing submission overlay, isRedesign:', isRedesign);
+        this.isRedesign = isRedesign;
+        this.currentStep = 0;
+        
+        const overlay = document.getElementById('submissionOverlay');
+        if (!overlay) {
+            console.error('❌ OVERLAY: submissionOverlay element not found!');
+            return;
+        }
+        
+        // Force show overlay
+        overlay.classList.remove('hidden');
+        overlay.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        // Set title based on mode
+        const title = document.getElementById('overlayTitle');
+        const subtitle = document.getElementById('overlaySubtitle');
+        if (isRedesign) {
+            title.textContent = 'Creating Your Custom Design';
+            subtitle.textContent = 'Our AI is crafting a bespoke garden plan for you';
+        } else {
+            title.textContent = 'Processing Your Quote';
+            subtitle.textContent = 'Calculating prices for your selected products';
+        }
+        
+        // Build progress steps
+        this.buildProgressSteps();
+        
+        // Start animation
+        this.animateSteps();
+        
+        console.log('✅ OVERLAY: Overlay is now visible');
+    },
+    
+    buildProgressSteps() {
+        const container = document.getElementById('overlayProgress');
+        const steps = this.isRedesign ? this.stepsRedesign : this.stepsProducts;
+        
+        container.innerHTML = steps.map((step, i) => `
+            <div class="overlay-step flex items-center" data-step="${i}">
+                <div class="step-icon w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4 transition-all duration-300">
+                    <i class="fas ${step.icon} text-gray-400"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="step-label font-medium text-gray-400 transition-all duration-300">${step.label}</p>
+                </div>
+                <div class="step-status">
+                    <i class="fas fa-circle text-gray-300 text-xs"></i>
+                </div>
+            </div>
+        `).join('');
+    },
+    
+    animateSteps() {
+        const steps = this.isRedesign ? this.stepsRedesign : this.stepsProducts;
+        const stepDuration = this.isRedesign ? 3000 : 2000; // 3s for redesign, 2s for products
+        
+        steps.forEach((_, i) => {
+            const timer = setTimeout(() => {
+                this.activateStep(i);
+                
+                // If last step, show success after a delay
+                if (i === steps.length - 1) {
+                    setTimeout(() => this.showSuccess(), 1500);
+                }
+            }, i * stepDuration);
+            this.stepTimers.push(timer);
+        });
+    },
+    
+    activateStep(stepIndex) {
+        const container = document.getElementById('overlayProgress');
+        const stepEl = container.querySelector(`[data-step="${stepIndex}"]`);
+        
+        if (stepEl) {
+            const icon = stepEl.querySelector('.step-icon');
+            const label = stepEl.querySelector('.step-label');
+            const status = stepEl.querySelector('.step-status i');
+            
+            // Activate this step
+            icon.classList.remove('bg-gray-200');
+            icon.classList.add('bg-primary', 'shadow-lg');
+            icon.querySelector('i').classList.remove('text-gray-400');
+            icon.querySelector('i').classList.add('text-white');
+            
+            label.classList.remove('text-gray-400');
+            label.classList.add('text-gray-800', 'font-semibold');
+            
+            status.classList.remove('fa-circle', 'text-gray-300');
+            status.classList.add('fa-check-circle', 'text-green-500');
+        }
+        
+        console.log(`🔄 OVERLAY: Step ${stepIndex + 1} activated`);
+    },
+    
+    showSuccess() {
+        console.log('🎉 OVERLAY: Showing success state');
+        
+        // Hide processing, show appropriate success
+        document.getElementById('overlayProcessing').classList.add('hidden');
+        
+        if (this.isRedesign) {
+            document.getElementById('overlaySuccessRedesign').classList.remove('hidden');
+        } else {
+            document.getElementById('overlaySuccessProducts').classList.remove('hidden');
+        }
+    },
+    
+    // Force complete animation (called when webhook returns)
+    forceComplete() {
+        // Clear pending timers
+        this.stepTimers.forEach(t => clearTimeout(t));
+        this.stepTimers = [];
+        
+        // Activate all steps
+        const steps = this.isRedesign ? this.stepsRedesign : this.stepsProducts;
+        steps.forEach((_, i) => this.activateStep(i));
+        
+        // Show success
+        setTimeout(() => this.showSuccess(), 500);
+    },
+    
+    // Hide overlay (for errors or reset)
+    hide() {
+        const overlay = document.getElementById('submissionOverlay');
+        if (overlay) {
+            overlay.classList.add('hidden');
+            overlay.style.display = 'none';
+        }
+        document.body.style.overflow = '';
+        
+        // Clear timers
+        this.stepTimers.forEach(t => clearTimeout(t));
+        this.stepTimers = [];
+    }
+};
+
 let currentStep = 1;
 const totalSteps = 6;
 let quoteData = {
