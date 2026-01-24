@@ -903,6 +903,26 @@
     background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
     transition: all 0.3s ease;
     text-decoration: none;
+    box-shadow: 
+        0 0 20px rgba(99, 102, 241, 0.5),
+        0 0 40px rgba(139, 92, 246, 0.3),
+        0 0 60px rgba(59, 130, 246, 0.2);
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 
+            0 0 20px rgba(99, 102, 241, 0.5),
+            0 0 40px rgba(139, 92, 246, 0.3),
+            0 0 60px rgba(59, 130, 246, 0.2);
+    }
+    50% {
+        box-shadow: 
+            0 0 30px rgba(99, 102, 241, 0.7),
+            0 0 50px rgba(139, 92, 246, 0.5),
+            0 0 80px rgba(59, 130, 246, 0.3);
+    }
 }
 
 .modern-btn-filled::before {
@@ -919,6 +939,13 @@
 
 .modern-btn-filled:hover::before {
     opacity: 0.7;
+}
+
+.modern-btn-filled:hover {
+    box-shadow: 
+        0 0 30px rgba(99, 102, 241, 0.8),
+        0 0 60px rgba(139, 92, 246, 0.5),
+        0 0 90px rgba(59, 130, 246, 0.3);
 }
 
 .modern-btn-filled .btn-inner {
