@@ -388,36 +388,8 @@
             }
         }
         
-        /* Quote page two-column layout */
-        .quote-layout {
-            display: flex !important;
-            flex-direction: row !important;
-            gap: 1.5rem;
-            align-items: flex-start;
-        }
-        
-        .quote-form-column {
-            flex: 1 1 0% !important;
-            max-width: 650px !important;
-            min-width: 0;
-        }
-        
-        .quote-summary-column {
-            display: block !important;
-            width: 280px !important;
-            min-width: 280px !important;
-            flex-shrink: 0 !important;
-            position: sticky;
-            top: 100px;
-        }
-        
+        /* Quote page two-column layout - mobile hide only */
         @media (max-width: 700px) {
-            .quote-layout {
-                flex-direction: column !important;
-            }
-            .quote-form-column {
-                max-width: 100% !important;
-            }
             .quote-summary-column {
                 display: none !important;
             }
