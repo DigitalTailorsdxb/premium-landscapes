@@ -346,8 +346,31 @@ function completeProgressAnimation() {
     // Hide loading state and show success result
     document.getElementById('loadingStateRedesign').classList.add('hidden');
     
+    // Scroll to top for visibility
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
     // Always show success - the quote was submitted, email is on the way
-    showQuoteResult(progressState.webhookResult || { success: true });
+    showQuoteResultRedesign(progressState.webhookResult || { success: true });
+}
+
+// Show redesign-specific success result
+function showQuoteResultRedesign(data) {
+    document.getElementById('quoteResultRedesign').classList.remove('hidden');
+    
+    console.log('✅ Full Garden Redesign request submitted successfully!');
+    console.log('Customer will receive design proposal via email from n8n workflow');
+    
+    // If webhook returned a quote reference, display it
+    if (data?.quoteRef && data.quoteRef !== 'processing') {
+        const resultDiv = document.getElementById('quoteResultRedesign');
+        const refDisplay = document.createElement('div');
+        refDisplay.className = 'bg-purple-50 border border-purple-200 rounded-xl p-4 mb-6 text-center';
+        refDisplay.innerHTML = `
+            <p class="text-sm text-gray-600 mb-1">Your Quote Reference</p>
+            <p class="font-bold text-xl text-purple-600">${data.quoteRef}</p>
+        `;
+        resultDiv.insertBefore(refDisplay, resultDiv.children[1]);
+    }
 }
 
 // Stop progress animation (for errors)
@@ -2502,6 +2525,7 @@ function showQuoteError(errorResponse) {
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('loadingStateRedesign')?.classList.add('hidden');
     document.getElementById('quoteResult').classList.add('hidden');
+    document.getElementById('quoteResultRedesign')?.classList.add('hidden');
     
     // Extract error details from response
     const message = errorResponse?.message || 'Sorry, there was an error processing your quote request.';
@@ -2573,6 +2597,7 @@ function showNetworkError() {
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('loadingStateRedesign')?.classList.add('hidden');
     document.getElementById('quoteResult').classList.add('hidden');
+    document.getElementById('quoteResultRedesign')?.classList.add('hidden');
     
     const contactEmail = window.brandConfig?.contact?.email || 'premiumlandscapesuk@gmail.com';
     const contactPhone = window.brandConfig?.contact?.phone || '07877 934782';
