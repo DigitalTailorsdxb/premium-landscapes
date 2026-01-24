@@ -7,20 +7,22 @@
 
 const SubmissionOverlay = {
     isRedesign: false,
+    hasImage: false,
     currentStep: 0,
     totalSteps: 6,
     stepTimers: [],
     
-    // Progress steps for each mode
-    stepsRedesign: [
+    // Progress steps WITH AI design (90 seconds total)
+    stepsWithDesign: [
         { icon: 'fa-clipboard-list', label: 'Reading your requirements...' },
-        { icon: 'fa-drafting-compass', label: 'Planning design structure...' },
-        { icon: 'fa-pencil-ruler', label: 'Creating your design...' },
-        { icon: 'fa-palette', label: 'Generating AI visualisation...' },
+        { icon: 'fa-drafting-compass', label: 'Analysing your garden photo...' },
+        { icon: 'fa-wand-magic-sparkles', label: 'AI creating your design...' },
+        { icon: 'fa-palette', label: 'Rendering visualisation...' },
         { icon: 'fa-file-pdf', label: 'Preparing your quote...' },
         { icon: 'fa-envelope', label: 'Sending to your email...' }
     ],
-    stepsProducts: [
+    // Progress steps WITHOUT AI design (30 seconds total)
+    stepsQuoteOnly: [
         { icon: 'fa-clipboard-check', label: 'Reading your selections...' },
         { icon: 'fa-calculator', label: 'Calculating quantities...' },
         { icon: 'fa-sterling-sign', label: 'Getting local prices...' },
@@ -30,9 +32,10 @@ const SubmissionOverlay = {
     ],
     
     // Show the overlay immediately
-    show(isRedesign) {
-        console.log('🎯 OVERLAY: Showing submission overlay, isRedesign:', isRedesign);
+    show(isRedesign, hasImage = false) {
+        console.log('🎯 OVERLAY: Showing submission overlay, isRedesign:', isRedesign, 'hasImage:', hasImage);
         this.isRedesign = isRedesign;
+        this.hasImage = hasImage;
         this.currentStep = 0;
         
         const overlay = document.getElementById('submissionOverlay');
@@ -49,12 +52,12 @@ const SubmissionOverlay = {
         // Set title based on mode
         const title = document.getElementById('overlayTitle');
         const subtitle = document.getElementById('overlaySubtitle');
-        if (isRedesign) {
-            title.textContent = 'Creating Your Custom Design';
-            subtitle.textContent = 'Our AI is crafting a bespoke garden plan for you';
+        if (hasImage) {
+            title.textContent = 'Creating Your AI Garden Design';
+            subtitle.textContent = 'Our AI is generating a bespoke visualisation of your garden';
         } else {
             title.textContent = 'Processing Your Quote';
-            subtitle.textContent = 'Calculating prices for your selected products';
+            subtitle.textContent = 'Calculating prices and preparing your quote';
         }
         
         // Build progress steps
@@ -68,7 +71,7 @@ const SubmissionOverlay = {
     
     buildProgressSteps() {
         const container = document.getElementById('overlayProgress');
-        const steps = this.isRedesign ? this.stepsRedesign : this.stepsProducts;
+        const steps = this.hasImage ? this.stepsWithDesign : this.stepsQuoteOnly;
         
         container.innerHTML = steps.map((step, i) => `
             <div class="overlay-step flex items-center" data-step="${i}">
@@ -86,8 +89,11 @@ const SubmissionOverlay = {
     },
     
     animateSteps() {
-        const steps = this.isRedesign ? this.stepsRedesign : this.stepsProducts;
-        const stepDuration = this.isRedesign ? 3000 : 2000; // 3s for redesign, 2s for products
+        const steps = this.hasImage ? this.stepsWithDesign : this.stepsQuoteOnly;
+        // 90 seconds with image (15s per step), 30 seconds without (5s per step)
+        const stepDuration = this.hasImage ? 15000 : 5000;
+        
+        console.log(`⏱️ OVERLAY: Animation duration - ${this.hasImage ? '90s (with design)' : '30s (quote only)'}`);
         
         steps.forEach((_, i) => {
             const timer = setTimeout(() => {
@@ -95,7 +101,7 @@ const SubmissionOverlay = {
                 
                 // If last step, show success after a delay
                 if (i === steps.length - 1) {
-                    setTimeout(() => this.showSuccess(), 1500);
+                    setTimeout(() => this.showSuccess(), 2000);
                 }
             }, i * stepDuration);
             this.stepTimers.push(timer);
@@ -128,12 +134,12 @@ const SubmissionOverlay = {
     },
     
     showSuccess() {
-        console.log('🎉 OVERLAY: Showing success state');
+        console.log('🎉 OVERLAY: Showing success state, hasImage:', this.hasImage);
         
         // Hide processing, show appropriate success
         document.getElementById('overlayProcessing').classList.add('hidden');
         
-        if (this.isRedesign) {
+        if (this.hasImage) {
             document.getElementById('overlaySuccessRedesign').classList.remove('hidden');
         } else {
             document.getElementById('overlaySuccessProducts').classList.remove('hidden');
@@ -147,7 +153,7 @@ const SubmissionOverlay = {
         this.stepTimers = [];
         
         // Activate all steps
-        const steps = this.isRedesign ? this.stepsRedesign : this.stepsProducts;
+        const steps = this.hasImage ? this.stepsWithDesign : this.stepsQuoteOnly;
         steps.forEach((_, i) => this.activateStep(i));
         
         // Show success
@@ -2210,13 +2216,15 @@ async function submitQuote() {
         }
     }
     
-    // Determine quote mode
+    // Determine quote mode and if image is attached
     const isFullRedesignMode = quoteData.quoteMode === 'full-redesign';
+    const hasImageAttached = quoteData.aiDesign && (aiDesignFiles.length > 0 || quoteData.files.length > 0);
     console.log('🚀 SUBMIT QUOTE - Mode:', isFullRedesignMode ? 'FULL REDESIGN' : 'INDIVIDUAL PRODUCTS');
+    console.log('🖼️ SUBMIT QUOTE - Has image for AI design:', hasImageAttached);
     
     // SHOW THE SUBMISSION OVERLAY IMMEDIATELY
-    // This is a full-screen overlay that cannot be missed
-    SubmissionOverlay.show(isFullRedesignMode);
+    // 90 seconds with image, 30 seconds without
+    SubmissionOverlay.show(isFullRedesignMode, hasImageAttached);
     
     // ============================================================================
     // WEBHOOK INTEGRATION POINT - Ready for Make.com/n8n Connection
