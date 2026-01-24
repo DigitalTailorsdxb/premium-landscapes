@@ -667,14 +667,22 @@
                         
                         <!-- Step 1: Project Type -->
                         <div id="step1" class="step-container step-transition">
-                            <div class="bg-gradient-to-r from-primary via-blue-500 to-accent px-5 py-4 rounded-2xl mb-6 -mx-4 md:mx-0 shadow-lg shadow-primary/20">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                                        <i class="fas fa-clipboard-question text-xl text-white"></i>
+                            <div class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-6 py-5 rounded-3xl mb-6 -mx-4 md:mx-0 shadow-2xl border border-white/10">
+                                <!-- Animated gradient overlay -->
+                                <div class="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 opacity-60 animate-pulse"></div>
+                                <!-- Subtle pattern overlay -->
+                                <div class="absolute inset-0 opacity-5" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+                                <div class="relative flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30 ring-2 ring-white/20">
+                                        <i class="fas fa-clipboard-question text-xl text-white drop-shadow-sm"></i>
                                     </div>
                                     <div>
-                                        <h2 class="font-heading font-bold text-xl md:text-2xl text-white">Quote Type</h2>
-                                        <p class="text-white/80 text-sm">Choose one option below</p>
+                                        <h2 class="font-heading font-bold text-xl md:text-2xl text-white tracking-tight">Quote Type</h2>
+                                        <p class="text-gray-300 text-sm mt-0.5">Choose one option below</p>
+                                    </div>
+                                    <div class="ml-auto hidden md:flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                                        <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                        <span class="text-xs text-gray-300 font-medium">Step 1 of 5</span>
                                     </div>
                                 </div>
                             </div>
