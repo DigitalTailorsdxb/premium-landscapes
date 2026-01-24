@@ -388,29 +388,30 @@
             }
         }
         
-        /* Quote page two-column layout - ALWAYS side by side on desktop */
+        /* Quote page two-column layout */
         .quote-layout {
             display: flex !important;
             flex-direction: row !important;
-            gap: 2rem;
+            gap: 1.5rem;
             align-items: flex-start;
         }
         
         .quote-form-column {
-            flex: 1 1 auto !important;
-            max-width: 700px !important;
+            flex: 1 1 0% !important;
+            max-width: 650px !important;
             min-width: 0;
         }
         
         .quote-summary-column {
             display: block !important;
-            width: 300px !important;
+            width: 280px !important;
+            min-width: 280px !important;
             flex-shrink: 0 !important;
             position: sticky;
             top: 100px;
         }
         
-        @media (max-width: 800px) {
+        @media (max-width: 700px) {
             .quote-layout {
                 flex-direction: column !important;
             }
@@ -1686,9 +1687,9 @@
         </div>
     </footer>
     
-    <script src="scripts/config.js?v=1769273844"></script>
-    <script src="scripts/quote-engine.js?v=1769273844"></script>
-    <script src="scripts/main.js?v=1769273844"></script>
+    <script src="scripts/config.js?v=1769274344"></script>
+    <script src="scripts/quote-engine.js?v=1769274344"></script>
+    <script src="scripts/main.js?v=1769274344"></script>
     <!-- Floating WhatsApp Button -->
     <a href="https://wa.me/447877934782?text=Hi%2C%20I%27d%20like%20a%20quote%20for%20my%20garden" 
        target="_blank" 
