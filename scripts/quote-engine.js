@@ -76,15 +76,19 @@ const SubmissionOverlay = {
         const steps = this.hasImage ? this.stepsWithDesign : this.stepsQuoteOnly;
         
         container.innerHTML = steps.map((step, i) => `
-            <div class="overlay-step flex items-center py-1" data-step="${i}">
-                <div class="step-icon w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3 transition-all duration-300">
-                    <i class="fas ${step.icon} text-gray-400"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="step-label text-sm font-medium text-gray-400 transition-all duration-300">${step.label}</p>
-                </div>
-                <div class="step-status w-7 h-7 flex items-center justify-center">
-                    <i class="fas fa-circle text-gray-200 text-xs"></i>
+            <div class="overlay-step relative flex items-center py-2 px-3 rounded-xl transition-all duration-500" data-step="${i}">
+                <div class="step-glow absolute inset-0 rounded-xl opacity-0 transition-opacity duration-500" style="background: linear-gradient(135deg, rgba(16,185,129,0.3), rgba(20,184,166,0.3), rgba(6,182,212,0.3)); filter: blur(8px);"></div>
+                <div class="step-border absolute inset-0 rounded-xl border-2 border-transparent transition-all duration-500"></div>
+                <div class="relative flex items-center w-full">
+                    <div class="step-icon w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3 transition-all duration-300">
+                        <i class="fas ${step.icon} text-gray-400"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="step-label text-sm font-medium text-gray-400 transition-all duration-300">${step.label}</p>
+                    </div>
+                    <div class="step-status w-7 h-7 flex items-center justify-center">
+                        <i class="fas fa-circle text-gray-200 text-xs"></i>
+                    </div>
                 </div>
             </div>
         `).join('');
@@ -97,42 +101,88 @@ const SubmissionOverlay = {
         
         console.log(`⏱️ OVERLAY: Animation duration - ${this.hasImage ? '90s (with design)' : '30s (quote only)'}`);
         
+        // Start with first step loading
+        this.setStepLoading(0);
+        
         steps.forEach((_, i) => {
             const timer = setTimeout(() => {
-                this.activateStep(i);
+                // Complete current step
+                this.completeStep(i);
+                
+                // Start loading next step (if not last)
+                if (i < steps.length - 1) {
+                    this.setStepLoading(i + 1);
+                }
                 
                 // If last step, show success after a delay
                 if (i === steps.length - 1) {
                     setTimeout(() => this.showSuccess(), 2000);
                 }
-            }, i * stepDuration);
+            }, (i + 1) * stepDuration);
             this.stepTimers.push(timer);
         });
     },
     
-    activateStep(stepIndex) {
+    setStepLoading(stepIndex) {
         const container = document.getElementById('overlayProgress');
         const stepEl = container.querySelector(`[data-step="${stepIndex}"]`);
         
         if (stepEl) {
+            const glow = stepEl.querySelector('.step-glow');
+            const border = stepEl.querySelector('.step-border');
             const icon = stepEl.querySelector('.step-icon');
             const label = stepEl.querySelector('.step-label');
             const statusContainer = stepEl.querySelector('.step-status');
             
-            // Activate this step
+            // Add green glowing ring
+            glow.style.opacity = '1';
+            glow.style.animation = 'pulse 1.5s ease-in-out infinite';
+            border.style.borderColor = '#10b981';
+            border.style.boxShadow = '0 0 15px rgba(16,185,129,0.5), 0 0 30px rgba(16,185,129,0.3)';
+            
+            // Activate icon
             icon.classList.remove('bg-gray-100');
-            icon.classList.add('bg-primary', 'shadow-lg');
+            icon.classList.add('bg-gradient-to-br', 'from-emerald-500', 'to-teal-500', 'shadow-lg');
             icon.querySelector('i').classList.remove('text-gray-400');
             icon.querySelector('i').classList.add('text-white');
             
+            // Activate label
             label.classList.remove('text-gray-400');
             label.classList.add('text-gray-800', 'font-semibold');
+            
+            // Show spinning loader
+            statusContainer.innerHTML = '<div class="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>';
+        }
+        
+        console.log(`⏳ OVERLAY: Step ${stepIndex + 1} loading`);
+    },
+    
+    completeStep(stepIndex) {
+        const container = document.getElementById('overlayProgress');
+        const stepEl = container.querySelector(`[data-step="${stepIndex}"]`);
+        
+        if (stepEl) {
+            const glow = stepEl.querySelector('.step-glow');
+            const border = stepEl.querySelector('.step-border');
+            const statusContainer = stepEl.querySelector('.step-status');
+            
+            // Remove glow animation
+            glow.style.opacity = '0';
+            glow.style.animation = 'none';
+            border.style.borderColor = 'transparent';
+            border.style.boxShadow = 'none';
             
             // Replace with green tick
             statusContainer.innerHTML = '<i class="fas fa-check-circle text-green-500 text-xl"></i>';
         }
         
-        console.log(`🔄 OVERLAY: Step ${stepIndex + 1} activated`);
+        console.log(`✅ OVERLAY: Step ${stepIndex + 1} completed`);
+    },
+    
+    activateStep(stepIndex) {
+        // For backwards compatibility - calls both loading and complete
+        this.setStepLoading(stepIndex);
+        setTimeout(() => this.completeStep(stepIndex), 500);
     },
     
     showSuccess() {
