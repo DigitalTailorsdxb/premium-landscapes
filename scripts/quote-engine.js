@@ -76,17 +76,17 @@ const SubmissionOverlay = {
         const steps = this.hasImage ? this.stepsWithDesign : this.stepsQuoteOnly;
         
         container.innerHTML = steps.map((step, i) => `
-            <div class="overlay-step relative flex items-center py-2 px-3 rounded-xl transition-all duration-500" data-step="${i}">
-                <div class="step-glow absolute inset-0 rounded-xl opacity-0 transition-opacity duration-500" style="background: linear-gradient(135deg, rgba(16,185,129,0.3), rgba(20,184,166,0.3), rgba(6,182,212,0.3)); filter: blur(8px);"></div>
-                <div class="step-border absolute inset-0 rounded-xl border-2 border-transparent transition-all duration-500"></div>
+            <div class="overlay-step relative flex items-center py-1.5 px-2 rounded-lg transition-all duration-500" data-step="${i}">
+                <div class="step-glow absolute inset-0 rounded-lg opacity-0 transition-opacity duration-500" style="background: linear-gradient(135deg, rgba(16,185,129,0.3), rgba(20,184,166,0.3), rgba(6,182,212,0.3)); filter: blur(6px);"></div>
+                <div class="step-border absolute inset-0 rounded-lg border-2 border-transparent transition-all duration-500"></div>
                 <div class="relative flex items-center w-full">
-                    <div class="step-icon w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3 transition-all duration-300">
-                        <i class="fas ${step.icon} text-gray-400"></i>
+                    <div class="step-icon w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-2 transition-all duration-300">
+                        <i class="fas ${step.icon} text-gray-400 text-sm"></i>
                     </div>
                     <div class="flex-1">
                         <p class="step-label text-sm font-medium text-gray-400 transition-all duration-300">${step.label}</p>
                     </div>
-                    <div class="step-status w-7 h-7 flex items-center justify-center">
+                    <div class="step-status w-5 h-5 flex items-center justify-center">
                         <i class="fas fa-circle text-gray-200 text-xs"></i>
                     </div>
                 </div>
@@ -151,7 +151,7 @@ const SubmissionOverlay = {
             label.classList.add('text-gray-800', 'font-semibold');
             
             // Show spinning loader
-            statusContainer.innerHTML = '<div class="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>';
+            statusContainer.innerHTML = '<div class="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>';
         }
         
         console.log(`⏳ OVERLAY: Step ${stepIndex + 1} loading`);
@@ -173,7 +173,7 @@ const SubmissionOverlay = {
             border.style.boxShadow = 'none';
             
             // Replace with green tick
-            statusContainer.innerHTML = '<i class="fas fa-check-circle text-green-500 text-xl"></i>';
+            statusContainer.innerHTML = '<i class="fas fa-check-circle text-green-500 text-base"></i>';
         }
         
         console.log(`✅ OVERLAY: Step ${stepIndex + 1} completed`);
