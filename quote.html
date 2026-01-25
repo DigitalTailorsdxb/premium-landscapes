@@ -1327,16 +1327,34 @@
                         <!-- Step 6: AI Design Visualisation -->
                         <div id="step6" class="step-container hidden step-transition">
                             <div class="mobile-step-spacer h-12 md:hidden"></div>
-                            <div class="text-center mb-6">
-                                <div class="inline-flex items-center bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-bold mb-4">
-                                    <i class="fas fa-gift mr-2"></i>
-                                    100% FREE
+                            <div class="group relative mb-6 -mx-4 md:mx-0">
+                                <!-- Animated border gradient -->
+                                <div class="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-3xl opacity-75 blur-sm group-hover:opacity-100 transition duration-500"></div>
+                                <!-- Main container -->
+                                <div class="relative bg-white px-6 py-5 rounded-3xl flex items-center gap-4 shadow-lg">
+                                    <!-- Floating number badge -->
+                                    <div class="absolute -top-3 -left-2 md:left-4 px-3 py-1 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center shadow-lg text-white font-bold text-xs ring-4 ring-white whitespace-nowrap">
+                                        Step 6
+                                    </div>
+                                    <!-- Icon with morphing background -->
+                                    <div class="w-14 h-14 relative">
+                                        <div class="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform duration-300"></div>
+                                        <div class="absolute inset-0 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-2xl -rotate-6 group-hover:-rotate-12 transition-transform duration-300 opacity-60"></div>
+                                        <div class="relative w-full h-full bg-white rounded-2xl flex items-center justify-center shadow-inner">
+                                            <i class="fas fa-wand-magic-sparkles text-2xl bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent"></i>
+                                        </div>
+                                    </div>
+                                    <!-- Text content -->
+                                    <div class="flex-1">
+                                        <h2 class="font-heading font-bold text-xl md:text-2xl bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">See Your New Garden Before We Build It</h2>
+                                        <p class="text-gray-500 text-sm">Get a photorealistic preview - delivered in 90 seconds!</p>
+                                    </div>
+                                    <!-- FREE badge -->
+                                    <div class="hidden md:flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold">
+                                        <i class="fas fa-gift mr-1"></i>
+                                        100% FREE
+                                    </div>
                                 </div>
-                                <h2 class="font-heading font-bold text-2xl md:text-3xl text-primary mb-2">
-                                    <i class="fas fa-magic text-accent mr-2"></i>
-                                    See Your New Garden Before We Build It
-                                </h2>
-                                <p class="text-gray-600 text-lg">Get a photorealistic preview of your transformed garden - delivered in 90 seconds!</p>
                             </div>
                             
                             <!-- What is AI Design? -->
