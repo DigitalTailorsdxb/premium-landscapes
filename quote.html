@@ -1941,30 +1941,26 @@
 
     <!-- SUBMISSION OVERLAY - Full screen overlay for processing and success states -->
     <div id="submissionOverlay" class="fixed inset-0 bg-white z-[100] hidden" style="display: none;">
-        <div class="h-screen flex flex-col overflow-hidden">
-            <!-- Header -->
-            <header class="bg-white px-4 py-2 flex-shrink-0">
-                <div class="max-w-4xl mx-auto flex items-center justify-center">
-                    <img src="images/logo.png" alt="Premium Landscapes" class="h-8 md:h-10">
-                </div>
-            </header>
-            
-            <!-- Content Area -->
-            <div class="flex-1 flex items-start justify-center p-3 pt-2 overflow-y-auto">
+        <div class="h-screen flex flex-col">
+            <!-- Content Area - Centered vertically -->
+            <div class="flex-1 flex flex-col items-center justify-center px-4 py-6 overflow-y-auto">
+                <!-- Logo -->
+                <img src="images/logo.png" alt="Premium Landscapes" class="h-12 md:h-16 mb-4">
+                
                 <div class="w-full max-w-lg">
                     
                     <!-- Processing State -->
                     <div id="overlayProcessing" class="text-center">
                         <div id="overlayTitle" class="font-heading font-bold text-xl md:text-2xl text-primary mb-1">Processing Your Request</div>
-                        <p id="overlaySubtitle" class="text-gray-600 mb-3 text-sm">Please wait while we prepare everything</p>
+                        <p id="overlaySubtitle" class="text-gray-600 mb-2 text-sm">Please wait while we prepare everything</p>
                         
                         <!-- Progress Steps -->
-                        <div id="overlayProgress" class="space-y-1 text-left max-w-md mx-auto">
+                        <div id="overlayProgress" class="space-y-0.5 text-left max-w-md mx-auto">
                             <!-- Steps will be injected by JS -->
                         </div>
                         
                         <!-- Disclaimer -->
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-2 mt-3 text-left">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-2 mt-2 text-left">
                             <div class="flex items-start">
                                 <i class="fas fa-info-circle text-blue-600 mr-2 mt-0.5 text-xs"></i>
                                 <p class="text-xs text-gray-700">Your quote is being prepared. Final prices may vary based on site conditions.</p>
@@ -2017,7 +2013,7 @@
                     </div>
                     
                     <!-- Powered by Trade Engine -->
-                    <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+                    <div class="mt-4 pt-3 border-t border-gray-200 text-center">
                         <a href="https://tradeengine.io" target="_blank" class="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition">
                             <i class="fas fa-bolt text-accent"></i>
                             <span class="text-sm">Powered by <strong class="text-primary">Trade Engine</strong></span>
