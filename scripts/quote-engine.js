@@ -1368,14 +1368,21 @@ function initializeFeatureCards() {
             // Pre-fill search with category name to show all products in that category
             if (searchInput) {
                 const searchTerm = categoryNames[feature] || feature;
-                searchInput.value = searchTerm;
+                
+                // Clear first, then set value and trigger search
+                searchInput.value = '';
                 searchInput.focus();
                 
-                // Trigger input event with proper bubbling
-                searchInput.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText' }));
-                
-                // Scroll to search
-                searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Small delay to ensure focus is set, then type the search term
+                setTimeout(() => {
+                    searchInput.value = searchTerm;
+                    // Manually trigger the search by dispatching input event
+                    const event = new Event('input', { bubbles: true });
+                    searchInput.dispatchEvent(event);
+                    
+                    // Scroll to search
+                    searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 50);
             }
         });
     });
