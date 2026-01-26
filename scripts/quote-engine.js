@@ -1369,20 +1369,83 @@ function initializeFeatureCards() {
             if (searchInput) {
                 const searchTerm = categoryNames[feature] || feature;
                 
-                // Clear first, then set value and trigger search
-                searchInput.value = '';
-                searchInput.focus();
+                // Scroll first so the dropdown is visible
+                searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 
-                // Small delay to ensure focus is set, then type the search term
+                // Small delay to let scroll complete, then set value and trigger
                 setTimeout(() => {
                     searchInput.value = searchTerm;
-                    // Manually trigger the search by dispatching input event
-                    const event = new Event('input', { bubbles: true });
-                    searchInput.dispatchEvent(event);
+                    searchInput.focus();
                     
-                    // Scroll to search
-                    searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 50);
+                    // Directly call the search logic instead of relying on event
+                    const dropdown = document.getElementById('searchResultsDropdown');
+                    if (dropdown) {
+                        const searchTermLower = searchTerm.toLowerCase().trim();
+                        const matches = searchableProducts.filter(product => 
+                            product.searchText.includes(searchTermLower) || 
+                            product.label.toLowerCase().includes(searchTermLower)
+                        ).slice(0, 15);
+                        
+                        if (matches.length > 0) {
+                            let resultsHtml = '<div class="py-2">';
+                            let currentCategory = '';
+                            
+                            matches.forEach(product => {
+                                if (product.categoryName !== currentCategory) {
+                                    if (currentCategory !== '') resultsHtml += '</div>';
+                                    currentCategory = product.categoryName;
+                                    resultsHtml += `
+                                        <div class="sticky top-0 px-4 py-3 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 flex items-center gap-3 z-10">
+                                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+                                                <i class="fas ${product.categoryIcon} text-primary text-sm"></i>
+                                            </div>
+                                            <span class="font-bold text-gray-700 text-sm uppercase tracking-wide">${product.categoryName}</span>
+                                        </div>
+                                        <div class="divide-y divide-gray-50">`;
+                                }
+                                
+                                const isSelected = quoteData.selectedProducts && quoteData.selectedProducts.some(p => p.id === product.id);
+                                resultsHtml += `
+                                    <div class="search-result-item group px-4 py-3.5 cursor-pointer flex items-center justify-between transition-all duration-200 ${isSelected ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500' : 'hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5 border-l-4 border-transparent hover:border-primary'}"
+                                         data-product-id="${product.id}"
+                                         data-category="${product.category}"
+                                         data-value="${product.value}"
+                                         data-label="${product.label}">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-xl ${isSelected ? 'bg-gradient-to-br from-green-400 to-emerald-500' : 'bg-gradient-to-br from-gray-100 to-gray-200 group-hover:from-primary/20 group-hover:to-accent/20'} flex items-center justify-center transition-all duration-200">
+                                                <i class="fas ${isSelected ? 'fa-check text-white' : product.categoryIcon + ' text-gray-500 group-hover:text-primary'} text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <span class="font-semibold text-gray-800 block">${product.label}</span>
+                                                ${product.group ? `<span class="text-xs text-gray-400">${product.group}</span>` : ''}
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            ${isSelected ? '<span class="text-xs text-green-600 font-medium">Added</span>' : '<i class="fas fa-plus text-gray-300 group-hover:text-primary transition-colors"></i>'}
+                                        </div>
+                                    </div>`;
+                            });
+                            
+                            resultsHtml += '</div></div>';
+                            dropdown.innerHTML = resultsHtml;
+                            dropdown.classList.remove('hidden');
+                            
+                            // Add click handlers
+                            dropdown.querySelectorAll('.search-result-item').forEach(item => {
+                                item.addEventListener('click', function() {
+                                    const productId = this.dataset.productId;
+                                    const category = this.dataset.category;
+                                    const value = this.dataset.value;
+                                    const label = this.dataset.label;
+                                    addProductFromSearch(productId, category, value, label);
+                                    searchInput.value = '';
+                                    dropdown.classList.add('hidden');
+                                    dropdown.innerHTML = '';
+                                });
+                            });
+                        }
+                    }
+                }, 100);
             }
         });
     });
