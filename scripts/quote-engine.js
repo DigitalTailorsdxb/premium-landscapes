@@ -1369,11 +1369,21 @@ function initializeFeatureCards() {
             if (searchInput) {
                 const searchTerm = categoryNames[feature] || feature;
                 searchInput.value = searchTerm;
-                searchInput.focus();
                 searchInput.dispatchEvent(new Event('input'));
                 
                 // Scroll to search
                 searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Auto-click the first result after dropdown renders
+                setTimeout(() => {
+                    const dropdown = document.getElementById('searchResultsDropdown');
+                    if (dropdown && !dropdown.classList.contains('hidden')) {
+                        const firstItem = dropdown.querySelector('.search-result-item');
+                        if (firstItem) {
+                            firstItem.click();
+                        }
+                    }
+                }, 150);
             }
         });
     });
