@@ -630,6 +630,8 @@ const subProducts = {
     'patio': {
         label: 'Paving Material',
         options: [
+            // Manufactured Paving (most popular first)
+            { value: 'porcelain_patio', label: 'Porcelain Tiles', price: '£££' },
             // Natural Stone Paving
             { value: 'indian_sandstone', label: 'Indian Sandstone', price: '££' },
             { value: 'limestone_paving', label: 'Limestone', price: '£££' },
@@ -642,8 +644,7 @@ const subProducts = {
             { value: 'granite_setts', label: 'Granite Setts', price: '££' },
             { value: 'sandstone_setts', label: 'Sandstone Setts', price: '££' },
             { value: 'cobblestones', label: 'Cobblestones', price: '££' },
-            // Manufactured Paving
-            { value: 'porcelain_patio', label: 'Porcelain Tiles', price: '£££' },
+            // Other Manufactured Paving
             { value: 'concrete_paving', label: 'Concrete Paving', price: '££' },
             { value: 'block_paving', label: 'Block Paving', price: '££' },
             { value: 'resin_bound', label: 'Resin Bound', price: '££££' }
