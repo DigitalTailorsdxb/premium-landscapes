@@ -2695,8 +2695,8 @@ function prepareWebhookPayload() {
             return parts.join(', ');
         };
         
-        // Check if Full Redesign mode with materials
-        const isFullRedesign = quoteData.features.includes('full-redesign');
+        // Check if Full Redesign mode - use quoteMode instead of features
+        const isFullRedesign = quoteData.quoteMode === 'full-redesign';
         const hasGardenDesignMaterials = isFullRedesign && Object.keys(gardenDesignMaterials).length > 0;
         
         // Format garden design materials for n8n
