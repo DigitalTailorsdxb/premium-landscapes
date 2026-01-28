@@ -2467,7 +2467,7 @@ async function submitQuote() {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'X-Webhook-Token': window.brandConfig?.webhooks?.securityToken || ''
+                    'X-Webhook-Secret': window.brandConfig?.webhooks?.securityToken || ''
                 },
                 body: JSON.stringify(webhookPayload)
             }).then(response => {
@@ -2488,7 +2488,7 @@ async function submitQuote() {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-Webhook-Token': window.brandConfig?.webhooks?.securityToken || ''
+                        'X-Webhook-Secret': window.brandConfig?.webhooks?.securityToken || ''
                     },
                     body: JSON.stringify(webhookPayload)
                 });
