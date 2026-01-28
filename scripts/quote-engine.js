@@ -2464,7 +2464,10 @@ async function submitQuote() {
             // Animation: 60s (quote only) or 120s (with AI design)
             fetch(webhookUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Webhook-Token': window.brandConfig?.webhooks?.securityToken || ''
+                },
                 body: JSON.stringify(webhookPayload)
             }).then(response => {
                 console.log('✅ Webhook sent successfully, status:', response.status);
@@ -2482,7 +2485,10 @@ async function submitQuote() {
             try {
                 const response = await fetch(webhookUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Webhook-Token': window.brandConfig?.webhooks?.securityToken || ''
+                    },
                     body: JSON.stringify(webhookPayload)
                 });
                 
