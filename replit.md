@@ -3,7 +3,7 @@
 ## Overview
 Premium Landscapes is an AI-powered, high-converting landscaping website template designed for sale to landscaping businesses. It serves as a public demo and white-label solution, enabling rapid rebranding and offering AI-powered instant quotes and design generation. The platform aims to provide a significant competitive advantage in the landscaping market by boosting conversion rates.
 
-**Trade Engine Branding:** All AI features branded as "Powered by Trade Engine" with footer link to https://tradeengine.io on every page. GREEN "FREE" badges on navigation and page headers emphasize no-cost features.
+**Trade Engine Branding:** All AI features branded as "Powered by Trade Engine" (styled: "Trade" in slate, "Engine" in amber) with footer link to https://trade-engine.co.uk on every page. GREEN "FREE" badges on navigation and page headers emphasize no-cost features.
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
