@@ -200,8 +200,16 @@ const SubmissionOverlay = {
         
         if (this.hasImage) {
             document.getElementById('overlaySuccessRedesign').classList.remove('hidden');
+            // Populate the redesign overlay showcase (OverlayR) from n8n response
+            if (typeof populateResultShowcase === 'function') {
+                populateResultShowcase(lastWebhookResult, 'OverlayR');
+            }
         } else {
             document.getElementById('overlaySuccessProducts').classList.remove('hidden');
+            // Populate the products overlay showcase (OverlayP) from n8n response
+            if (typeof populateResultShowcase === 'function') {
+                populateResultShowcase(lastWebhookResult, 'OverlayP');
+            }
         }
     },
     
@@ -384,10 +392,14 @@ function advanceIndividualProgressStep(stepIndex) {
 }
 
 // Called when webhook completes for individual products
+// Shared store for the most recent webhook result — used by overlay showSuccess()
+let lastWebhookResult = null;
+
 function onIndividualWebhookComplete(success, result) {
     progressStateIndividual.webhookComplete = true;
     progressStateIndividual.webhookSuccess = success;
     progressStateIndividual.webhookResult = result;
+    lastWebhookResult = result;
     
     if (success) {
         console.log('✅ Individual products webhook completed successfully');
@@ -559,6 +571,7 @@ function onWebhookComplete(success, result) {
     progressState.webhookComplete = true;
     progressState.webhookSuccess = success;
     progressState.webhookResult = result;
+    lastWebhookResult = result;
     
     if (success) {
         console.log('✅ Webhook completed successfully (UI running independently)');
@@ -608,6 +621,9 @@ function showQuoteResultRedesign(data) {
     } else {
         console.error('❌ quoteResultRedesign element NOT FOUND!');
     }
+
+    // Populate the result showcase card with n8n response data
+    populateResultShowcase(data, 'Redesign');
     
     console.log('✅ Full Garden Redesign request submitted successfully!');
     console.log('Customer will receive design proposal via email from n8n workflow');
@@ -2880,6 +2896,99 @@ function prepareWebhookPayload() {
 // DISPLAY QUOTE RESULT
 // Shows confirmation message - actual quote sent via email from n8n
 // ============================================================================
+// ============================================================================
+// WEBHOOK RESPONSE PARSER
+// Handles both flat JSON (Option 1) and raw HubSpot deal array (Option 2)
+// ============================================================================
+function parseWebhookResponse(data) {
+    const parsed = { customerName: '', quoteTotal: '', imageUrl: '', pdfUrl: '', quoteRef: '' };
+    if (!data) return parsed;
+
+    // Option 1 — flat JSON: { success, customerName, quoteTotal, imageUrl, pdfUrl }
+    if (data.customerName !== undefined || data.quoteTotal !== undefined || data.imageUrl !== undefined || data.pdfUrl !== undefined) {
+        parsed.customerName = data.customerName || '';
+        parsed.quoteTotal   = String(data.quoteTotal   || '');
+        parsed.imageUrl     = data.imageUrl     || '';
+        parsed.pdfUrl       = data.pdfUrl       || '';
+        parsed.quoteRef     = data.quoteRef     || '';
+        return parsed;
+    }
+
+    // Option 2 — HubSpot raw array: [{ dealId, properties: { amount: { value }, … } }]
+    const item = Array.isArray(data) ? data[0] : null;
+    if (item && item.properties) {
+        const p = item.properties;
+        parsed.customerName = p.quote_reference?.value  || '';
+        parsed.quoteTotal   = p.amount?.value            || '';
+        parsed.imageUrl     = p.ai_garden_image_url?.value || '';
+        parsed.pdfUrl       = p.ai_quote_pdf_url?.value    || '';
+        parsed.quoteRef     = p.quote_reference?.value  || '';
+    }
+
+    return parsed;
+}
+
+// ============================================================================
+// RESULT SHOWCASE POPULATOR
+// Fills the result card (greeting, price, design image, PDF link) from webhook data
+// suffix = 'Products' | 'Redesign'
+// ============================================================================
+function populateResultShowcase(data, suffix) {
+    const parsed = parseWebhookResponse(data);
+    const showcase = document.getElementById('resultShowcase' + suffix);
+    if (!showcase) return;
+
+    // Always show the showcase card
+    showcase.classList.remove('hidden');
+
+    // --- Customer name ---
+    const customerName = parsed.customerName || quoteData.firstName || 'you';
+    const nameEl = document.getElementById('resultName' + suffix);
+    if (nameEl) nameEl.textContent = customerName;
+
+    // --- Price badge ---
+    if (parsed.quoteTotal) {
+        const raw = String(parsed.quoteTotal).replace(/[^0-9.]/g, '');
+        const num = parseFloat(raw);
+        if (!isNaN(num) && num > 0) {
+            const formatted = '£' + Math.round(num).toLocaleString('en-GB');
+            const priceEl = document.getElementById('resultPrice' + suffix);
+            if (priceEl) priceEl.textContent = formatted;
+        } else {
+            const badge = document.getElementById('resultPriceBadge' + suffix);
+            if (badge) badge.classList.add('hidden');
+        }
+    } else {
+        const badge = document.getElementById('resultPriceBadge' + suffix);
+        if (badge) badge.classList.add('hidden');
+    }
+
+    // --- Design image ---
+    if (parsed.imageUrl) {
+        const imgWrap = document.getElementById('resultImageWrap' + suffix);
+        const img     = document.getElementById('resultDesignImg' + suffix);
+        const viewBtn = document.getElementById('resultViewDesignBtn' + suffix);
+        if (imgWrap) imgWrap.classList.remove('hidden');
+        if (img)     img.src = parsed.imageUrl;
+        if (viewBtn) viewBtn.href = parsed.imageUrl;
+    }
+
+    // --- PDF download ---
+    if (parsed.pdfUrl) {
+        const pdfWrap = document.getElementById('resultPdfWrap' + suffix);
+        const pdfBtn  = document.getElementById('resultPdfBtn' + suffix);
+        if (pdfWrap) pdfWrap.classList.remove('hidden');
+        if (pdfBtn)  pdfBtn.href = parsed.pdfUrl;
+    }
+
+    console.log(`✅ Result showcase populated [${suffix}]:`, {
+        name: customerName,
+        price: parsed.quoteTotal,
+        hasImage: !!parsed.imageUrl,
+        hasPdf: !!parsed.pdfUrl
+    });
+}
+
 async function showQuoteResult(data) {
     console.log('🎨 showQuoteResult - Starting success UI transition');
     stopIndividualProgressAnimation();
@@ -2900,6 +3009,9 @@ async function showQuoteResult(data) {
     } else {
         console.error('❌ quoteResult element NOT FOUND!');
     }
+
+    // Populate the result showcase card with n8n response data
+    populateResultShowcase(data, 'Products');
     
     console.log('✅ Quote request submitted successfully!');
     console.log('Customer will receive detailed PDF quote via email from n8n workflow');
