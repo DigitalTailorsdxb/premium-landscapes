@@ -1941,9 +1941,6 @@ function nextStep() {
         return;
     }
 
-    // Fire Meta Pixel Lead event once — when the user commits to starting a quote (leaves step 1)
-    if (currentStep === 1 && typeof fbq === 'function') { fbq('track', 'Lead'); }
-    
     // Step 2: Validate products selected for individual-products mode
     if (currentStep === 2 && quoteData.quoteMode === 'individual-products') {
         // Check at least one product selected
@@ -2403,7 +2400,10 @@ async function submitQuote() {
         return;
     }
     isSubmittingQuote = true;
-    
+
+    // Fire Meta Pixel Lead event at the moment of quote submission (covers both paths)
+    if (typeof fbq === 'function') { fbq('track', 'Lead'); }
+
     console.log('🚀 SUBMIT QUOTE FUNCTION CALLED - Version: 20251028-FINAL');
     console.log('Current quoteData:', quoteData);
     
