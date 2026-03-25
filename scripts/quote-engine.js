@@ -594,7 +594,7 @@ function onWebhookComplete(success, result) {
             // Animation is still running — fast-forward it immediately so
             // the customer sees their image and quote as soon as n8n replies
             console.log('⚡ n8n replied while animation running — fast-forwarding to result now');
-            overlayAnimator.forceComplete();
+            SubmissionOverlay.forceComplete();
         } else if (successAlreadyShowing) {
             // Animation already finished — populate the visible success screen now
             if (!document.getElementById('overlaySuccessRedesign')?.classList.contains('hidden')) {
