@@ -187,6 +187,9 @@ const SubmissionOverlay = {
     
     showSuccess() {
         console.log('🎉 OVERLAY: Showing success state, hasImage:', this.hasImage);
+
+        // Fire Meta Pixel Lead event once when results are shown
+        if (typeof fbq === 'function') { fbq('track', 'Lead'); }
         
         // Hide processing, show appropriate success
         document.getElementById('overlayProcessing').classList.add('hidden');
