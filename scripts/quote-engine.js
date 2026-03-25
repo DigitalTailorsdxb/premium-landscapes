@@ -2562,10 +2562,17 @@ async function submitQuote() {
                     'X-Webhook-Secret': window.brandConfig?.webhooks?.securityToken || ''
                 },
                 body: JSON.stringify(webhookPayload)
-            }).then(response => {
+            }).then(async response => {
                 console.log('✅ Webhook sent successfully, status:', response.status);
                 isSubmittingQuote = false;
-                onWebhookComplete(true, { success: true });
+                let result = {};
+                try {
+                    result = await response.json();
+                    console.log('✅ n8n Full Redesign Response (raw):', result);
+                } catch (e) {
+                    console.log('⚠️ n8n returned non-JSON response for full redesign');
+                }
+                onWebhookComplete(true, result);
             }).catch(error => {
                 console.warn('⚠️ Webhook error (UI continues):', error.message);
                 isSubmittingQuote = false;
