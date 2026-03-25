@@ -400,9 +400,17 @@ function onIndividualWebhookComplete(success, result) {
     progressStateIndividual.webhookSuccess = success;
     progressStateIndividual.webhookResult = result;
     lastWebhookResult = result;
-    
+
     if (success) {
         console.log('✅ Individual products webhook completed successfully');
+
+        // If the overlay/in-page success screen is already visible, populate it now
+        if (!document.getElementById('overlaySuccessProducts')?.classList.contains('hidden')) {
+            if (typeof populateResultShowcase === 'function') { populateResultShowcase(result, 'OverlayP'); }
+        }
+        if (!document.getElementById('quoteResult')?.classList.contains('hidden')) {
+            if (typeof populateResultShowcase === 'function') { populateResultShowcase(result, 'Products'); }
+        }
     } else {
         console.warn('⚠️ Individual products webhook returned error:', result?.error || result?.message);
     }
@@ -572,9 +580,25 @@ function onWebhookComplete(success, result) {
     progressState.webhookSuccess = success;
     progressState.webhookResult = result;
     lastWebhookResult = result;
-    
+
     if (success) {
         console.log('✅ Webhook completed successfully (UI running independently)');
+
+        // If the overlay success screen is already visible, populate it now
+        // (handles the case where the animation finished before the webhook returned)
+        if (!document.getElementById('overlaySuccessRedesign')?.classList.contains('hidden')) {
+            if (typeof populateResultShowcase === 'function') { populateResultShowcase(result, 'OverlayR'); }
+        }
+        if (!document.getElementById('overlaySuccessProducts')?.classList.contains('hidden')) {
+            if (typeof populateResultShowcase === 'function') { populateResultShowcase(result, 'OverlayP'); }
+        }
+        // Same for in-page result panels
+        if (!document.getElementById('quoteResultRedesign')?.classList.contains('hidden')) {
+            if (typeof populateResultShowcase === 'function') { populateResultShowcase(result, 'Redesign'); }
+        }
+        if (!document.getElementById('quoteResult')?.classList.contains('hidden')) {
+            if (typeof populateResultShowcase === 'function') { populateResultShowcase(result, 'Products'); }
+        }
     } else {
         console.warn('⚠️ Webhook returned error (UI continues independently):', result?.error || result?.message);
     }
