@@ -187,9 +187,6 @@ const SubmissionOverlay = {
     
     showSuccess() {
         console.log('🎉 OVERLAY: Showing success state, hasImage:', this.hasImage);
-
-        // Fire Meta Pixel Lead event once when results are shown
-        if (typeof fbq === 'function') { fbq('track', 'Lead'); }
         
         // Hide processing, show appropriate success
         document.getElementById('overlayProcessing').classList.add('hidden');
@@ -1943,6 +1940,9 @@ function nextStep() {
         alert('Please select a quote option: Complete Garden Redesign or Select Individual Products');
         return;
     }
+
+    // Fire Meta Pixel Lead event once — when the user commits to starting a quote (leaves step 1)
+    if (currentStep === 1 && typeof fbq === 'function') { fbq('track', 'Lead'); }
     
     // Step 2: Validate products selected for individual-products mode
     if (currentStep === 2 && quoteData.quoteMode === 'individual-products') {
