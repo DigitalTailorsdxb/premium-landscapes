@@ -2576,16 +2576,22 @@ async function submitQuote() {
                 },
                 body: JSON.stringify(webhookPayload)
             }).then(async response => {
-                console.log('✅ Webhook sent successfully, status:', response.status);
+                console.log('📩 Webhook response status:', response.status);
                 isSubmittingQuote = false;
                 let result = {};
                 try {
                     result = await response.json();
-                    console.log('✅ n8n Full Redesign Response (raw):', result);
+                    console.log('📩 n8n Full Redesign Response (raw):', result);
                 } catch (e) {
                     console.log('⚠️ n8n returned non-JSON response for full redesign');
                 }
-                onWebhookComplete(true, result);
+                if (response.ok) {
+                    console.log('✅ Webhook completed successfully');
+                    onWebhookComplete(true, result);
+                } else {
+                    console.warn('⚠️ n8n workflow error (status ' + response.status + '):', result?.message || 'Unknown error');
+                    onWebhookComplete(false, result);
+                }
             }).catch(error => {
                 console.warn('⚠️ Webhook error (UI continues):', error.message);
                 isSubmittingQuote = false;
