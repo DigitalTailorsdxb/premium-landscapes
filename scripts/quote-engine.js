@@ -582,17 +582,30 @@ function onWebhookComplete(success, result) {
     lastWebhookResult = result;
 
     if (success) {
-        console.log('✅ Webhook completed successfully (UI running independently)');
+        console.log('✅ Webhook completed successfully');
 
-        // If the overlay success screen is already visible, populate it now
-        // (handles the case where the animation finished before the webhook returned)
-        if (!document.getElementById('overlaySuccessRedesign')?.classList.contains('hidden')) {
-            if (typeof populateResultShowcase === 'function') { populateResultShowcase(result, 'OverlayR'); }
+        const overlay = document.getElementById('submissionOverlay');
+        const overlayVisible = overlay && !overlay.classList.contains('hidden') && overlay.style.display !== 'none';
+        const successAlreadyShowing =
+            !document.getElementById('overlaySuccessRedesign')?.classList.contains('hidden') ||
+            !document.getElementById('overlaySuccessProducts')?.classList.contains('hidden');
+
+        if (overlayVisible && !successAlreadyShowing) {
+            // Animation is still running — fast-forward it immediately so
+            // the customer sees their image and quote as soon as n8n replies
+            console.log('⚡ n8n replied while animation running — fast-forwarding to result now');
+            overlayAnimator.forceComplete();
+        } else if (successAlreadyShowing) {
+            // Animation already finished — populate the visible success screen now
+            if (!document.getElementById('overlaySuccessRedesign')?.classList.contains('hidden')) {
+                if (typeof populateResultShowcase === 'function') { populateResultShowcase(result, 'OverlayR'); }
+            }
+            if (!document.getElementById('overlaySuccessProducts')?.classList.contains('hidden')) {
+                if (typeof populateResultShowcase === 'function') { populateResultShowcase(result, 'OverlayP'); }
+            }
         }
-        if (!document.getElementById('overlaySuccessProducts')?.classList.contains('hidden')) {
-            if (typeof populateResultShowcase === 'function') { populateResultShowcase(result, 'OverlayP'); }
-        }
-        // Same for in-page result panels
+
+        // In-page result panels (non-overlay flow)
         if (!document.getElementById('quoteResultRedesign')?.classList.contains('hidden')) {
             if (typeof populateResultShowcase === 'function') { populateResultShowcase(result, 'Redesign'); }
         }
