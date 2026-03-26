@@ -422,3 +422,14 @@ img[loading="lazy"] {
         transform: scale(0.98);
     }
 }
+
+/* ─── btn-lg: half-size on mobile ────────────────────────── */
+@media (max-width: 767px) {
+    .modern-btn-white.btn-lg .btn-inner,
+    .modern-btn-filled.btn-lg .btn-inner,
+    .modern-btn-teal-white.btn-lg .btn-inner,
+    .modern-btn-teal-filled.btn-lg .btn-inner {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.9rem;
+    }
+}
