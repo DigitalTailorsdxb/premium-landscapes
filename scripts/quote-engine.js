@@ -213,7 +213,13 @@ const SubmissionOverlay = {
         }
     },
     
-    // Force complete animation (called when webhook returns)
+    // Check whether the overlay is currently on screen
+    isVisible() {
+        const overlay = document.getElementById('submissionOverlay');
+        return overlay && !overlay.classList.contains('hidden') && overlay.style.display !== 'none';
+    },
+    
+    // Force complete animation immediately (called when webhook returns early)
     forceComplete() {
         // Clear pending timers
         this.stepTimers.forEach(t => clearTimeout(t));
@@ -403,6 +409,13 @@ function onIndividualWebhookComplete(success, result) {
 
     if (success) {
         console.log('✅ Individual products webhook completed successfully');
+
+        // Fast-forward overlay animation immediately so results show now
+        if (typeof SubmissionOverlay !== 'undefined' && SubmissionOverlay.isVisible && SubmissionOverlay.isVisible()) {
+            console.log('⚡ Fast-forwarding individual products overlay to show results');
+            SubmissionOverlay.forceComplete();
+            return; // forceComplete will call showSuccess() which calls populateResultShowcase
+        }
 
         // If the overlay/in-page success screen is already visible, populate it now
         if (!document.getElementById('overlaySuccessProducts')?.classList.contains('hidden')) {
@@ -2967,12 +2980,17 @@ function parseWebhookResponse(data) {
         return parsed;
     }
 
-    // Option 2 — HubSpot raw array: [{ dealId, properties: { amount: { value }, … } }]
+    // Option 2 — HubSpot raw array: [{ dealId, properties: { dealname, amount, … } }]
     const item = Array.isArray(data) ? data[0] : null;
     if (item && item.properties) {
         const p = item.properties;
-        parsed.customerName = p.quote_reference?.value  || '';
-        parsed.quoteTotal   = p.amount?.value            || '';
+        // Extract first name from dealname e.g. "Lewis Reid – Garden Design – PL-..."
+        const dealname = p.dealname?.value || '';
+        parsed.customerName = dealname
+            ? (dealname.split(' \u2013 ')[0] || dealname.split(' - ')[0] || dealname).trim()
+            : '';
+        // Amount: prefer custom amount field, fall back to hs_forecast_amount
+        parsed.quoteTotal   = p.amount?.value || p.hs_forecast_amount?.value || '';
         parsed.imageUrl     = p.ai_garden_image_url?.value || '';
         parsed.pdfUrl       = p.ai_quote_pdf_url?.value    || '';
         parsed.quoteRef     = p.quote_reference?.value  || '';
