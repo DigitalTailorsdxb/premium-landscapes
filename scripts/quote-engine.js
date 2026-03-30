@@ -3379,31 +3379,96 @@ function formatBudgetForDesign(budget) {
     return String(budget);
 }
 
+// Read EXIF orientation tag from a JPEG ArrayBuffer (returns 1-8, or 1 if not found)
+function getExifOrientation(buffer) {
+    const view = new DataView(buffer);
+    // Must start with JPEG SOI marker FF D8
+    if (view.getUint16(0) !== 0xFFD8) return 1;
+    let offset = 2;
+    while (offset < view.byteLength) {
+        const marker = view.getUint16(offset);
+        offset += 2;
+        if (marker === 0xFFE1) { // APP1 marker — EXIF lives here
+            // Check for "Exif" header
+            if (view.getUint32(offset + 2) !== 0x45786966) return 1;
+            const little = view.getUint16(offset + 8) === 0x4949; // byte order
+            const ifdOffset = view.getUint32(offset + 14, little);
+            const tags = view.getUint16(offset + 8 + ifdOffset, little);
+            for (let i = 0; i < tags; i++) {
+                const tag = view.getUint16(offset + 8 + ifdOffset + 2 + i * 12, little);
+                if (tag === 0x0112) { // Orientation tag
+                    return view.getUint16(offset + 8 + ifdOffset + 2 + i * 12 + 8, little);
+                }
+            }
+        } else if ((marker & 0xFF00) !== 0xFF00) {
+            break;
+        } else {
+            offset += view.getUint16(offset);
+        }
+    }
+    return 1;
+}
+
+// Apply EXIF orientation to a canvas context before drawing
+// Orientation values 1-8 as per EXIF spec
+function applyExifOrientation(ctx, orientation, width, height) {
+    switch (orientation) {
+        case 2: ctx.transform(-1, 0, 0, 1, width, 0); break;           // Horizontal flip
+        case 3: ctx.transform(-1, 0, 0, -1, width, height); break;      // 180°
+        case 4: ctx.transform(1, 0, 0, -1, 0, height); break;           // Vertical flip
+        case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;                 // 90° CW + H flip
+        case 6: ctx.transform(0, 1, -1, 0, height, 0); break;           // 90° CW (common portrait)
+        case 7: ctx.transform(0, -1, -1, 0, height, width); break;      // 90° CCW + H flip
+        case 8: ctx.transform(0, -1, 1, 0, 0, width); break;            // 90° CCW
+        default: break; // Orientation 1 = no transform needed
+    }
+}
+
 async function compressImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) {
+    // Read EXIF orientation first (requires ArrayBuffer)
+    const orientation = await new Promise((res) => {
+        if (!file.type || !file.type.includes('jpeg')) { res(1); return; }
+        const ab = new FileReader();
+        ab.onload = (e) => res(getExifOrientation(e.target.result));
+        ab.onerror = () => res(1);
+        ab.readAsArrayBuffer(file);
+    });
+
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => {
             const img = new Image();
             img.onload = () => {
-                let width = img.width;
-                let height = img.height;
+                // For 90°/270° rotations, swap the logical width/height
+                const swapped = orientation >= 5 && orientation <= 8;
+                let width  = swapped ? img.height : img.width;
+                let height = swapped ? img.width  : img.height;
 
                 if (width > maxWidth || height > maxHeight) {
                     const ratio = Math.min(maxWidth / width, maxHeight / height);
-                    width = Math.round(width * ratio);
+                    width  = Math.round(width  * ratio);
                     height = Math.round(height * ratio);
                 }
 
                 const canvas = document.createElement('canvas');
-                canvas.width = width;
+                canvas.width  = width;
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
+
+                // Apply EXIF rotation before drawing
+                applyExifOrientation(ctx, orientation, width, height);
+
+                // Draw at un-swapped pixel dimensions so the transform does the rotation
+                if (swapped) {
+                    ctx.drawImage(img, 0, 0, height, width);
+                } else {
+                    ctx.drawImage(img, 0, 0, width, height);
+                }
 
                 const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
                 const originalKB = (file.size / 1024).toFixed(0);
                 const compressedKB = (compressedBase64.length * 0.75 / 1024).toFixed(0);
-                console.log(`📸 Image compressed: ${originalKB}KB → ${compressedKB}KB (${width}x${height})`);
+                console.log(`📸 Image compressed: ${originalKB}KB → ${compressedKB}KB (${width}x${height}) [EXIF orientation: ${orientation}]`);
                 resolve(compressedBase64);
             };
             img.onerror = () => reject(new Error('Failed to load image'));
