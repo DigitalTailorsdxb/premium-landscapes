@@ -3381,30 +3381,45 @@ function formatBudgetForDesign(budget) {
 
 // Read EXIF orientation tag from a JPEG ArrayBuffer (returns 1-8, or 1 if not found)
 function getExifOrientation(buffer) {
-    const view = new DataView(buffer);
-    // Must start with JPEG SOI marker FF D8
-    if (view.getUint16(0) !== 0xFFD8) return 1;
-    let offset = 2;
-    while (offset < view.byteLength) {
-        const marker = view.getUint16(offset);
-        offset += 2;
-        if (marker === 0xFFE1) { // APP1 marker — EXIF lives here
-            // Check for "Exif" header
-            if (view.getUint32(offset + 2) !== 0x45786966) return 1;
-            const little = view.getUint16(offset + 8) === 0x4949; // byte order
-            const ifdOffset = view.getUint32(offset + 14, little);
-            const tags = view.getUint16(offset + 8 + ifdOffset, little);
-            for (let i = 0; i < tags; i++) {
-                const tag = view.getUint16(offset + 8 + ifdOffset + 2 + i * 12, little);
-                if (tag === 0x0112) { // Orientation tag
-                    return view.getUint16(offset + 8 + ifdOffset + 2 + i * 12 + 8, little);
+    try {
+        const view = new DataView(buffer);
+        // Must start with JPEG SOI marker FF D8
+        if (view.getUint16(0) !== 0xFFD8) return 1;
+        let offset = 2;
+        while (offset + 2 <= view.byteLength) {
+            const marker = view.getUint16(offset);
+            offset += 2;
+            if (marker === 0xFFE1) { // APP1 marker — EXIF lives here
+                // offset now points to APP1 length field (2 bytes)
+                // Check for "Exif" magic at offset+2 (bytes 6-9 absolute)
+                if (offset + 10 > view.byteLength) return 1;
+                if (view.getUint32(offset + 2) !== 0x45786966) return 1;
+                // TIFF header starts at offset+8 (after length+Exif\0\0)
+                const tiff = offset + 8;
+                const little = view.getUint16(tiff) === 0x4949; // II=little, MM=big
+                // IFD0 offset is at TIFF+4, relative to TIFF start
+                const ifdOffset = view.getUint32(tiff + 4, little);
+                const ifdStart = tiff + ifdOffset;
+                if (ifdStart + 2 > view.byteLength) return 1;
+                const tags = view.getUint16(ifdStart, little);
+                for (let i = 0; i < tags; i++) {
+                    const entryStart = ifdStart + 2 + i * 12;
+                    if (entryStart + 12 > view.byteLength) break;
+                    const tag = view.getUint16(entryStart, little);
+                    if (tag === 0x0112) { // Orientation tag
+                        return view.getUint16(entryStart + 8, little);
+                    }
                 }
+                return 1; // APP1 found but no orientation tag
+            } else if ((marker & 0xFF00) !== 0xFF00) {
+                break; // Not a valid marker
+            } else {
+                if (offset + 2 > view.byteLength) break;
+                offset += view.getUint16(offset); // skip this segment
             }
-        } else if ((marker & 0xFF00) !== 0xFF00) {
-            break;
-        } else {
-            offset += view.getUint16(offset);
         }
+    } catch (e) {
+        // Any parse error — just treat as normal orientation
     }
     return 1;
 }
