@@ -1826,20 +1826,66 @@ function initializeAreaSlider() {
     }
 }
 
-// Custom budget input (mandatory for full redesign)
+// Budget state: number (specific) | 'unlimited' | 'unknown'
+// Default is 'unknown' — customer hasn't told us their budget
+let budgetIsUnlimited = false;
+
 function initializeBudgetOptions() {
+    // Start with unknown (not null, not zero — they haven't told us)
+    quoteData.budget = 'unknown';
+
     const budgetInput = document.getElementById('customBudgetInput');
-    
     if (budgetInput) {
         budgetInput.addEventListener('input', function() {
             const value = parseFloat(this.value);
             if (value && value > 0) {
+                // User typed a number — turn off unlimited toggle if on
+                budgetIsUnlimited = false;
+                _applyUnlimitedBudgetUI(false);
                 quoteData.budget = value;
-                updateSummary();
             } else {
-                quoteData.budget = null;
+                // Input cleared — back to unknown (unless unlimited is toggled)
+                if (!budgetIsUnlimited) quoteData.budget = 'unknown';
             }
+            updateSummary();
         });
+    }
+}
+
+function toggleUnlimitedBudget() {
+    budgetIsUnlimited = !budgetIsUnlimited;
+    _applyUnlimitedBudgetUI(budgetIsUnlimited);
+
+    if (budgetIsUnlimited) {
+        // Clear any typed value and lock the input
+        const input = document.getElementById('customBudgetInput');
+        if (input) { input.value = ''; input.disabled = true; }
+        quoteData.budget = 'unlimited';
+    } else {
+        // Restore input and go back to unknown until they type something
+        const input = document.getElementById('customBudgetInput');
+        if (input) { input.disabled = false; }
+        quoteData.budget = 'unknown';
+    }
+    updateSummary();
+}
+
+function _applyUnlimitedBudgetUI(active) {
+    const btn  = document.getElementById('unlimitedBudgetBtn');
+    const text = document.getElementById('unlimitedBudgetBtnText');
+    const hint = document.getElementById('budgetHintText');
+    if (!btn) return;
+
+    if (active) {
+        btn.classList.remove('border-dashed', 'border-gray-300', 'text-gray-600');
+        btn.classList.add('border-solid', 'border-accent', 'bg-accent/10', 'text-accent');
+        if (text) text.textContent = 'No budget limit selected — design freely';
+        if (hint) hint.textContent = 'We\'ll design without any spending restrictions';
+    } else {
+        btn.classList.add('border-dashed', 'border-gray-300', 'text-gray-600');
+        btn.classList.remove('border-solid', 'border-accent', 'bg-accent/10', 'text-accent');
+        if (text) text.textContent = 'No budget limit — design my dream garden';
+        if (hint) hint.textContent = 'Not sure? Leave both blank — we\'ll ask during your consultation';
     }
 }
 
@@ -2344,10 +2390,10 @@ function updateSummary() {
         `;
     }
     
-    if (quoteData.budget) {
+    if (quoteData.budget && quoteData.budget !== 'unknown') {
         const formattedBudget = typeof quoteData.budget === 'number' 
             ? `£${quoteData.budget.toLocaleString('en-GB')}` 
-            : quoteData.budget;
+            : quoteData.budget === 'unlimited' ? 'No limit' : quoteData.budget;
         html += `
             <div class="summary-item bg-stone px-3 py-2 rounded-lg mt-2">
                 <p class="text-sm"><i class="fas fa-pound-sign text-accent mr-2"></i>Budget: <strong>${formattedBudget}</strong></p>
@@ -2433,7 +2479,7 @@ function updateMobileSummaryBadge() {
     
     // Count other filled fields
     if (quoteData.area) count++;
-    if (quoteData.budget) count++;
+    if (quoteData.budget && quoteData.budget !== 'unknown') count++;
     if (quoteData.postcode) count++;
     if (quoteData.files && quoteData.files.length > 0) count++;
     if (quoteData.designVisionNotes && quoteData.designVisionNotes.trim()) count++;
@@ -2700,14 +2746,19 @@ function prepareWebhookPayload() {
     return Promise.all(filePromises).then(async (filesData) => {
         // Parse budget - handles both numeric input and legacy string format
         const parseBudget = (budget) => {
-            if (!budget) return null;
-            
-            // If already a number, return it
+            if (!budget || budget === 'unknown') return null;
+            if (budget === 'unlimited') return null; // no cap
             if (typeof budget === 'number') return budget;
-            
             // Legacy string format (e.g., "£5k-£10k" or "<5000")
             const match = String(budget).match(/(\d+)k/i);
             return match ? parseInt(match[1]) * 1000 : null;
+        };
+
+        // 'specified' | 'unlimited' | 'unknown'
+        const getBudgetType = (budget) => {
+            if (typeof budget === 'number' && budget > 0) return 'specified';
+            if (budget === 'unlimited') return 'unlimited';
+            return 'unknown';
         };
         
         const totalBudget = parseBudget(quoteData.budget);
@@ -2872,6 +2923,7 @@ function prepareWebhookPayload() {
                 type: isFullRedesign ? 'full_garden_redesign' : 'individual_products',
                 totalArea_m2: totalArea,
                 totalBudget_gbp: totalBudget,
+                budgetType: getBudgetType(quoteData.budget),
                 layoutType: 'standard',
                 sunlight: 'partial sun',
                 stylePreference: detectStylePreference(),
@@ -3376,7 +3428,8 @@ function detectMaintenanceLevel() {
 
 // Helper: Format budget for design workflow
 function formatBudgetForDesign(budget) {
-    if (!budget) return '<5000';
+    if (!budget || budget === 'unknown') return 'unknown';
+    if (budget === 'unlimited') return 'unlimited';
     
     // If numeric, convert to range
     if (typeof budget === 'number') {

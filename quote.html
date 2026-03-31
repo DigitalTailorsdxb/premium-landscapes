@@ -1296,25 +1296,31 @@
                             
                             <div class="mb-6" id="budgetSection">
                                 <label class="block text-gray-700 font-semibold mb-3">
-                                    <span id="budgetLabel">Your budget</span>
+                                    <span id="budgetLabel">Your approximate budget</span>
                                     <span id="budgetOptional" class="text-gray-500 font-normal text-sm">(optional)</span>
                                 </label>
-                                <div class="relative">
+                                <div class="relative mb-3">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-lg pointer-events-none">£</span>
                                     <input 
                                         type="number" 
                                         id="customBudgetInput" 
                                         min="1000"
                                         step="500"
-                                        class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base font-semibold"
-                                        placeholder="£ e.g. 15000 (leave blank = unlimited)"
+                                        class="w-full pl-9 pr-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base font-semibold"
+                                        placeholder="e.g. 15000"
                                     >
                                 </div>
-                                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-3">
-                                    <p class="text-sm text-amber-800 font-medium">
-                                        <i class="fas fa-exclamation-circle text-amber-600 mr-2"></i>
-                                        <strong>No budget limit?</strong> Leave this blank and your quote will have <strong>no spending cap</strong> — we'll design your dream garden without any budget restrictions.
-                                    </p>
-                                </div>
+                                <!-- Unlimited budget toggle button -->
+                                <button 
+                                    type="button"
+                                    id="unlimitedBudgetBtn"
+                                    onclick="toggleUnlimitedBudget()"
+                                    class="w-full flex items-center justify-center gap-3 px-5 py-4 rounded-xl border-2 border-dashed border-gray-300 text-gray-600 font-semibold text-sm hover:border-accent hover:text-accent transition-all duration-200"
+                                >
+                                    <i class="fas fa-infinity text-base"></i>
+                                    <span id="unlimitedBudgetBtnText">No budget limit — design my dream garden</span>
+                                </button>
+                                <p id="budgetHintText" class="text-xs text-gray-400 mt-2 text-center">Not sure? Leave both blank — we'll ask during your consultation</p>
                             </div>
                             
                             <div class="flex gap-2 md:gap-3">
@@ -2231,7 +2237,7 @@
     </footer>
     
     <script src="scripts/config.js?v=1774476799"></script>
-    <script src="scripts/quote-engine.js?v=1774952000"></script>
+    <script src="scripts/quote-engine.js?v=1774952100"></script>
     <script src="scripts/main.js?v=1774476799"></script>
     <!-- Floating WhatsApp Button -->
     <a href="https://wa.me/447877934782?text=Hi%2C%20I%27d%20like%20a%20quote%20for%20my%20garden" 
