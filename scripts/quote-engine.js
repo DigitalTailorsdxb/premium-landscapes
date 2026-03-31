@@ -2972,11 +2972,11 @@ function parseWebhookResponse(data) {
 
     // Option 1 — flat JSON: { success, customerName, quoteTotal, imageUrl, pdfUrl }
     if (data.customerName !== undefined || data.quoteTotal !== undefined || data.imageUrl !== undefined || data.pdfUrl !== undefined) {
-        parsed.customerName = data.customerName || '';
-        parsed.quoteTotal   = String(data.quoteTotal   || '');
-        parsed.imageUrl     = data.imageUrl     || '';
-        parsed.pdfUrl       = data.pdfUrl       || '';
-        parsed.quoteRef     = data.quoteRef     || '';
+        parsed.customerName = String(data.customerName || '').trim();
+        parsed.quoteTotal   = String(data.quoteTotal   || '').trim();
+        parsed.imageUrl     = String(data.imageUrl     || '').trim();
+        parsed.pdfUrl       = String(data.pdfUrl       || '').trim();
+        parsed.quoteRef     = String(data.quoteRef     || '').trim();
         return parsed;
     }
 
@@ -3041,7 +3041,12 @@ function populateResultShowcase(data, suffix) {
         const viewBtn = document.getElementById('resultViewDesignBtn' + suffix);
         if (imgWrap) imgWrap.classList.remove('hidden');
         if (img)     img.src = parsed.imageUrl;
-        if (viewBtn) viewBtn.href = parsed.imageUrl;
+        if (viewBtn) {
+            viewBtn.href = parsed.imageUrl;
+            viewBtn.setAttribute('target', '_blank');
+            viewBtn.setAttribute('rel', 'noopener noreferrer');
+            viewBtn.onclick = (e) => { e.preventDefault(); window.open(parsed.imageUrl, '_blank'); };
+        }
     }
 
     // --- PDF download ---
@@ -3049,14 +3054,19 @@ function populateResultShowcase(data, suffix) {
         const pdfWrap = document.getElementById('resultPdfWrap' + suffix);
         const pdfBtn  = document.getElementById('resultPdfBtn' + suffix);
         if (pdfWrap) pdfWrap.classList.remove('hidden');
-        if (pdfBtn)  pdfBtn.href = parsed.pdfUrl;
+        if (pdfBtn) {
+            pdfBtn.href = parsed.pdfUrl;
+            pdfBtn.setAttribute('target', '_blank');
+            pdfBtn.setAttribute('rel', 'noopener noreferrer');
+            pdfBtn.onclick = (e) => { e.preventDefault(); window.open(parsed.pdfUrl, '_blank'); };
+        }
     }
 
     console.log(`✅ Result showcase populated [${suffix}]:`, {
         name: customerName,
         price: parsed.quoteTotal,
-        hasImage: !!parsed.imageUrl,
-        hasPdf: !!parsed.pdfUrl
+        imageUrl: parsed.imageUrl,
+        pdfUrl: parsed.pdfUrl
     });
 }
 
