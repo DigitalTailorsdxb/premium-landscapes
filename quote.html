@@ -2237,7 +2237,7 @@
     </footer>
     
     <script src="scripts/config.js?v=1774476799"></script>
-    <script src="scripts/quote-engine.js?v=1774952100"></script>
+    <script src="scripts/quote-engine.js?v=1775060416"></script>
     <script src="scripts/main.js?v=1774476799"></script>
     <!-- Floating WhatsApp Button -->
     <a href="https://wa.me/447877934782?text=Hi%2C%20I%27d%20like%20a%20quote%20for%20my%20garden" 
@@ -2417,6 +2417,29 @@
                         
                     </div>
                     
+                    <!-- Error State (shown when webhook fails to send) -->
+                    <div id="overlayError" class="hidden text-center">
+                        <div class="w-16 h-16 mx-auto mb-4 bg-amber-100 rounded-full flex items-center justify-center shadow-lg">
+                            <i class="fas fa-exclamation-triangle text-3xl text-amber-500"></i>
+                        </div>
+                        <h2 class="font-heading font-bold text-2xl text-gray-800 mb-1">Something Went Wrong</h2>
+                        <p class="text-gray-500 text-sm mb-4">We couldn't send your quote — please contact us directly and we'll sort it straight away.</p>
+                        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4 text-left">
+                            <p class="font-semibold text-amber-800 text-sm mb-3"><i class="fas fa-headset mr-2 text-amber-600"></i>Get in touch directly</p>
+                            <a href="tel:07877934782" class="flex items-center gap-3 bg-white rounded-xl p-3 mb-2 hover:bg-gray-50 transition">
+                                <i class="fas fa-phone text-green-600"></i>
+                                <span class="font-semibold text-gray-800 text-sm">07877 934782</span>
+                            </a>
+                            <a href="mailto:premiumlandscapesuk@gmail.com" class="flex items-center gap-3 bg-white rounded-xl p-3 hover:bg-gray-50 transition">
+                                <i class="fas fa-envelope text-primary"></i>
+                                <span class="font-semibold text-gray-800 text-sm">premiumlandscapesuk@gmail.com</span>
+                            </a>
+                        </div>
+                        <a href="index.html" class="inline-flex items-center gap-2 bg-gray-800 text-white px-6 py-2.5 rounded-full font-semibold text-sm hover:bg-gray-700 transition">
+                            <i class="fas fa-home"></i> Back to Home
+                        </a>
+                    </div>
+
                     <!-- Powered by Trade Engine -->
                     <div class="mt-4 pt-3 border-t border-gray-200 text-center">
                         <a href="https://trade-engine.co.uk" target="_blank" class="inline-flex items-center gap-2 text-gray-500 hover:opacity-80 transition">

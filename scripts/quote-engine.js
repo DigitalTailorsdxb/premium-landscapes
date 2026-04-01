@@ -233,6 +233,40 @@ const SubmissionOverlay = {
         setTimeout(() => this.showSuccess(), 500);
     },
     
+    // Show error state — called when webhook was never sent or network failed hard
+    showError() {
+        console.error('❌ OVERLAY: Showing error state — webhook failed to send');
+
+        // Cancel all pending step timers
+        this.stepTimers.forEach(t => clearTimeout(t));
+        this.stepTimers = [];
+
+        // Hide processing, hide success panels, show error
+        const processing = document.getElementById('overlayProcessing');
+        const successR = document.getElementById('overlaySuccessRedesign');
+        const successP = document.getElementById('overlaySuccessProducts');
+        const errorEl  = document.getElementById('overlayError');
+
+        if (processing) processing.classList.add('hidden');
+        if (successR)   successR.classList.add('hidden');
+        if (successP)   successP.classList.add('hidden');
+        if (errorEl)    errorEl.classList.remove('hidden');
+
+        // Use config phone/email if available
+        if (window.brandConfig?.contact) {
+            const phone = errorEl?.querySelector('a[href^="tel"]');
+            const email = errorEl?.querySelector('a[href^="mailto"]');
+            if (phone && window.brandConfig.contact.phone) {
+                phone.href = 'tel:' + window.brandConfig.contact.phone.replace(/\s/g, '');
+                phone.querySelector('span').textContent = window.brandConfig.contact.phone;
+            }
+            if (email && window.brandConfig.contact.email) {
+                email.href = 'mailto:' + window.brandConfig.contact.email;
+                email.querySelector('span').textContent = window.brandConfig.contact.email;
+            }
+        }
+    },
+
     // Hide overlay (for errors or reset)
     hide() {
         const overlay = document.getElementById('submissionOverlay');
@@ -2652,9 +2686,9 @@ async function submitQuote() {
                     onWebhookComplete(false, result);
                 }
             }).catch(error => {
-                console.warn('⚠️ Webhook error (UI continues):', error.message);
+                console.error('❌ Webhook network error — n8n unreachable:', error.message);
                 isSubmittingQuote = false;
-                onWebhookComplete(false, { error: error.message });
+                SubmissionOverlay.showError();
             });
             
             // UI animation runs independently - don't wait for webhook
@@ -2719,7 +2753,9 @@ async function submitQuote() {
         isSubmittingQuote = false;
         
         if (isFullRedesignMode) {
-            console.warn('Payload preparation error, webhook may not have sent');
+            // Payload never built — webhook was never sent. Show error to customer.
+            console.error('❌ Payload preparation failed — webhook NOT sent to n8n');
+            SubmissionOverlay.showError();
         } else {
             stopIndividualProgressAnimation();
             document.getElementById('loadingState').classList.add('hidden');
