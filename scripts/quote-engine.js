@@ -1582,16 +1582,16 @@ function isSingularProduct(material) {
 function getUnitConfig(feature, material) {
     // Check if this specific product requires linear metres
     if (material && LM_PRODUCTS.includes(material)) {
-        return { label: 'Length (metres)', placeholder: '', unit: 'lm' };
+        return { label: 'Length (metres)', placeholder: '', unit: 'sm' };
     }
     
     const baseConfig = {
-        'fencing': { label: 'Length (metres)', placeholder: '', unit: 'lm' },
-        'hedging': { label: 'Length (metres)', placeholder: '', unit: 'lm' },
+        'fencing': { label: 'Length (metres)', placeholder: '', unit: 'sm' },
+        'hedging': { label: 'Length (metres)', placeholder: '', unit: 'sm' },
         'lighting': { label: 'Number of Fittings', placeholder: '', unit: 'fittings' },
         'steps': { label: 'Number of Steps', placeholder: '', unit: 'steps' },
-        'walls': { label: 'Length (metres)', placeholder: '', unit: 'lm' },
-        'drainage': { label: 'Length (metres)', placeholder: '', unit: 'lm' },
+        'walls': { label: 'Length (metres)', placeholder: '', unit: 'sm' },
+        'drainage': { label: 'Length (metres)', placeholder: '', unit: 'sm' },
         'water-features': { label: 'Quantity', placeholder: '', unit: 'qty' },
         'ponds': { label: 'Quantity', placeholder: '', unit: 'qty' },
         'pergolas': { label: 'Quantity', placeholder: '', unit: 'qty' },
@@ -1605,7 +1605,7 @@ function getUnitConfig(feature, material) {
     if (feature === 'other' && material) {
         // Edging - linear metres
         if (material.includes('edging')) {
-            return { label: 'Length (metres)', placeholder: '', unit: 'lm' };
+            return { label: 'Length (metres)', placeholder: '', unit: 'sm' };
         }
         // Individual items (pergolas, sheds, fire pits, etc.)
         if (material.includes('pergola') || material.includes('gazebo') || material.includes('shed') || 
