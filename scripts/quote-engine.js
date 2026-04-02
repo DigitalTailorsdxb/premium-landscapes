@@ -11,6 +11,7 @@ const SubmissionOverlay = {
     currentStep: 0,
     totalSteps: 6,
     stepTimers: [],
+    showSuccessTimer: null,
     
     // Progress steps WITH AI design (90 seconds total - 8 steps @ 11.25s each)
     stepsWithDesign: [
@@ -114,9 +115,9 @@ const SubmissionOverlay = {
                     this.setStepLoading(i + 1);
                 }
                 
-                // If last step, show success after a delay
+                // If last step, show success after a delay (tracked so it can be cancelled)
                 if (i === steps.length - 1) {
-                    setTimeout(() => this.showSuccess(), 2000);
+                    this.showSuccessTimer = setTimeout(() => this.showSuccess(), 2000);
                 }
             }, (i + 1) * stepDuration);
             this.stepTimers.push(timer);
@@ -187,7 +188,14 @@ const SubmissionOverlay = {
     
     showSuccess() {
         console.log('🎉 OVERLAY: Showing success state, hasImage:', this.hasImage);
-        
+
+        // Clear the timer reference now that it's fired
+        this.showSuccessTimer = null;
+
+        // Defensively hide error panel in case it was shown by an earlier race
+        const errorEl = document.getElementById('overlayError');
+        if (errorEl) errorEl.classList.add('hidden');
+
         // Hide processing, show appropriate success
         document.getElementById('overlayProcessing').classList.add('hidden');
         
@@ -221,16 +229,22 @@ const SubmissionOverlay = {
     
     // Force complete animation immediately (called when webhook returns early)
     forceComplete() {
-        // Clear pending timers
+        // Clear pending step timers
         this.stepTimers.forEach(t => clearTimeout(t));
         this.stepTimers = [];
-        
+
+        // Cancel any pending showSuccess timer (from last animation step)
+        if (this.showSuccessTimer) {
+            clearTimeout(this.showSuccessTimer);
+            this.showSuccessTimer = null;
+        }
+
         // Activate all steps
         const steps = this.hasImage ? this.stepsWithDesign : this.stepsQuoteOnly;
         steps.forEach((_, i) => this.activateStep(i));
-        
-        // Show success
-        setTimeout(() => this.showSuccess(), 500);
+
+        // Show success (tracked so showError can cancel it if it fires first)
+        this.showSuccessTimer = setTimeout(() => this.showSuccess(), 500);
     },
     
     // Show error state — called when webhook was never sent or network failed hard
@@ -240,6 +254,12 @@ const SubmissionOverlay = {
         // Cancel all pending step timers
         this.stepTimers.forEach(t => clearTimeout(t));
         this.stepTimers = [];
+
+        // Cancel any pending showSuccess timer so it can't override this error state
+        if (this.showSuccessTimer) {
+            clearTimeout(this.showSuccessTimer);
+            this.showSuccessTimer = null;
+        }
 
         // Hide processing, hide success panels, show error
         const processing = document.getElementById('overlayProcessing');
