@@ -1925,20 +1925,23 @@ function toggleUnlimitedBudget() {
 }
 
 function _applyUnlimitedBudgetUI(active) {
-    const btn  = document.getElementById('unlimitedBudgetBtn');
-    const text = document.getElementById('unlimitedBudgetBtnText');
-    const hint = document.getElementById('budgetHintText');
+    const btn       = document.getElementById('unlimitedBudgetBtn');
+    const text      = document.getElementById('unlimitedBudgetBtnText');
+    const hint      = document.getElementById('budgetHintText');
+    const stateIcon = document.getElementById('unlimitedStateIcon');
     if (!btn) return;
 
     if (active) {
-        btn.classList.remove('border-dashed', 'border-gray-300', 'text-gray-600');
-        btn.classList.add('border-solid', 'border-accent', 'bg-accent/10', 'text-accent');
-        if (text) text.textContent = 'No budget limit selected — design freely';
-        if (hint) hint.textContent = 'We\'ll design without any spending restrictions';
+        btn.classList.add('ring-4', 'ring-green-400', 'ring-offset-2');
+        if (stateIcon) stateIcon.innerHTML = '<i class="fas fa-check text-white text-xs"></i>';
+        if (stateIcon) { stateIcon.classList.add('bg-green-400', 'border-green-400'); stateIcon.classList.remove('border-white/40'); }
+        if (text) text.textContent = 'Selected — designing without any spending cap';
+        if (hint) hint.textContent = 'We\'ll design your dream garden without restrictions';
     } else {
-        btn.classList.add('border-dashed', 'border-gray-300', 'text-gray-600');
-        btn.classList.remove('border-solid', 'border-accent', 'bg-accent/10', 'text-accent');
-        if (text) text.textContent = 'No budget limit — design my dream garden';
+        btn.classList.remove('ring-4', 'ring-green-400', 'ring-offset-2');
+        if (stateIcon) stateIcon.innerHTML = '<i class="fas fa-chevron-right text-white/60 text-xs"></i>';
+        if (stateIcon) { stateIcon.classList.remove('bg-green-400', 'border-green-400'); stateIcon.classList.add('border-white/40'); }
+        if (text) text.textContent = 'Design my dream garden — no spending cap';
         if (hint) hint.textContent = 'Not sure? Leave both blank — we\'ll ask during your consultation';
     }
 }

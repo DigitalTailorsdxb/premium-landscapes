@@ -1315,10 +1315,23 @@
                                     type="button"
                                     id="unlimitedBudgetBtn"
                                     onclick="toggleUnlimitedBudget()"
-                                    class="w-full flex items-center justify-center gap-3 px-5 py-4 rounded-xl border-2 border-dashed border-gray-300 text-gray-600 font-semibold text-sm hover:border-accent hover:text-accent transition-all duration-200"
+                                    class="w-full relative overflow-hidden flex items-center gap-4 px-5 py-4 rounded-2xl bg-gradient-to-r from-purple-600 via-violet-600 to-blue-600 text-white shadow-lg hover:shadow-xl hover:brightness-110 active:scale-[0.99] transition-all duration-200 group"
                                 >
-                                    <i class="fas fa-infinity text-base"></i>
-                                    <span id="unlimitedBudgetBtnText">No budget limit — design my dream garden</span>
+                                    <!-- Shimmer overlay -->
+                                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none"></div>
+                                    <!-- Icon -->
+                                    <div class="flex-shrink-0 w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-infinity text-xl text-white"></i>
+                                    </div>
+                                    <!-- Text -->
+                                    <div class="flex-1 text-left">
+                                        <p class="font-bold text-sm">No budget limit</p>
+                                        <p id="unlimitedBudgetBtnText" class="text-purple-100 text-xs font-normal leading-tight">Design my dream garden — no spending cap</p>
+                                    </div>
+                                    <!-- State indicator -->
+                                    <div class="flex-shrink-0 w-7 h-7 rounded-full border-2 border-white/40 flex items-center justify-center transition-all duration-200" id="unlimitedStateIcon">
+                                        <i class="fas fa-chevron-right text-white/60 text-xs"></i>
+                                    </div>
                                 </button>
                                 <p id="budgetHintText" class="text-xs text-gray-400 mt-2 text-center">Not sure? Leave both blank — we'll ask during your consultation</p>
                             </div>
@@ -2237,7 +2250,7 @@
     </footer>
     
     <script src="scripts/config.js?v=1774476799"></script>
-    <script src="scripts/quote-engine.js?v=1775114200"></script>
+    <script src="scripts/quote-engine.js?v=1775131500"></script>
     <script src="scripts/main.js?v=1774476799"></script>
     <!-- Floating WhatsApp Button -->
     <a href="https://wa.me/447877934782?text=Hi%2C%20I%27d%20like%20a%20quote%20for%20my%20garden" 
