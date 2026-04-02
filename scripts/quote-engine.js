@@ -2820,8 +2820,8 @@ function prepareWebhookPayload() {
         // Human-readable budget string for n8n display — use this directly in templates
         const getBudgetDisplay = (budget) => {
             if (typeof budget === 'number' && budget > 0) return `£${budget.toLocaleString('en-GB')}`;
-            if (budget === 'unlimited') return 'No budget limit';
-            return 'Not specified';
+            if (budget === 'unlimited') return 'unlimited';
+            return 'no specific budget';
         };
         
         const totalBudget = parseBudget(quoteData.budget);
