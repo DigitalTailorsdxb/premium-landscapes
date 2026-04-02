@@ -2816,6 +2816,13 @@ function prepareWebhookPayload() {
             if (budget === 'unlimited') return 'unlimited';
             return 'unknown';
         };
+
+        // Human-readable budget string for n8n display — use this directly in templates
+        const getBudgetDisplay = (budget) => {
+            if (typeof budget === 'number' && budget > 0) return `£${budget.toLocaleString('en-GB')}`;
+            if (budget === 'unlimited') return 'No budget limit';
+            return 'Not specified';
+        };
         
         const totalBudget = parseBudget(quoteData.budget);
         const totalArea = parseInt(quoteData.area) || 40;
@@ -2980,6 +2987,7 @@ function prepareWebhookPayload() {
                 totalArea_m2: totalArea,
                 totalBudget_gbp: totalBudget,
                 budgetType: getBudgetType(quoteData.budget),
+                budgetDisplay: getBudgetDisplay(quoteData.budget),
                 layoutType: 'standard',
                 sunlight: 'partial sun',
                 stylePreference: detectStylePreference(),
