@@ -2196,12 +2196,7 @@ function nextStep() {
         currentStep++;
     }
     
-    // Skip step 6 (AI Design) for individual products mode - no images needed
-    if (currentStep === 6 && quoteData.quoteMode === 'individual-products') {
-        // Submit the quote directly instead of showing step 6
-        submitQuote();
-        return;
-    }
+    // Step 6 is now shown for both modes (IP and full redesign)
     
     // Special handling for Step 2: detect Full Redesign mode
     if (currentStep === 2) {
@@ -2218,14 +2213,10 @@ function nextStep() {
     if (currentStep === 5) {
         updateAIDesignVisibility();
         
-        // Update button text - "Submit Quote" for individual products, "Continue" for full redesign
+        // Both modes now continue to step 6 (AI design upload)
         const step5Btn = document.getElementById('step5ContinueBtn');
         if (step5Btn) {
-            if (quoteData.quoteMode === 'individual-products') {
-                step5Btn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> Get My Quote';
-            } else {
-                step5Btn.innerHTML = 'Continue <i class="fas fa-arrow-right ml-2"></i>';
-            }
+            step5Btn.innerHTML = 'Continue <i class="fas fa-arrow-right ml-2"></i>';
         }
     }
     
@@ -2236,6 +2227,20 @@ function nextStep() {
         const aiDesignCheckbox = document.getElementById('aiDesign');
         if (aiDesignCheckbox) {
             aiDesignCheckbox.checked = true;
+        }
+        // Customise step 6 copy based on quote mode
+        const isIP = quoteData.quoteMode === 'individual-products';
+        const explainer = document.getElementById('step6ExplainerText');
+        const uploadDesc = document.getElementById('step6UploadDesc');
+        const btnLabel  = document.getElementById('submitWithAIBtnLabel');
+        if (isIP) {
+            if (explainer) explainer.innerHTML = 'Our AI will take your photo and overlay your <strong>chosen products exactly where you want them</strong> — so you can see your patio, decking, or artificial grass in your own garden before we break ground. Delivered to your inbox in 90 seconds.';
+            if (uploadDesc) uploadDesc.textContent = 'Upload a photo of your current garden and we\'ll show your selected products in place — so you can see exactly how they\'ll look.';
+            if (btnLabel)  btnLabel.textContent = 'Submit Quote + See My Design';
+        } else {
+            if (explainer) explainer.innerHTML = 'Our AI technology transforms your current garden photo into a <strong>photorealistic design image</strong> showing exactly how your new garden will look once completed. It\'s like seeing the future of your outdoor space before any work begins!';
+            if (uploadDesc) uploadDesc.textContent = 'Upload a photo of your current garden and we\'ll transform it into a stunning visualisation of your new space.';
+            if (btnLabel)  btnLabel.textContent = 'Get Quote + AI Design';
         }
     }
     
@@ -2310,18 +2315,19 @@ function skipAIDesign() {
 }
 
 function updateProgress() {
-    // Individual products mode has fewer steps (skips step 3 and 6)
+    // Individual products mode skips step 3 (area/budget) → 5 effective steps
     const isIndividualProducts = quoteData.quoteMode === 'individual-products';
-    const effectiveTotalSteps = isIndividualProducts ? 4 : totalSteps;
+    const effectiveTotalSteps = isIndividualProducts ? 5 : totalSteps;
     
     // Map current step to effective step number for individual products
     let effectiveCurrentStep = currentStep;
     if (isIndividualProducts) {
-        // Steps are: 1, 2, 4, 5 (mapped to display as 1, 2, 3, 4)
+        // Steps are: 1, 2, 4, 5, 6 (skips step 3 - budget/area) → display as 1, 2, 3, 4, 5
         if (currentStep === 1) effectiveCurrentStep = 1;
         else if (currentStep === 2) effectiveCurrentStep = 2;
         else if (currentStep === 4) effectiveCurrentStep = 3;
         else if (currentStep === 5) effectiveCurrentStep = 4;
+        else if (currentStep === 6) effectiveCurrentStep = 5;
     }
     
     const percentage = (effectiveCurrentStep / effectiveTotalSteps) * 100;
