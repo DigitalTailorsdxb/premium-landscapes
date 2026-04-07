@@ -3056,9 +3056,9 @@ function prepareWebhookPayload() {
         
         console.log('🔑 REQUEST ID:', requestId);
         
-        // Add photo for AI design if requested (Full Redesign mode only)
-        if (isFullRedesign && quoteData.aiDesign) {
-            // Priority: AI-specific photos (Step 5) > Step 4 photos
+        // Add photo for AI design if requested (both Full Redesign and Individual Products)
+        if (quoteData.aiDesign) {
+            // Priority: AI-specific photos (Step 6) > Step 4 photos
             const photoSource = aiDesignFiles.length > 0 ? aiDesignFiles : quoteData.files;
             
             if (photoSource.length > 0) {
@@ -3075,6 +3075,8 @@ function prepareWebhookPayload() {
                 } catch (photoError) {
                     console.error('Error converting photo:', photoError);
                 }
+            } else {
+                console.log('⚠️ AI design requested but no photo uploaded — sending without image');
             }
         }
         
