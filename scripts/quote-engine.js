@@ -2334,6 +2334,23 @@ function updateProgress() {
     document.getElementById('progressBar').style.width = `${percentage}%`;
     document.getElementById('progressText').textContent = `Step ${effectiveCurrentStep} of ${effectiveTotalSteps}`;
     document.getElementById('progressPercent').textContent = `${Math.round(percentage)}%`;
+
+    // Update step pips (v2 redesign)
+    const pipIds = [1,2,3,4,5,6];
+    const lineIds = ['pl-12','pl-23','pl-34','pl-45','pl-56'];
+    pipIds.forEach(function(n) {
+        var pip = document.getElementById('pip-' + n);
+        if (!pip) return;
+        pip.classList.remove('active','completed');
+        if (n < currentStep) pip.classList.add('completed');
+        else if (n === currentStep) pip.classList.add('active');
+    });
+    lineIds.forEach(function(id, idx) {
+        var line = document.getElementById(id);
+        if (!line) return;
+        // idx 0 = between pips 1-2, done when currentStep > 1, etc.
+        line.classList.toggle('done', currentStep > idx + 1);
+    });
 }
 
 // Update live summary

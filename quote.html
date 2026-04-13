@@ -714,40 +714,221 @@
     <link rel="stylesheet" href="styles/mobile.css?v=2">
     <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
     <style>
-    /* ── MOBILE STEP HEADER FIX (all 6 steps) ── */
+    /* ═══════════════════════════════════════════
+       QUOTE PAGE v2 — APP-LIKE REDESIGN
+       ═══════════════════════════════════════════ */
+
+    /* === Dark Hero === */
+    #quoteHero {
+        background: linear-gradient(160deg, #06101f 0%, #0d2247 60%, #150e38 100%) !important;
+        padding-bottom: 2.5rem !important;
+    }
+    #quoteHero h1 { color: #f8fafc !important; background: none !important; -webkit-text-fill-color: #f8fafc !important; }
+    #quoteHero p  { color: rgba(248,250,252,0.58) !important; }
+    #quoteHero .text-accent { color: #a78bfa !important; }
+    #quoteHero a span.text-black  { color: #f8fafc !important; }
+    #quoteHero a span.text-amber-500 { color: #fbbf24 !important; }
+    #quoteHero .bg-green-500 { background: linear-gradient(135deg,#10b981,#059669) !important; color:#fff !important; }
+
+    /* === Sticky Progress Bar — dark, flush with hero === */
+    .sticky.top-20.z-40 {
+        background: #09192e !important;
+        box-shadow: 0 1px 0 rgba(255,255,255,0.07) !important;
+        border-bottom: none !important;
+    }
+    #progressText  { color: rgba(248,250,252,0.5)  !important; font-size: 0.78rem !important; font-weight: 500 !important; }
+    #progressPercent { color: rgba(248,250,252,0.3) !important; font-size: 0.72rem !important; }
+    /* Hide old thin bar */
+    .w-full.bg-gray-200.rounded-full.h-2 { display: none !important; }
+
+    /* Step pips */
+    .step-pip {
+        width: 30px; height: 30px; border-radius: 50%;
+        background: rgba(255,255,255,0.07);
+        border: 1.5px solid rgba(255,255,255,0.13);
+        color: rgba(255,255,255,0.3);
+        font-size: 0.65rem; font-weight: 800;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0; transition: all 0.3s ease;
+        font-family: 'Inter', sans-serif; letter-spacing: -0.02em;
+    }
+    .step-pip.completed {
+        background: #10b981; border-color: #10b981; color: white; font-size: 0;
+    }
+    .step-pip.completed::after {
+        content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+        font-size: 0.6rem;
+    }
+    .step-pip.active {
+        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        border-color: transparent; color: white;
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.22), 0 4px 14px rgba(37,99,235,0.4);
+    }
+    .pip-line {
+        flex: 1; height: 2px;
+        background: rgba(255,255,255,0.07);
+        transition: background 0.3s ease;
+    }
+    .pip-line.done { background: #10b981; }
+
+    /* === Main section background === */
+    section.py-8.px-4.bg-white.min-h-screen { background: #eef1f6 !important; }
+
+    /* === Form card — elevated glass look === */
+    .quote-form-column > div.bg-white {
+        border-radius: 1.5rem !important;
+        box-shadow: 0 24px 64px -12px rgba(6,16,35,0.22), 0 4px 20px -4px rgba(0,0,0,0.1) !important;
+        border: 1px solid rgba(0,0,0,0.06) !important;
+        padding: 2rem 2.25rem !important;
+    }
+
+    /* === Summary panel === */
+    #desktopSummary > div {
+        border-radius: 1.25rem !important;
+        box-shadow: 0 10px 40px -10px rgba(6,16,35,0.14) !important;
+        border: 1px solid rgba(0,0,0,0.06) !important;
+    }
+
+    /* ═══ QSH — Clean Numbered Step Headers ═══ */
+    .qsh { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1.5px solid #edf1f7; }
+    .qsh-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .qsh-num {
+        width: 2.25rem; height: 2.25rem; border-radius: 50%;
+        background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+        color: white; font-weight: 800; font-size: 0.875rem;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+        font-family: 'Inter', sans-serif; letter-spacing: -0.02em;
+    }
+    .qsh-line {
+        flex: 1; height: 1.5px;
+        background: linear-gradient(90deg, rgba(37,99,235,0.18), transparent);
+        border-radius: 1px;
+    }
+    .qsh-title {
+        font-family: 'Inter', sans-serif !important;
+        font-size: 1.875rem !important; font-weight: 800 !important;
+        color: #0c1829 !important; line-height: 1.1 !important;
+        letter-spacing: -0.028em !important;
+        margin: 0 !important; padding: 0 !important;
+        background: none !important; -webkit-text-fill-color: #0c1829 !important;
+    }
+    .qsh-sub {
+        font-size: 0.875rem !important; color: #64748b !important;
+        margin: 0.3rem 0 0 0 !important; padding: 0 !important;
+    }
+    .qsh-badge {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        background: linear-gradient(135deg,#10b981,#059669);
+        color: white; font-size: 0.65rem; font-weight: 800;
+        padding: 0.2rem 0.6rem; border-radius: 999px;
+        letter-spacing: 0.04em; text-transform: uppercase;
+        margin-left: 0.5rem; vertical-align: middle;
+    }
+
+    /* ═══ INPUTS — Premium feel ═══ */
+    .quote-form-column input[type="text"],
+    .quote-form-column input[type="email"],
+    .quote-form-column input[type="tel"],
+    .quote-form-column textarea:not(.hidden) {
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 0.875rem !important;
+        background: #f8fafc !important;
+        transition: border-color 0.2s, box-shadow 0.2s, background 0.2s !important;
+        color: #0f172a !important;
+    }
+    .quote-form-column input[type="text"]:focus,
+    .quote-form-column input[type="email"]:focus,
+    .quote-form-column input[type="tel"]:focus,
+    .quote-form-column textarea:not(.hidden):focus {
+        border-color: #2563eb !important; background: #ffffff !important;
+        box-shadow: 0 0 0 4px rgba(37,99,235,0.09) !important; outline: none !important;
+    }
+    .quote-form-column label {
+        font-size: 0.75rem !important; font-weight: 700 !important;
+        color: #475569 !important;
+        text-transform: uppercase !important; letter-spacing: 0.05em !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    /* ═══ BUTTONS — Gradient depth ═══ */
+    .quote-form-column button.bg-primary,
+    .quote-form-column button.flex-1.bg-primary,
+    #step1 > button.bg-primary {
+        background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%) !important;
+        border-radius: 0.875rem !important; border: none !important;
+        font-weight: 700 !important; font-size: 1rem !important;
+        padding: 0.9375rem 1.5rem !important;
+        box-shadow: 0 4px 20px rgba(37,99,235,0.35), 0 1px 4px rgba(0,0,0,0.1) !important;
+        transition: transform 0.15s, box-shadow 0.15s !important;
+        color: white !important; letter-spacing: 0.01em !important;
+    }
+    .quote-form-column button.bg-primary:hover,
+    .quote-form-column button.flex-1.bg-primary:hover,
+    #step1 > button.bg-primary:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 8px 28px rgba(37,99,235,0.42), 0 2px 6px rgba(0,0,0,0.12) !important;
+    }
+    .quote-form-column button.bg-primary:active,
+    #step1 > button.bg-primary:active { transform: translateY(0) !important; }
+
+    /* Back button */
+    .quote-form-column button[onclick="prevStep()"] {
+        background: transparent !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 0.875rem !important;
+        color: #64748b !important; font-weight: 600 !important;
+        padding: 0.9375rem 1.125rem !important;
+        transition: border-color 0.2s, color 0.2s, background 0.2s !important;
+    }
+    .quote-form-column button[onclick="prevStep()"]:hover {
+        border-color: #2563eb !important; color: #2563eb !important;
+        background: #eff6ff !important;
+    }
+
+    /* ═══ STEP 1 OPTION CARDS ═══ */
+    .quote-mode-card {
+        border-radius: 1.125rem !important; border-width: 2px !important;
+        transition: all 0.2s ease !important;
+    }
+    .quote-mode-card[data-mode="full-redesign"] {
+        background: linear-gradient(135deg, #f5f3ff 0%, #eff6ff 100%) !important;
+        border-color: #8b5cf6 !important;
+    }
+    .quote-mode-card[data-mode="individual-products"] {
+        background: #f8fafc !important; border-color: #cbd5e1 !important;
+    }
+    .quote-mode-card:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 12px 32px -8px rgba(0,0,0,0.13) !important;
+    }
+    .quote-mode-card[data-mode="full-redesign"].selected {
+        border-color: #7c3aed !important;
+        background: linear-gradient(135deg,#ede9fe,#dbeafe) !important;
+        box-shadow: 0 12px 36px -8px rgba(124,58,237,0.28) !important;
+        transform: scale(1.01) !important;
+    }
+    .quote-mode-card[data-mode="individual-products"].selected {
+        border-color: #2563eb !important;
+        background: linear-gradient(135deg,#eff6ff,#f0f9ff) !important;
+        box-shadow: 0 12px 36px -8px rgba(37,99,235,0.22) !important;
+        transform: scale(1.01) !important;
+    }
+
+    /* ═══ MOBILE ═══ */
     @media (max-width: 767px) {
-        /* Remove negative side bleed */
-        .quote-step-hdr { margin-left: 0 !important; margin-right: 0 !important; margin-bottom: 14px !important; }
-        /* Hide the gradient glow border */
-        .quote-step-hdr > div:first-child { display: none !important; }
-        /* Inner card: compact flat white */
-        .quote-step-hdr > div:last-child {
-            padding: 10px 12px !important;
-            border-radius: 12px !important;
-            background: #ffffff !important;
-            border: 1.5px solid #dbeafe !important;
-            box-shadow: 0 1px 4px rgba(37,99,235,0.08) !important;
-            gap: 10px !important;
-        }
-        /* Hide floating step badge (progress bar already shows step) */
-        .quote-step-hdr > div:last-child > div:first-child { display: none !important; }
-        /* Shrink icon box */
-        .quote-step-hdr .w-14 { width: 34px !important; height: 34px !important; min-width: 34px !important; }
-        .quote-step-hdr .w-14 i { font-size: 0.95rem !important; }
-        /* TITLE: force solid visible text — cancels bg-clip-text/text-transparent */
-        .quote-step-hdr h2 {
-            font-size: 0.95rem !important;
-            line-height: 1.2 !important;
-            background: none !important;
-            -webkit-background-clip: initial !important;
-            background-clip: initial !important;
-            -webkit-text-fill-color: #1e293b !important;
-            color: #1e293b !important;
-        }
-        /* Hide subtitle — saves vertical space */
-        .quote-step-hdr p { display: none !important; }
-        /* Hide decorative dots */
-        .quote-step-hdr .hidden.md\:flex { display: none !important; }
+        .quote-form-column > div.bg-white { padding: 1.25rem !important; border-radius: 1.25rem !important; }
+        .qsh { margin-bottom: 1.5rem; padding-bottom: 1.25rem; }
+        .qsh-title { font-size: 1.375rem !important; }
+        .qsh-sub   { font-size: 0.8rem !important; }
+        .step-pip  { width: 26px; height: 26px; font-size: 0.6rem; }
+        .mobile-step-spacer { display: block !important; height: 12px !important; }
+        .quote-form-column > div { overflow-x: hidden; }
+        #productGrid { grid-template-columns: repeat(2,1fr) !important; gap: 0.5rem !important; }
+        #productGrid .feature-card { padding: 0.625rem 0.5rem !important; }
+        #productGrid .feature-card i { font-size: 1.35rem !important; }
+        #productGrid .feature-card p { font-size: 0.7rem !important; }
     }
     </style>
 </head>
@@ -809,34 +990,47 @@
         </div>
     </div>
     
-    <!-- Quote Page Hero - Compact on mobile -->
-    <section id="quoteHero" class="pt-24 md:pt-32 pb-4 md:pb-8 px-4 bg-gradient-to-br from-stone to-white transition-all duration-300">
+    <!-- Quote Page Hero -->
+    <section id="quoteHero" class="pt-24 md:pt-32 pb-6 md:pb-10 px-4 transition-all duration-300">
         <div class="container mx-auto max-w-5xl text-center">
-            <h1 class="font-heading font-bold text-2xl md:text-5xl text-primary mb-2 md:mb-3">
-                Instant Quote &amp; Design
-                <span class="hidden md:inline-block md:ml-3 bg-green-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg align-middle">FREE</span>
-            </h1>
-            <span class="md:hidden inline-block bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg mb-2">FREE</span>
-            <p class="text-sm md:text-xl text-gray-600 mb-1 md:mb-2">
-                Get pricing & a design concept in minutes. No cost, no obligation.
-            </p>
-            <div class="flex items-center justify-center space-x-1 md:space-x-2 text-xs md:text-sm text-accent">
-                <i class="fas fa-bolt"></i>
-                <span>Powered by <a href="https://trade-engine.co.uk" target="_blank" class="font-bold hover:opacity-80"><span class="text-black">Trade</span> <span class="text-amber-500">Engine</span></a> • ~2 mins</span>
+            <div class="inline-flex items-center gap-2 bg-white/10 text-white/70 text-xs font-semibold px-3 py-1.5 rounded-full mb-4 border border-white/15 backdrop-blur-sm">
+                <i class="fas fa-bolt text-amber-400"></i>
+                Powered by <span class="text-white font-bold">Trade</span><span class="text-amber-400 font-bold">Engine</span>
+                <span class="w-px h-3 bg-white/20 mx-1"></span>
+                <span class="text-green-400 font-bold">100% FREE</span>
             </div>
+            <h1 class="font-heading font-bold text-3xl md:text-5xl mb-3 md:mb-4" style="color:#f8fafc;letter-spacing:-0.025em;line-height:1.1;">
+                Instant Quote &amp; Design
+            </h1>
+            <p class="text-sm md:text-lg mb-0" style="color:rgba(248,250,252,0.55);">
+                Pricing &amp; AI design concept in minutes — no cost, no obligation.
+            </p>
         </div>
     </section>
     
-    <!-- Progress Bar -->
-    <div class="sticky top-20 z-40 bg-white shadow-sm">
-        <div class="container mx-auto max-w-5xl px-4 py-4">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-semibold text-gray-600" id="progressText">Step 1 of 6</span>
-                <span class="text-xs text-gray-500" id="progressPercent">20%</span>
+    <!-- Progress Bar v2 -->
+    <div class="sticky top-20 z-40">
+        <div class="container mx-auto max-w-5xl px-4 py-3">
+            <div class="flex items-center justify-between mb-2.5">
+                <span id="progressText">Step 1 of 6</span>
+                <span id="progressPercent">20%</span>
             </div>
-            <div class="w-full bg-gray-200 rounded-full h-2">
-                <div id="progressBar" class="progress-bar bg-gradient-to-r from-primary to-accent h-2 rounded-full" style="width: 20%"></div>
+            <!-- Step pip indicator -->
+            <div class="flex items-center" id="stepPipsRow">
+                <div class="step-pip active" id="pip-1">1</div>
+                <div class="pip-line" id="pl-12"></div>
+                <div class="step-pip" id="pip-2">2</div>
+                <div class="pip-line" id="pl-23"></div>
+                <div class="step-pip" id="pip-3">3</div>
+                <div class="pip-line" id="pl-34"></div>
+                <div class="step-pip" id="pip-4">4</div>
+                <div class="pip-line" id="pl-45"></div>
+                <div class="step-pip" id="pip-5">5</div>
+                <div class="pip-line" id="pl-56"></div>
+                <div class="step-pip" id="pip-6">6</div>
             </div>
+            <!-- Legacy bar (JS still writes to it, hidden) -->
+            <div class="hidden"><div id="progressBar" style="width:20%"></div></div>
         </div>
     </div>
     
@@ -874,40 +1068,13 @@
                         
                         <!-- Step 1: Project Type -->
                         <div id="step1" class="step-container step-transition">
-                            <div class="quote-step-hdr group relative mb-6 -mx-4 md:mx-0">
-                                <!-- Animated border gradient -->
-                                <div class="hidden md:block absolute -inset-0.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-3xl opacity-75 blur-sm group-hover:opacity-100 transition duration-500"></div>
-                                <!-- Main container -->
-                                <div class="relative bg-white px-6 py-5 rounded-3xl flex items-center gap-4">
-                                    <!-- Floating number badge -->
-                                    <div class="hidden md:flex absolute -top-3 md:-top-3 left-4 px-3 py-1 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full items-center justify-center shadow-lg text-white font-bold text-xs ring-4 ring-white whitespace-nowrap">
-                                        Step 1
-                                    </div>
-                                    <!-- Icon with morphing background -->
-                                    <div class="w-14 h-14 relative">
-                                        <div class="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform duration-300"></div>
-                                        <div class="absolute inset-0 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-2xl -rotate-6 group-hover:-rotate-12 transition-transform duration-300 opacity-60"></div>
-                                        <div class="relative w-full h-full bg-white rounded-2xl flex items-center justify-center shadow-inner">
-                                            <i class="fas fa-wand-magic-sparkles text-2xl text-teal-500"></i>
-                                        </div>
-                                    </div>
-                                    <!-- Text content -->
-                                    <div class="flex-1">
-                                        <h2 class="font-heading font-bold text-xl md:text-2xl text-gray-800">Quote Type</h2>
-                                        <p class="text-gray-500 text-sm">Choose one option below</p>
-                                    </div>
-                                    <!-- Decorative dots -->
-                                    <div class="hidden md:flex flex-col gap-1.5 mr-2">
-                                        <div class="flex gap-1.5">
-                                            <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
-                                            <div class="w-2 h-2 rounded-full bg-teal-400"></div>
-                                        </div>
-                                        <div class="flex gap-1.5">
-                                            <div class="w-2 h-2 rounded-full bg-cyan-400"></div>
-                                            <div class="w-2 h-2 rounded-full bg-emerald-300"></div>
-                                        </div>
-                                    </div>
+                            <div class="qsh">
+                                <div class="qsh-row">
+                                    <div class="qsh-num">1</div>
+                                    <div class="qsh-line"></div>
                                 </div>
+                                <h2 class="qsh-title">Quote Type</h2>
+                                <p class="qsh-sub">How would you like to proceed?</p>
                             </div>
                             
                             <!-- Option 1: Complete Garden Redesign -->
@@ -974,41 +1141,14 @@
                         
                         <!-- Step 2: Project Details -->
                         <div id="step2" class="step-container hidden step-transition">
-                            <div class="mobile-step-spacer h-12 md:hidden"></div>
-                            <div id="step2Header" class="quote-step-hdr group relative mb-6 -mx-4 md:mx-0">
-                                <!-- Animated border gradient -->
-                                <div class="hidden md:block absolute -inset-0.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-3xl opacity-75 blur-sm group-hover:opacity-100 transition duration-500"></div>
-                                <!-- Main container -->
-                                <div class="relative bg-white px-6 py-5 rounded-3xl flex items-center gap-4 shadow-lg">
-                                    <!-- Floating number badge -->
-                                    <div class="hidden md:flex absolute -top-3 md:-top-3 left-4 px-3 py-1 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full items-center justify-center shadow-lg text-white font-bold text-xs ring-4 ring-white whitespace-nowrap">
-                                        Step 2
-                                    </div>
-                                    <!-- Icon with morphing background -->
-                                    <div class="w-14 h-14 relative">
-                                        <div class="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform duration-300"></div>
-                                        <div class="absolute inset-0 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-2xl -rotate-6 group-hover:-rotate-12 transition-transform duration-300 opacity-60"></div>
-                                        <div class="relative w-full h-full bg-white rounded-2xl flex items-center justify-center shadow-inner">
-                                            <i id="step2IconInner" class="fas fa-boxes-stacked text-2xl text-teal-500"></i>
-                                        </div>
-                                    </div>
-                                    <!-- Text content -->
-                                    <div class="flex-1">
-                                        <h2 id="step2Title" class="font-heading font-bold text-xl md:text-2xl text-gray-800">Select Your Products</h2>
-                                        <p id="step2Subtitle" class="text-gray-500 text-sm">Choose the products you'd like quoted</p>
-                                    </div>
-                                    <!-- Decorative dots -->
-                                    <div class="hidden md:flex flex-col gap-1.5 mr-2">
-                                        <div class="flex gap-1.5">
-                                            <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
-                                            <div class="w-2 h-2 rounded-full bg-teal-400"></div>
-                                        </div>
-                                        <div class="flex gap-1.5">
-                                            <div class="w-2 h-2 rounded-full bg-cyan-400"></div>
-                                            <div class="w-2 h-2 rounded-full bg-emerald-300"></div>
-                                        </div>
-                                    </div>
+                            <div class="mobile-step-spacer"></div>
+                            <div id="step2Header" class="qsh">
+                                <div class="qsh-row">
+                                    <div class="qsh-num">2</div>
+                                    <div class="qsh-line"></div>
                                 </div>
+                                <h2 id="step2Title" class="qsh-title">Select Your Products</h2>
+                                <p id="step2Subtitle" class="qsh-sub">Choose the products you'd like quoted</p>
                             </div>
                             
                             <!-- Standard Mode Content (for individual products) -->
@@ -1273,41 +1413,14 @@
                         
                         <!-- Step 3: Area & Budget -->
                         <div id="step3" class="step-container hidden step-transition">
-                            <div class="mobile-step-spacer h-12 md:hidden"></div>
-                            <div class="quote-step-hdr group relative mb-6 -mx-4 md:mx-0">
-                                <!-- Animated border gradient -->
-                                <div class="hidden md:block absolute -inset-0.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-3xl opacity-75 blur-sm group-hover:opacity-100 transition duration-500"></div>
-                                <!-- Main container -->
-                                <div class="relative bg-white px-6 py-5 rounded-3xl flex items-center gap-4 shadow-lg">
-                                    <!-- Floating number badge -->
-                                    <div class="hidden md:flex absolute -top-3 md:-top-3 left-4 px-3 py-1 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full items-center justify-center shadow-lg text-white font-bold text-xs ring-4 ring-white whitespace-nowrap">
-                                        Step 3
-                                    </div>
-                                    <!-- Icon with morphing background -->
-                                    <div class="w-14 h-14 relative">
-                                        <div class="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform duration-300"></div>
-                                        <div class="absolute inset-0 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-2xl -rotate-6 group-hover:-rotate-12 transition-transform duration-300 opacity-60"></div>
-                                        <div class="relative w-full h-full bg-white rounded-2xl flex items-center justify-center shadow-inner">
-                                            <i class="fas fa-ruler-combined text-2xl text-teal-500"></i>
-                                        </div>
-                                    </div>
-                                    <!-- Text content -->
-                                    <div class="flex-1">
-                                        <h2 class="font-heading font-bold text-xl md:text-2xl text-gray-800"><span class="md:hidden">Area & Budget</span><span class="hidden md:inline">Project Size & Budget</span></h2>
-                                        <p class="text-gray-500 text-sm">Help us understand the scope</p>
-                                    </div>
-                                    <!-- Decorative dots -->
-                                    <div class="hidden md:flex flex-col gap-1.5 mr-2">
-                                        <div class="flex gap-1.5">
-                                            <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
-                                            <div class="w-2 h-2 rounded-full bg-teal-400"></div>
-                                        </div>
-                                        <div class="flex gap-1.5">
-                                            <div class="w-2 h-2 rounded-full bg-cyan-400"></div>
-                                            <div class="w-2 h-2 rounded-full bg-emerald-300"></div>
-                                        </div>
-                                    </div>
+                            <div class="mobile-step-spacer"></div>
+                            <div class="qsh">
+                                <div class="qsh-row">
+                                    <div class="qsh-num">3</div>
+                                    <div class="qsh-line"></div>
                                 </div>
+                                <h2 class="qsh-title">Size &amp; Budget</h2>
+                                <p class="qsh-sub">Help us understand the scope of your project</p>
                             </div>
                             
                             <div class="mb-6">
@@ -1383,41 +1496,14 @@
                         
                         <!-- Step 4: Location & Photo -->
                         <div id="step4" class="step-container hidden step-transition">
-                            <div class="mobile-step-spacer h-12 md:hidden"></div>
-                            <div class="quote-step-hdr group relative mb-6 -mx-4 md:mx-0">
-                                <!-- Animated border gradient -->
-                                <div class="hidden md:block absolute -inset-0.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-3xl opacity-75 blur-sm group-hover:opacity-100 transition duration-500"></div>
-                                <!-- Main container -->
-                                <div class="relative bg-white px-6 py-5 rounded-3xl flex items-center gap-4 shadow-lg">
-                                    <!-- Floating number badge -->
-                                    <div class="hidden md:flex absolute -top-3 md:-top-3 left-4 px-3 py-1 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full items-center justify-center shadow-lg text-white font-bold text-xs ring-4 ring-white whitespace-nowrap">
-                                        Step 4
-                                    </div>
-                                    <!-- Icon with morphing background -->
-                                    <div class="w-14 h-14 relative">
-                                        <div class="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform duration-300"></div>
-                                        <div class="absolute inset-0 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-2xl -rotate-6 group-hover:-rotate-12 transition-transform duration-300 opacity-60"></div>
-                                        <div class="relative w-full h-full bg-white rounded-2xl flex items-center justify-center shadow-inner">
-                                            <i class="fas fa-location-dot text-2xl text-teal-500"></i>
-                                        </div>
-                                    </div>
-                                    <!-- Text content -->
-                                    <div class="flex-1">
-                                        <h2 class="font-heading font-bold text-xl md:text-2xl text-gray-800"><span class="md:hidden">Location</span><span class="hidden md:inline">Your Location</span></h2>
-                                        <p class="text-gray-500 text-sm">This helps us provide accurate regional pricing</p>
-                                    </div>
-                                    <!-- Decorative dots -->
-                                    <div class="hidden md:flex flex-col gap-1.5 mr-2">
-                                        <div class="flex gap-1.5">
-                                            <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
-                                            <div class="w-2 h-2 rounded-full bg-teal-400"></div>
-                                        </div>
-                                        <div class="flex gap-1.5">
-                                            <div class="w-2 h-2 rounded-full bg-cyan-400"></div>
-                                            <div class="w-2 h-2 rounded-full bg-emerald-300"></div>
-                                        </div>
-                                    </div>
+                            <div class="mobile-step-spacer"></div>
+                            <div class="qsh">
+                                <div class="qsh-row">
+                                    <div class="qsh-num">4</div>
+                                    <div class="qsh-line"></div>
                                 </div>
+                                <h2 class="qsh-title">Your Location</h2>
+                                <p class="qsh-sub">Helps us calculate accurate regional pricing</p>
                             </div>
                             
                             <div class="mb-6">
@@ -1472,41 +1558,14 @@
                         
                         <!-- Step 5: Contact Details -->
                         <div id="step5" class="step-container hidden step-transition">
-                            <div class="mobile-step-spacer h-12 md:hidden"></div>
-                            <div class="quote-step-hdr group relative mb-6 -mx-4 md:mx-0">
-                                <!-- Animated border gradient -->
-                                <div class="hidden md:block absolute -inset-0.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-3xl opacity-75 blur-sm group-hover:opacity-100 transition duration-500"></div>
-                                <!-- Main container -->
-                                <div class="relative bg-white px-6 py-5 rounded-3xl flex items-center gap-4 shadow-lg">
-                                    <!-- Floating number badge -->
-                                    <div class="hidden md:flex absolute -top-3 md:-top-3 left-4 px-3 py-1 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full items-center justify-center shadow-lg text-white font-bold text-xs ring-4 ring-white whitespace-nowrap">
-                                        Step 5
-                                    </div>
-                                    <!-- Icon with morphing background -->
-                                    <div class="w-14 h-14 relative">
-                                        <div class="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform duration-300"></div>
-                                        <div class="absolute inset-0 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-2xl -rotate-6 group-hover:-rotate-12 transition-transform duration-300 opacity-60"></div>
-                                        <div class="relative w-full h-full bg-white rounded-2xl flex items-center justify-center shadow-inner">
-                                            <i class="fas fa-user-circle text-2xl text-teal-500"></i>
-                                        </div>
-                                    </div>
-                                    <!-- Text content -->
-                                    <div class="flex-1">
-                                        <h2 class="font-heading font-bold text-xl md:text-2xl text-gray-800"><span class="md:hidden">Contact Details</span><span class="hidden md:inline">Your Contact Details</span></h2>
-                                        <p class="text-gray-500 text-sm">Where should we send your quote?</p>
-                                    </div>
-                                    <!-- Decorative dots -->
-                                    <div class="hidden md:flex flex-col gap-1.5 mr-2">
-                                        <div class="flex gap-1.5">
-                                            <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
-                                            <div class="w-2 h-2 rounded-full bg-teal-400"></div>
-                                        </div>
-                                        <div class="flex gap-1.5">
-                                            <div class="w-2 h-2 rounded-full bg-cyan-400"></div>
-                                            <div class="w-2 h-2 rounded-full bg-emerald-300"></div>
-                                        </div>
-                                    </div>
+                            <div class="mobile-step-spacer"></div>
+                            <div class="qsh">
+                                <div class="qsh-row">
+                                    <div class="qsh-num">5</div>
+                                    <div class="qsh-line"></div>
                                 </div>
+                                <h2 class="qsh-title">Contact Details</h2>
+                                <p class="qsh-sub">Where should we send your quote &amp; design?</p>
                             </div>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -1579,35 +1638,15 @@
                         
                         <!-- Step 6: AI Design Visualisation -->
                         <div id="step6" class="step-container hidden step-transition">
-                            <div class="mobile-step-spacer h-12 md:hidden"></div>
-                            <div class="quote-step-hdr group relative mb-6 -mx-4 md:mx-0">
-                                <!-- Animated border gradient -->
-                                <div class="hidden md:block absolute -inset-0.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-3xl opacity-75 blur-sm group-hover:opacity-100 transition duration-500"></div>
-                                <!-- Main container -->
-                                <div class="relative bg-white px-6 py-5 rounded-3xl flex items-center gap-4 shadow-lg">
-                                    <!-- Floating number badge -->
-                                    <div class="hidden md:flex absolute -top-3 md:-top-3 left-4 px-3 py-1 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full items-center justify-center shadow-lg text-white font-bold text-xs ring-4 ring-white whitespace-nowrap">
-                                        Step 6
-                                    </div>
-                                    <!-- Icon with morphing background -->
-                                    <div class="w-14 h-14 relative">
-                                        <div class="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform duration-300"></div>
-                                        <div class="absolute inset-0 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-2xl -rotate-6 group-hover:-rotate-12 transition-transform duration-300 opacity-60"></div>
-                                        <div class="relative w-full h-full bg-white rounded-2xl flex items-center justify-center shadow-inner">
-                                            <i class="fas fa-wand-magic-sparkles text-2xl text-teal-500"></i>
-                                        </div>
-                                    </div>
-                                    <!-- Text content -->
-                                    <div class="flex-1">
-                                        <h2 class="font-heading font-bold text-xl md:text-2xl text-gray-800"><span class="md:hidden">AI Garden Preview</span><span class="hidden md:inline">See Your New Garden Before We Build It</span></h2>
-                                        <p class="text-gray-500 text-sm">Get a photorealistic preview - delivered in 90 seconds!</p>
-                                    </div>
-                                    <!-- FREE badge -->
-                                    <div class="hidden md:flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold">
-                                        <i class="fas fa-gift mr-1"></i>
-                                        100% FREE
-                                    </div>
+                            <div class="mobile-step-spacer"></div>
+                            <div class="qsh">
+                                <div class="qsh-row">
+                                    <div class="qsh-num">6</div>
+                                    <div class="qsh-line"></div>
+                                    <span class="qsh-badge"><i class="fas fa-gift"></i> FREE</span>
                                 </div>
+                                <h2 class="qsh-title">AI Garden Preview</h2>
+                                <p class="qsh-sub">Photorealistic visualisation — delivered in 90 seconds</p>
                             </div>
                             
                             <!-- What is AI Design? — desktop version -->
@@ -2306,7 +2345,7 @@
     </footer>
     
     <script src="scripts/config.js?v=1774476799"></script>
-    <script src="scripts/quote-engine.js?v=1775165000"></script>
+    <script src="scripts/quote-engine.js?v=1775165100"></script>
     <script src="scripts/main.js?v=1774476799"></script>
     <!-- Floating WhatsApp Button -->
     <a href="https://wa.me/447877934782?text=Hi%2C%20I%27d%20like%20a%20quote%20for%20my%20garden" 
