@@ -718,35 +718,23 @@
        QUOTE PAGE v2 — APP-LIKE REDESIGN
        ═══════════════════════════════════════════ */
 
-    /* === Dark Hero === */
-    #quoteHero {
-        background: linear-gradient(160deg, #06101f 0%, #0d2247 60%, #150e38 100%) !important;
-        padding-bottom: 2.5rem !important;
-    }
-    #quoteHero h1 { color: #f8fafc !important; background: none !important; -webkit-text-fill-color: #f8fafc !important; }
-    #quoteHero p  { color: rgba(248,250,252,0.58) !important; }
-    #quoteHero .text-accent { color: #a78bfa !important; }
-    #quoteHero a span.text-black  { color: #f8fafc !important; }
-    #quoteHero a span.text-amber-500 { color: #fbbf24 !important; }
-    #quoteHero .bg-green-500 { background: linear-gradient(135deg,#10b981,#059669) !important; color:#fff !important; }
-
-    /* === Sticky Progress Bar — dark, flush with hero === */
+    /* === Sticky Progress Bar — white, brand-aligned === */
     .sticky.top-20.z-40 {
-        background: #09192e !important;
-        box-shadow: 0 1px 0 rgba(255,255,255,0.07) !important;
+        background: #ffffff !important;
+        box-shadow: 0 1px 0 #e2e8f0 !important;
         border-bottom: none !important;
     }
-    #progressText  { color: rgba(248,250,252,0.5)  !important; font-size: 0.78rem !important; font-weight: 500 !important; }
-    #progressPercent { color: rgba(248,250,252,0.3) !important; font-size: 0.72rem !important; }
+    #progressText  { color: #64748b !important; font-size: 0.78rem !important; font-weight: 500 !important; }
+    #progressPercent { color: #94a3b8 !important; font-size: 0.72rem !important; }
     /* Hide old thin bar */
     .w-full.bg-gray-200.rounded-full.h-2 { display: none !important; }
 
     /* Step pips */
     .step-pip {
         width: 30px; height: 30px; border-radius: 50%;
-        background: rgba(255,255,255,0.07);
-        border: 1.5px solid rgba(255,255,255,0.13);
-        color: rgba(255,255,255,0.3);
+        background: #f1f5f9;
+        border: 1.5px solid #cbd5e1;
+        color: #94a3b8;
         font-size: 0.65rem; font-weight: 800;
         display: flex; align-items: center; justify-content: center;
         flex-shrink: 0; transition: all 0.3s ease;
@@ -766,7 +754,7 @@
     }
     .pip-line {
         flex: 1; height: 2px;
-        background: rgba(255,255,255,0.07);
+        background: #e2e8f0;
         transition: background 0.3s ease;
     }
     .pip-line.done { background: #10b981; }
@@ -918,20 +906,6 @@
 
     /* ═══ MOBILE ═══ */
     @media (max-width: 767px) {
-        /* Hero: strip to bare minimum — just a short title strip */
-        #quoteHero {
-            padding-top: 5.25rem !important;
-            padding-bottom: 0.625rem !important;
-        }
-        /* Hide pill and subtitle on mobile — too much noise */
-        #quoteHero .inline-flex { display: none !important; }
-        #quoteHero p { display: none !important; }
-        #quoteHero h1 {
-            font-size: 1.375rem !important;
-            margin-bottom: 0 !important;
-            letter-spacing: -0.02em !important;
-        }
-
         /* Pips row: more compact on mobile */
         .sticky.top-20.z-40 > div { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
         #progressText { font-size: 0.7rem !important; }
@@ -1018,26 +992,8 @@
         </div>
     </div>
     
-    <!-- Quote Page Hero -->
-    <section id="quoteHero" class="pt-24 md:pt-32 pb-6 md:pb-10 px-4 transition-all duration-300">
-        <div class="container mx-auto max-w-5xl text-center">
-            <div class="inline-flex items-center gap-2 bg-white/10 text-white/70 text-xs font-semibold px-3 py-1.5 rounded-full mb-4 border border-white/15 backdrop-blur-sm">
-                <i class="fas fa-bolt text-amber-400"></i>
-                Powered by <span class="text-white font-bold">Trade</span><span class="text-amber-400 font-bold">Engine</span>
-                <span class="w-px h-3 bg-white/20 mx-1"></span>
-                <span class="text-green-400 font-bold">100% FREE</span>
-            </div>
-            <h1 class="font-heading font-bold text-3xl md:text-5xl mb-3 md:mb-4" style="color:#f8fafc;letter-spacing:-0.025em;line-height:1.1;">
-                Instant Quote &amp; Design
-            </h1>
-            <p class="text-sm md:text-lg mb-0" style="color:rgba(248,250,252,0.55);">
-                Pricing &amp; AI design concept in minutes — no cost, no obligation.
-            </p>
-        </div>
-    </section>
-    
     <!-- Progress Bar v2 -->
-    <div class="sticky top-20 z-40">
+    <div class="sticky top-20 z-40 mt-20">
         <div class="container mx-auto max-w-5xl px-4 py-3">
             <div class="flex items-center justify-between mb-2.5">
                 <span id="progressText">Step 1 of 6</span>
