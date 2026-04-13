@@ -274,9 +274,10 @@
                 border-radius: 0.875rem !important;
             }
 
-            /* 8. Hide spacer divs */
+            /* 8. Step spacer: give breathing room above each step header on mobile */
             .mobile-step-spacer {
-                display: none;
+                display: block !important;
+                height: 20px !important;
             }
 
             /* 9. Product grid — 2 columns */
@@ -916,10 +917,10 @@
                                     <div class="selected-indicator absolute top-3 left-3 md:top-4 md:left-4 w-6 h-6 md:w-8 md:h-8 bg-primary rounded-full items-center justify-center shadow-lg z-10">
                                         <i class="fas fa-check text-white text-xs md:text-sm"></i>
                                     </div>
-                                    <div class="absolute top-2 right-2 md:top-3 md:right-3 bg-accent text-white text-[10px] md:text-xs font-bold px-2 py-0.5 md:px-3 md:py-1 rounded-full">
+                                    <div class="absolute top-0 right-0 md:top-3 md:right-3 bg-accent text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl md:rounded-full">
                                         MOST POPULAR
                                     </div>
-                                    <div class="flex flex-col md:flex-row items-center md:items-start gap-3 md:gap-4 pt-6 md:pt-0">
+                                    <div class="flex flex-col md:flex-row items-center md:items-start gap-3 md:gap-4 pt-8 md:pt-0 pr-2 md:pr-0">
                                         <div class="flex-shrink-0 w-14 h-14 md:w-16 md:h-16 bg-white rounded-xl flex items-center justify-center shadow-md">
                                             <i class="fas fa-magic text-3xl md:text-5xl text-accent"></i>
                                         </div>

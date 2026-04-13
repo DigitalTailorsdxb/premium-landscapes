@@ -477,8 +477,8 @@ img[loading="lazy"] {
         box-shadow: 0 2px 16px rgba(0,0,0,0.07) !important;
     }
 
-    /* ─── mobile-step-spacer: minimal gap ─────────────── */
-    .mobile-step-spacer { height: 2px !important; }
+    /* ─── mobile-step-spacer: breathing room above each step header ─── */
+    .mobile-step-spacer { display: block !important; height: 20px !important; }
 
     /* ─── STEP HEADER BANNERS ──────────────────────────── */
 
