@@ -1302,10 +1302,11 @@
                                 <div class="relative mb-3">
                                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-lg pointer-events-none">£</span>
                                     <input 
-                                        type="number" 
+                                        type="text" 
+                                        inputmode="numeric"
+                                        pattern="[0-9]*"
                                         id="customBudgetInput" 
-                                        min="1000"
-                                        step="500"
+                                        autocomplete="off"
                                         class="w-full pl-9 pr-5 py-4 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-accent transition-colors text-base font-semibold"
                                         placeholder="e.g. 15000"
                                     >
