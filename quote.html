@@ -710,8 +710,45 @@
             color: #10b981;
         }
     </style>
-    <link rel="stylesheet" href="styles/mobile.css">
+    <link rel="stylesheet" href="styles/mobile.css?v=2">
     <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+    <style>
+    /* ── MOBILE STEP HEADER FIX (all 6 steps) ── */
+    @media (max-width: 767px) {
+        /* Remove negative side bleed */
+        .quote-step-hdr { margin-left: 0 !important; margin-right: 0 !important; margin-bottom: 14px !important; }
+        /* Hide the gradient glow border */
+        .quote-step-hdr > div:first-child { display: none !important; }
+        /* Inner card: compact flat white */
+        .quote-step-hdr > div:last-child {
+            padding: 10px 12px !important;
+            border-radius: 12px !important;
+            background: #ffffff !important;
+            border: 1.5px solid #dbeafe !important;
+            box-shadow: 0 1px 4px rgba(37,99,235,0.08) !important;
+            gap: 10px !important;
+        }
+        /* Hide floating step badge (progress bar already shows step) */
+        .quote-step-hdr > div:last-child > div:first-child { display: none !important; }
+        /* Shrink icon box */
+        .quote-step-hdr .w-14 { width: 34px !important; height: 34px !important; min-width: 34px !important; }
+        .quote-step-hdr .w-14 i { font-size: 0.95rem !important; }
+        /* TITLE: force solid visible text — cancels bg-clip-text/text-transparent */
+        .quote-step-hdr h2 {
+            font-size: 0.95rem !important;
+            line-height: 1.2 !important;
+            background: none !important;
+            -webkit-background-clip: initial !important;
+            background-clip: initial !important;
+            -webkit-text-fill-color: #1e293b !important;
+            color: #1e293b !important;
+        }
+        /* Hide subtitle — saves vertical space */
+        .quote-step-hdr p { display: none !important; }
+        /* Hide decorative dots */
+        .quote-step-hdr .hidden.md\:flex { display: none !important; }
+    }
+    </style>
 </head>
 <body class="bg-white text-gray-800">
     
