@@ -609,6 +609,11 @@ img[loading="lazy"] {
     .step-container .flex.gap-3 button:first-child span.hidden {
         display: none !important;
     }
+
+    /* ─── BUDGET INPUT: no £ prefix on mobile so remove left indent ── */
+    #customBudgetInput {
+        padding-left: 1rem !important;
+    }
 }
 
 /* Extra-small phones (≤ 374px) */
