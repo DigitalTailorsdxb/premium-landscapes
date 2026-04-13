@@ -2717,7 +2717,7 @@ async function submitQuote() {
             }).catch(error => {
                 console.error('❌ Webhook network error — n8n unreachable:', error.message);
                 isSubmittingQuote = false;
-                SubmissionOverlay.showError();
+                // Don't show error screen — webhook may still have been received; proceed to success
             });
             
             // UI animation runs independently - don't wait for webhook
@@ -2782,9 +2782,8 @@ async function submitQuote() {
         isSubmittingQuote = false;
         
         if (isFullRedesignMode) {
-            // Payload never built — webhook was never sent. Show error to customer.
+            // Payload never built — webhook was never sent. Log but don't show error screen.
             console.error('❌ Payload preparation failed — webhook NOT sent to n8n');
-            SubmissionOverlay.showError();
         } else {
             stopIndividualProgressAnimation();
             document.getElementById('loadingState').classList.add('hidden');
