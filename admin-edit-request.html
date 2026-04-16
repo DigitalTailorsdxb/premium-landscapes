@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quote Edit Request — Admin | Premium Landscapes</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Top bar ── */
+        .admin-bar {
+            background: #0f172a;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            padding: 0.5rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .admin-bar span { color: #f8fafc; font-weight: 600; }
+        .admin-bar a {
+            margin-left: auto;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.72rem;
+        }
+        .admin-bar a:hover { color: #94a3b8; }
+
+        /* ── Page header ── */
+        .page-header {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .page-header .icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .page-header .icon i { color: #fff; font-size: 1rem; }
+        .page-header h1 { font-size: 1.125rem; font-weight: 700; color: #0f172a; }
+        .page-header p { font-size: 0.8rem; color: #64748b; margin-top: 0.1rem; }
+
+        /* ── Main layout ── */
+        main {
+            flex: 1;
+            padding: 2rem 1rem;
+            max-width: 680px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+            padding: 2rem;
+        }
+
+        /* ── Form fields ── */
+        .field { margin-bottom: 1.5rem; }
+        label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #475569;
+            margin-bottom: 0.5rem;
+        }
+        label .req { color: #ef4444; margin-left: 2px; }
+
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            color: #1e293b;
+            background: #f8fafc;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            outline: none;
+        }
+        input[type="email"]:focus,
+        textarea:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+            background: #fff;
+        }
+        textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
+
+        /* ── Edit type radio cards ── */
+        .radio-group { display: flex; flex-direction: column; gap: 0.625rem; }
+        .radio-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.875rem;
+            padding: 0.875rem 1rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+            background: #f8fafc;
+            text-transform: none;
+            letter-spacing: 0;
+            font-weight: 400;
+        }
+        .radio-card:hover { border-color: #93c5fd; background: #eff6ff; }
+        .radio-card input[type="radio"] { margin-top: 2px; accent-color: #2563eb; flex-shrink: 0; }
+        .radio-card.selected { border-color: #2563eb; background: #eff6ff; }
+        .radio-card .rc-label { font-weight: 600; font-size: 0.9rem; color: #1e293b; }
+        .radio-card .rc-desc { font-size: 0.78rem; color: #64748b; margin-top: 0.15rem; line-height: 1.4; }
+
+        /* ── Submit button ── */
+        .btn-submit {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.975rem;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: opacity 0.15s, transform 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .btn-submit:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* ── Spinner ── */
+        .spinner {
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            flex-shrink: 0;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Banners ── */
+        .banner {
+            border-radius: 10px;
+            padding: 0.875rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.625rem;
+            margin-top: 1rem;
+        }
+        .banner i { margin-top: 1px; flex-shrink: 0; }
+        .banner.success { background: #f0fdf4; border: 1.5px solid #86efac; color: #166534; }
+        .banner.error   { background: #fef2f2; border: 1.5px solid #fca5a5; color: #991b1b; }
+        .banner.loading { background: #eff6ff; border: 1.5px solid #93c5fd; color: #1d4ed8; }
+
+        /* ── Divider ── */
+        .divider {
+            border: none;
+            border-top: 1px solid #f1f5f9;
+            margin: 1.75rem 0;
+        }
+
+        /* ── Endpoint reference ── */
+        .endpoint-ref {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+        .endpoint-ref h3 {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #94a3b8;
+            margin-bottom: 0.75rem;
+        }
+        .endpoint-row {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            margin-bottom: 0.4rem;
+        }
+        .endpoint-row:last-child { margin-bottom: 0; }
+        .endpoint-type { font-weight: 600; color: #475569; min-width: 100px; flex-shrink: 0; }
+        .endpoint-url  { color: #64748b; word-break: break-all; font-family: monospace; font-size: 0.74rem; }
+    </style>
+</head>
+<body>
+
+    <!-- Top bar -->
+    <div class="admin-bar">
+        <i class="fas fa-lock" style="font-size:0.65rem;"></i>
+        <span>Admin</span> · Premium Landscapes internal tool
+        <a href="index.html">← Back to site</a>
+    </div>
+
+    <!-- Page header -->
+    <div class="page-header">
+        <div class="icon"><i class="fas fa-pen-to-square"></i></div>
+        <div>
+            <h1>Quote Edit Request</h1>
+            <p>Trigger a quote or garden image edit for a customer via n8n</p>
+        </div>
+    </div>
+
+    <main>
+        <div class="card">
+            <form id="editForm" novalidate>
+
+                <!-- Customer Email -->
+                <div class="field">
+                    <label for="customerEmail">Customer Email <span class="req">*</span></label>
+                    <input
+                        type="email"
+                        id="customerEmail"
+                        name="customer_email"
+                        placeholder="customer@example.com"
+                        required
+                        autocomplete="email"
+                    >
+                </div>
+
+                <!-- Edit Instructions -->
+                <div class="field">
+                    <label for="editInstructions">Edit Instructions <span class="req">*</span></label>
+                    <textarea
+                        id="editInstructions"
+                        name="edit_instructions"
+                        placeholder="e.g. Replace porcelain patio with block paving, reduce quantity to 30m². Keep everything else the same."
+                        required
+                    ></textarea>
+                </div>
+
+                <!-- Edit Type -->
+                <div class="field">
+                    <label>Edit Type <span class="req">*</span></label>
+                    <div class="radio-group" id="editTypeGroup">
+
+                        <label class="radio-card selected" id="card-quote">
+                            <input type="radio" name="edit_type" value="quote" checked>
+                            <div>
+                                <div class="rc-label"><i class="fas fa-file-invoice-dollar" style="color:#2563eb;margin-right:6px;"></i>Quote Only</div>
+                                <div class="rc-desc">Re-prices the quote and sends an updated PDF to the customer.</div>
+                            </div>
+                        </label>
+
+                        <label class="radio-card" id="card-image">
+                            <input type="radio" name="edit_type" value="image">
+                            <div>
+                                <div class="rc-label"><i class="fas fa-image" style="color:#7c3aed;margin-right:6px;"></i>Garden Image Only</div>
+                                <div class="rc-desc">Re-generates the AI garden visualisation based on the instructions.</div>
+                            </div>
+                        </label>
+
+                        <label class="radio-card" id="card-combined">
+                            <input type="radio" name="edit_type" value="combined">
+                            <div>
+                                <div class="rc-label"><i class="fas fa-layer-group" style="color:#059669;margin-right:6px;"></i>Quote + Image</div>
+                                <div class="rc-desc">Updates both the quote PDF and the garden image in one go.</div>
+                            </div>
+                        </label>
+
+                    </div>
+                </div>
+
+                <!-- Status banner (hidden by default) -->
+                <div id="statusBanner" class="banner" style="display:none;"></div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <i class="fas fa-paper-plane"></i>
+                    Send Edit Request
+                </button>
+
+            </form>
+
+            <hr class="divider">
+
+            <!-- Endpoint reference -->
+            <div class="endpoint-ref">
+                <h3>Webhook endpoints</h3>
+                <div class="endpoint-row">
+                    <span class="endpoint-type">Quote Only</span>
+                    <span class="endpoint-url">https://n8n.trade-engine.co.uk/webhook/quote-editor-test</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="endpoint-type">Image Only</span>
+                    <span class="endpoint-url">https://n8n.trade-engine.co.uk/webhook/image-editor-test</span>
+                </div>
+                <div class="endpoint-row">
+                    <span class="endpoint-type">Quote + Image</span>
+                    <span class="endpoint-url">https://n8n.trade-engine.co.uk/webhook/combined-editor-test</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const ENDPOINTS = {
+            quote:    'https://n8n.trade-engine.co.uk/webhook/quote-editor-test',
+            image:    'https://n8n.trade-engine.co.uk/webhook/image-editor-test',
+            combined: 'https://n8n.trade-engine.co.uk/webhook/combined-editor-test'
+        };
+
+        // Radio card highlight
+        document.querySelectorAll('#editTypeGroup input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
+                radio.closest('.radio-card').classList.add('selected');
+            });
+        });
+
+        // Form submit
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email        = document.getElementById('customerEmail').value.trim();
+            const instructions = document.getElementById('editInstructions').value.trim();
+            const editType     = document.querySelector('input[name="edit_type"]:checked').value;
+            const btn          = document.getElementById('submitBtn');
+            const banner       = document.getElementById('statusBanner');
+
+            // Basic validation
+            if (!email || !instructions) {
+                showBanner('error', 'fa-circle-exclamation', 'Please fill in all required fields.');
+                return;
+            }
+
+            // Loading state
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Processing — this can take up to 60 seconds…';
+            showBanner('loading', 'fa-circle-notch fa-spin', 'Sending request to n8n…');
+
+            const payload = {
+                customer_email:    email,
+                edit_instructions: instructions
+            };
+
+            try {
+                const res = await fetch(ENDPOINTS[editType], {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    showBanner('success', 'fa-circle-check', `Done! The updated quote/image has been emailed to ${email}.`);
+                    document.getElementById('editForm').reset();
+                    // Restore radio card highlight to first option after reset
+                    document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
+                    document.getElementById('card-quote').classList.add('selected');
+                } else {
+                    showBanner('error', 'fa-circle-exclamation', `Something went wrong. Check n8n for details. (HTTP ${res.status})`);
+                }
+            } catch (err) {
+                showBanner('error', 'fa-circle-exclamation', 'Something went wrong. Check n8n for details. (Network error)');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Edit Request';
+            }
+        });
+
+        function showBanner(type, icon, message) {
+            const banner = document.getElementById('statusBanner');
+            banner.className = `banner ${type}`;
+            banner.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
+            banner.style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
