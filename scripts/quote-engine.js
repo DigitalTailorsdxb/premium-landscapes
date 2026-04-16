@@ -20,7 +20,7 @@ const SubmissionOverlay = {
         { icon: 'fa-brain', label: 'Understanding your space...' },
         { icon: 'fa-wand-magic-sparkles', label: 'AI creating your design...' },
         { icon: 'fa-palette', label: 'Rendering visualisation...' },
-        { icon: 'fa-sparkles', label: 'Adding finishing touches...' },
+        { icon: 'fa-brush', label: 'Adding finishing touches...' },
         { icon: 'fa-file-pdf', label: 'Preparing your quote...' },
         { icon: 'fa-envelope', label: 'Sending to your email...' }
     ],
@@ -2667,13 +2667,20 @@ async function submitQuote() {
         const isFullRedesign = webhookPayload.project.type === 'full_garden_redesign';
         
         // Route to appropriate webhook
-        const webhookUrl = isFullRedesign 
+        const rawWebhookUrl = isFullRedesign 
             ? window.brandConfig?.webhooks?.quoteFullRedesign 
             : window.brandConfig?.webhooks?.quote;
         
+        // On the Replit dev domain, route through the local proxy to avoid CORS issues.
+        // On production (premium-landscapes.co.uk) the direct URL is used.
+        const isDevDomain = window.location.hostname.includes('replit.dev') || window.location.hostname === 'localhost';
+        const webhookUrl = (isDevDomain && rawWebhookUrl)
+            ? rawWebhookUrl.replace('https://n8n.trade-engine.co.uk/webhook/', '/webhook-proxy/')
+            : rawWebhookUrl;
+
         const quoteType = isFullRedesign ? 'FULL GARDEN REDESIGN' : 'INDIVIDUAL PRODUCTS';
         console.log(`🎯 Quote Type: ${quoteType}`);
-        console.log(`🔗 Routing to: ${isFullRedesign ? 'Full Redesign Workflow' : 'Standard Quote Workflow'}`);
+        console.log(`🔗 Routing to: ${isDevDomain ? 'Proxy → ' : ''}${webhookUrl}`);
         
         // Check if webhook URL is configured
         if (!webhookUrl || webhookUrl.includes('your-') || webhookUrl.includes('-webhook-url')) {

@@ -2285,7 +2285,7 @@
     </footer>
     
     <script src="scripts/config.js?v=1774476799"></script>
-    <script src="scripts/quote-engine.js?v=1775165100"></script>
+    <script src="scripts/quote-engine.js?v=1775165101"></script>
     <script src="scripts/main.js?v=1774476799"></script>
     <!-- Floating WhatsApp Button -->
     <a href="https://wa.me/447877934782?text=Hi%2C%20I%27d%20like%20a%20quote%20for%20my%20garden" 
@@ -2554,10 +2554,15 @@
 
     <script>
     /* ── Inline Edit Request — appears on quote/design success overlay ── */
+    const _isDevDomain = window.location.hostname.includes('replit.dev') || window.location.hostname === 'localhost';
+    const _proxyBase   = '/webhook-proxy/';
+    const _n8nBase     = 'https://n8n.trade-engine.co.uk/webhook/';
+    function _ep(slug) { return _isDevDomain ? _proxyBase + slug : _n8nBase + slug; }
+
     const EDIT_ENDPOINTS = {
-        quote:    'https://n8n.trade-engine.co.uk/webhook/quote-editor-test',
-        image:    'https://n8n.trade-engine.co.uk/webhook/image-editor-test',
-        combined: 'https://n8n.trade-engine.co.uk/webhook/combined-editor-test'
+        quote:    _ep('quote-editor-test'),
+        image:    _ep('image-editor-test'),
+        combined: _ep('combined-editor-test')
     };
 
     async function submitOverlayEditRequest(variant) {

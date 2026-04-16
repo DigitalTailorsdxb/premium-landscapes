@@ -326,10 +326,12 @@
     </main>
 
     <script>
+        const _dev = window.location.hostname.includes('replit.dev') || window.location.hostname === 'localhost';
+        function _ep(slug) { return _dev ? '/webhook-proxy/' + slug : 'https://n8n.trade-engine.co.uk/webhook/' + slug; }
         const ENDPOINTS = {
-            quote:    'https://n8n.trade-engine.co.uk/webhook/quote-editor-test',
-            image:    'https://n8n.trade-engine.co.uk/webhook/image-editor-test',
-            combined: 'https://n8n.trade-engine.co.uk/webhook/combined-editor-test'
+            quote:    _ep('quote-editor-test'),
+            image:    _ep('image-editor-test'),
+            combined: _ep('combined-editor-test')
         };
 
         // Radio card highlight
