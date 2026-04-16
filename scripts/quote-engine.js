@@ -2979,11 +2979,13 @@ function prepareWebhookPayload() {
             // Full redesign mode always uses budget-based design now (simplified UI)
             // The designVisionNotes textarea contains all requirements
             
-            // Return clean structure for n8n - always budget-based for full redesign
+            // Return the exact structure n8n expects for budget-based mode
             return {
                 budgetBasedDesign: true,
                 categories: {},
-                designVision: quoteData.designVisionNotes || ''
+                totalMaterialCount: 0,    // n8n validation requires this field
+                materials: [],             // n8n pricing loops over this flat array
+                designVisionNotes: quoteData.designVisionNotes || '' // correct field name n8n references
             };
         };
         
@@ -3062,15 +3064,23 @@ function prepareWebhookPayload() {
             console.log('📦 Individual products items array:', payload.items);
         }
         
+        // Add options object — matches original n8n payload spec ("options": { "aiDesign": false })
+        payload.options = {
+            aiDesign: quoteData.aiDesign || false
+        };
+
         // Add metadata for n8n workflow tracking
         // Generate unique request ID to trace duplicates
         const requestId = 'REQ-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8);
         
         payload.metadata = {
             source: 'website_quote_form',
+            formVersion: '2.0',
             timestamp: new Date().toISOString(),
             requestId: requestId, // Unique ID to detect duplicate webhook calls
             quoteType: isFullRedesign ? 'full_garden_redesign' : 'individual_products',
+            hasPhoto: !!(quoteData.aiDesign && (aiDesignFiles.length > 0 || quoteData.files.length > 0)),
+            hasMaterials: false,
             webhookDestination: isFullRedesign 
                 ? window.brandConfig?.webhooks?.quoteFullRedesign || 'https://n8n.example.com/webhook/premium-landscapes-full-redesign'
                 : window.brandConfig?.webhooks?.quote || 'https://n8n.example.com/webhook/premium-landscapes-quote',
