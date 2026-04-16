@@ -52,7 +52,7 @@ class PremiumLandscapesHandler(SimpleHTTPRequestHandler):
 
         try:
             req = urllib.request.Request(target_url, data=body, headers=forward_headers, method='POST')
-            with urllib.request.urlopen(req, timeout=90) as resp:
+            with urllib.request.urlopen(req, timeout=180) as resp:
                 status  = resp.status
                 content = resp.read()
 

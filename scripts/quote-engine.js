@@ -77,18 +77,18 @@ const SubmissionOverlay = {
         const steps = this.hasImage ? this.stepsWithDesign : this.stepsQuoteOnly;
         
         container.innerHTML = steps.map((step, i) => `
-            <div class="overlay-step relative flex items-center py-1.5 px-2 rounded-lg transition-all duration-500" data-step="${i}">
-                <div class="step-glow absolute inset-0 rounded-lg opacity-0 transition-opacity duration-500" style="background: linear-gradient(135deg, rgba(16,185,129,0.3), rgba(20,184,166,0.3), rgba(6,182,212,0.3)); filter: blur(6px);"></div>
-                <div class="step-border absolute inset-0 rounded-lg border-2 border-transparent transition-all duration-500"></div>
+            <div class="overlay-step relative flex items-center py-2 px-3 rounded-xl transition-all duration-500" data-step="${i}" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);">
+                <div class="step-glow absolute inset-0 rounded-xl opacity-0 transition-opacity duration-500" style="background:linear-gradient(135deg,rgba(16,185,129,0.25),rgba(6,182,212,0.2));filter:blur(8px);"></div>
+                <div class="step-border absolute inset-0 rounded-xl border-2 border-transparent transition-all duration-500" style="pointer-events:none;"></div>
                 <div class="relative flex items-center w-full">
-                    <div class="step-icon w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-2 transition-all duration-300">
-                        <i class="fas ${step.icon} text-gray-400 text-sm"></i>
+                    <div class="step-icon w-8 h-8 rounded-full flex items-center justify-center mr-3 transition-all duration-300 flex-shrink-0" style="background:rgba(255,255,255,0.08);">
+                        <i class="fas ${step.icon} text-sm" style="color:rgba(255,255,255,0.35);"></i>
                     </div>
                     <div class="flex-1">
-                        <p class="step-label text-sm font-medium text-gray-400 transition-all duration-300">${step.label}</p>
+                        <p class="step-label text-sm font-medium transition-all duration-300" style="color:rgba(255,255,255,0.4);">${step.label}</p>
                     </div>
-                    <div class="step-status w-5 h-5 flex items-center justify-center">
-                        <i class="fas fa-circle text-gray-200 text-xs"></i>
+                    <div class="step-status w-5 h-5 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-circle text-xs" style="color:rgba(255,255,255,0.1);"></i>
                     </div>
                 </div>
             </div>
@@ -141,15 +141,14 @@ const SubmissionOverlay = {
             border.style.borderColor = '#10b981';
             border.style.boxShadow = '0 0 15px rgba(16,185,129,0.5), 0 0 30px rgba(16,185,129,0.3)';
             
-            // Activate icon
-            icon.classList.remove('bg-gray-100');
-            icon.classList.add('bg-gradient-to-br', 'from-emerald-500', 'to-teal-500', 'shadow-lg');
-            icon.querySelector('i').classList.remove('text-gray-400');
-            icon.querySelector('i').classList.add('text-white');
+            // Activate icon (dark theme)
+            icon.style.background = 'linear-gradient(135deg,#10b981,#0d9488)';
+            icon.style.boxShadow = '0 0 16px rgba(16,185,129,0.4)';
+            icon.querySelector('i').style.color = '#ffffff';
             
-            // Activate label
-            label.classList.remove('text-gray-400');
-            label.classList.add('text-gray-800', 'font-semibold');
+            // Activate label (dark theme)
+            label.style.color = '#ffffff';
+            label.style.fontWeight = '600';
             
             // Show spinning loader
             statusContainer.innerHTML = '<div class="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>';
