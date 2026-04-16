@@ -15,7 +15,9 @@ ALLOWED_PROXY_TARGETS = {
     # Original quote webhooks
     'premium-landscapes-quote':         'https://n8n.trade-engine.co.uk/webhook/premium-landscapes-quote',
     'premium-landscapes-full-redesign': 'https://n8n.trade-engine.co.uk/webhook/premium-landscapes-full-redesign',
-    # Edit request webhooks
+    # Edit request webhook (new unified endpoint)
+    'edit-request':                     'https://n8n.trade-engine.co.uk/webhook/edit-request',
+    # Legacy edit webhooks (kept for backwards compatibility)
     'quote-editor-test':                'https://n8n.trade-engine.co.uk/webhook/quote-editor-test',
     'image-editor-test':                'https://n8n.trade-engine.co.uk/webhook/image-editor-test',
     'combined-editor-test':             'https://n8n.trade-engine.co.uk/webhook/combined-editor-test',
