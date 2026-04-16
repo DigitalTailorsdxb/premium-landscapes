@@ -2285,7 +2285,7 @@
     </footer>
     
     <script src="scripts/config.js?v=1774476799"></script>
-    <script src="scripts/quote-engine.js?v=1776405000"></script>
+    <script src="scripts/quote-engine.js?v=1776405001"></script>
     <script src="scripts/main.js?v=1774476799"></script>
     <!-- Floating WhatsApp Button -->
     <a href="https://wa.me/447877934782?text=Hi%2C%20I%27d%20like%20a%20quote%20for%20my%20garden" 
@@ -2313,10 +2313,18 @@
         <div class="h-screen flex flex-col overflow-y-auto">
             <div class="flex-1 flex flex-col items-center justify-start px-4 py-8 min-h-screen">
 
-                <!-- Logo -->
-                <a href="index.html" class="mb-6 opacity-90 hover:opacity-100 transition flex-shrink-0">
-                    <img src="images/logo.png" alt="Premium Landscapes" class="h-14 md:h-16 filter brightness-0 invert" onerror="this.style.display='none'">
-                </a>
+                <!-- Logo + Trade Engine branding -->
+                <div class="flex flex-col items-center mb-6 flex-shrink-0">
+                    <a href="index.html" class="mb-2 opacity-95 hover:opacity-100 transition">
+                        <div style="background:rgba(255,255,255,0.97);border-radius:16px;padding:10px 22px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(0,0,0,0.35);">
+                            <img src="images/logo.png" alt="Premium Landscapes" class="h-10 md:h-12">
+                        </div>
+                    </a>
+                    <a href="https://trade-engine.co.uk" target="_blank" style="display:inline-flex;align-items:center;gap:5px;color:rgba(255,255,255,0.45);text-decoration:none;font-size:11px;letter-spacing:0.02em;" class="hover:opacity-80 transition">
+                        <i class="fas fa-bolt text-amber-400" style="font-size:10px;"></i>
+                        <span>Powered by <strong style="color:rgba(255,255,255,0.65);">Trade</strong> <strong style="color:#f59e0b;">Engine</strong></span>
+                    </a>
+                </div>
 
                 <div class="w-full max-w-md">
 
@@ -2416,37 +2424,52 @@
                         </div>
 
                         <!-- Edit request panel -->
-                        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(99,102,241,0.3);border-radius:20px;padding:18px 20px;backdrop-filter:blur(20px);" class="mb-4 text-left">
-                            <div class="flex items-center gap-2 mb-2">
-                                <i class="fas fa-pen-to-square text-indigo-400"></i>
-                                <span class="font-semibold text-white text-sm">Want to make changes?</span>
+                        <div style="background:rgba(255,255,255,0.05);border:1.5px solid rgba(99,102,241,0.22);border-radius:24px;padding:22px;backdrop-filter:blur(20px);" class="mb-4 text-left">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div style="width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 12px rgba(99,102,241,0.4);">
+                                    <i class="fas fa-pen text-white" style="font-size:13px;"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-white text-sm leading-tight">Want to make changes?</p>
+                                    <p class="text-slate-400 text-xs">We'll update and resend to your inbox automatically.</p>
+                                </div>
                             </div>
-                            <p class="text-xs text-slate-400 mb-4">Tell us what you'd like to adjust and we'll update and resend automatically.</p>
+                            <div style="border-top:1px solid rgba(255,255,255,0.08);margin-bottom:16px;"></div>
                             <!-- Form section -->
                             <div id="editFormP">
-                                <div class="flex flex-col gap-3 mb-4">
-                                    <label class="flex items-start gap-3 cursor-pointer" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 14px;">
-                                        <input type="radio" name="editTypeP" value="both" style="accent-color:#6366f1;margin-top:2px;flex-shrink:0;">
-                                        <span class="text-xs text-slate-200"><span class="font-semibold block mb-0.5">Update quote + garden design</span><span class="text-slate-400">Changes materials, quantities or budget — we'll regenerate both your PDF quote and AI garden image.</span></span>
+                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">1 — What would you like to change?</p>
+                                <div class="flex flex-col gap-2 mb-5">
+                                    <label class="edit-option-P flex items-center gap-3 cursor-pointer" style="border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:13px 15px;transition:border-color 0.2s,background 0.2s;">
+                                        <input type="radio" name="editTypeP" value="both" style="accent-color:#6366f1;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('P')">
+                                        <span>
+                                            <span class="text-sm font-semibold text-white block leading-tight">Quote + garden design</span>
+                                            <span class="text-xs text-slate-400">Regenerates both your PDF quote and AI garden image</span>
+                                        </span>
                                     </label>
-                                    <label class="flex items-start gap-3 cursor-pointer" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 14px;">
-                                        <input type="radio" name="editTypeP" value="image" style="accent-color:#a78bfa;margin-top:2px;flex-shrink:0;">
-                                        <span class="text-xs text-slate-200"><span class="font-semibold block mb-0.5">Update garden design only</span><span class="text-slate-400">Change how the garden looks visually — only the AI image is regenerated, your quote stays the same.</span></span>
+                                    <label class="edit-option-P flex items-center gap-3 cursor-pointer" style="border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:13px 15px;transition:border-color 0.2s,background 0.2s;">
+                                        <input type="radio" name="editTypeP" value="image" style="accent-color:#6366f1;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('P')">
+                                        <span>
+                                            <span class="text-sm font-semibold text-white block leading-tight">Garden design only</span>
+                                            <span class="text-xs text-slate-400">Only the AI image is regenerated — your quote stays the same</span>
+                                        </span>
                                     </label>
                                 </div>
-                                <textarea id="editInstructionsP" rows="3" placeholder="e.g. swap sandstone for porcelain paving, add raised beds along the back fence, change artificial turf to real grass"
-                                    style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px 14px;color:#fff;font-size:13px;resize:none;outline:none;box-sizing:border-box;margin-bottom:10px;"
-                                    onfocus="this.style.borderColor='rgba(99,102,241,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'"></textarea>
-                                <div id="editStatusP" style="display:none;font-size:12px;margin-bottom:10px;padding:10px 14px;border-radius:10px;"></div>
+                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">2 — Describe what you'd like changed</p>
+                                <textarea id="editInstructionsP" rows="4" placeholder="e.g. swap sandstone for porcelain paving, add raised beds along the back fence, change artificial turf to real grass"
+                                    style="width:100%;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:14px;padding:13px 15px;color:#fff;font-size:13px;line-height:1.6;resize:none;outline:none;box-sizing:border-box;transition:border-color 0.2s;placeholder-color:#64748b;"
+                                    onfocus="this.style.borderColor='rgba(99,102,241,0.65)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'"></textarea>
+                                <p class="text-xs text-slate-500 mt-1.5 mb-4">Minimum 10 characters</p>
+                                <div id="editStatusP" style="display:none;font-size:12px;margin-bottom:12px;padding:11px 14px;border-radius:12px;"></div>
                                 <button onclick="submitOverlayEditRequest('P')" id="editBtnP"
-                                    style="width:100%;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-weight:600;padding:12px 20px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;transition:opacity 0.2s;"
-                                    onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+                                    style="width:100%;background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);color:#fff;font-weight:700;padding:15px 20px;border-radius:14px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;font-size:15px;letter-spacing:0.01em;box-shadow:0 4px 22px rgba(99,102,241,0.38);transition:box-shadow 0.2s,transform 0.2s;"
+                                    onmouseover="this.style.boxShadow='0 6px 32px rgba(99,102,241,0.58)';this.style.transform='translateY(-1px)'"
+                                    onmouseout="this.style.boxShadow='0 4px 22px rgba(99,102,241,0.38)';this.style.transform='none'">
                                     <i class="fas fa-paper-plane"></i> Send Edit Request
                                 </button>
                             </div>
                             <!-- Success section (shown on submit) -->
-                            <div id="editSuccessP" style="display:none;padding:16px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);border-radius:14px;text-align:center;">
-                                <i class="fas fa-circle-check" style="color:#4ade80;font-size:28px;display:block;margin-bottom:10px;"></i>
+                            <div id="editSuccessP" style="display:none;padding:20px;background:rgba(34,197,94,0.1);border:1.5px solid rgba(34,197,94,0.3);border-radius:16px;text-align:center;">
+                                <i class="fas fa-circle-check" style="color:#4ade80;font-size:32px;display:block;margin-bottom:10px;"></i>
                                 <p id="editSuccessMsgP" style="color:#86efac;font-size:14px;font-weight:600;line-height:1.5;margin:0;"></p>
                             </div>
                         </div>
@@ -2529,37 +2552,52 @@
                         </div>
 
                         <!-- Edit request panel -->
-                        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(139,92,246,0.3);border-radius:20px;padding:18px 20px;backdrop-filter:blur(20px);" class="mb-4 text-left">
-                            <div class="flex items-center gap-2 mb-2">
-                                <i class="fas fa-pen-to-square text-violet-400"></i>
-                                <span class="font-semibold text-white text-sm">Want to make changes?</span>
+                        <div style="background:rgba(255,255,255,0.05);border:1.5px solid rgba(139,92,246,0.22);border-radius:24px;padding:22px;backdrop-filter:blur(20px);" class="mb-4 text-left">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div style="width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 12px rgba(139,92,246,0.4);">
+                                    <i class="fas fa-pen text-white" style="font-size:13px;"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-white text-sm leading-tight">Want to make changes?</p>
+                                    <p class="text-slate-400 text-xs">We'll update and resend to your inbox automatically.</p>
+                                </div>
                             </div>
-                            <p class="text-xs text-slate-400 mb-4">Tell us what you'd like to adjust and we'll update and resend automatically.</p>
+                            <div style="border-top:1px solid rgba(255,255,255,0.08);margin-bottom:16px;"></div>
                             <!-- Form section -->
                             <div id="editFormR">
-                                <div class="flex flex-col gap-3 mb-4">
-                                    <label class="flex items-start gap-3 cursor-pointer" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 14px;">
-                                        <input type="radio" name="editTypeR" value="both" style="accent-color:#8b5cf6;margin-top:2px;flex-shrink:0;">
-                                        <span class="text-xs text-slate-200"><span class="font-semibold block mb-0.5">Update quote + garden design</span><span class="text-slate-400">Changes materials, quantities or budget — we'll regenerate both your PDF quote and AI garden image.</span></span>
+                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">1 — What would you like to change?</p>
+                                <div class="flex flex-col gap-2 mb-5">
+                                    <label class="edit-option-R flex items-center gap-3 cursor-pointer" style="border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:13px 15px;transition:border-color 0.2s,background 0.2s;">
+                                        <input type="radio" name="editTypeR" value="both" style="accent-color:#8b5cf6;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('R')">
+                                        <span>
+                                            <span class="text-sm font-semibold text-white block leading-tight">Quote + garden design</span>
+                                            <span class="text-xs text-slate-400">Regenerates both your PDF quote and AI garden image</span>
+                                        </span>
                                     </label>
-                                    <label class="flex items-start gap-3 cursor-pointer" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 14px;">
-                                        <input type="radio" name="editTypeR" value="image" style="accent-color:#a78bfa;margin-top:2px;flex-shrink:0;">
-                                        <span class="text-xs text-slate-200"><span class="font-semibold block mb-0.5">Update garden design only</span><span class="text-slate-400">Change how the garden looks visually — only the AI image is regenerated, your quote stays the same.</span></span>
+                                    <label class="edit-option-R flex items-center gap-3 cursor-pointer" style="border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:13px 15px;transition:border-color 0.2s,background 0.2s;">
+                                        <input type="radio" name="editTypeR" value="image" style="accent-color:#8b5cf6;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('R')">
+                                        <span>
+                                            <span class="text-sm font-semibold text-white block leading-tight">Garden design only</span>
+                                            <span class="text-xs text-slate-400">Only the AI image is regenerated — your quote stays the same</span>
+                                        </span>
                                     </label>
                                 </div>
-                                <textarea id="editInstructionsR" rows="3" placeholder="e.g. swap sandstone for porcelain paving, add raised beds along the back fence, change artificial turf to real grass"
-                                    style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px 14px;color:#fff;font-size:13px;resize:none;outline:none;box-sizing:border-box;margin-bottom:10px;"
-                                    onfocus="this.style.borderColor='rgba(139,92,246,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'"></textarea>
-                                <div id="editStatusR" style="display:none;font-size:12px;margin-bottom:10px;padding:10px 14px;border-radius:10px;"></div>
+                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">2 — Describe what you'd like changed</p>
+                                <textarea id="editInstructionsR" rows="4" placeholder="e.g. swap sandstone for porcelain paving, add raised beds along the back fence, change artificial turf to real grass"
+                                    style="width:100%;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:14px;padding:13px 15px;color:#fff;font-size:13px;line-height:1.6;resize:none;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                                    onfocus="this.style.borderColor='rgba(139,92,246,0.65)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'"></textarea>
+                                <p class="text-xs text-slate-500 mt-1.5 mb-4">Minimum 10 characters</p>
+                                <div id="editStatusR" style="display:none;font-size:12px;margin-bottom:12px;padding:11px 14px;border-radius:12px;"></div>
                                 <button onclick="submitOverlayEditRequest('R')" id="editBtnR"
-                                    style="width:100%;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:600;padding:12px 20px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;transition:opacity 0.2s;"
-                                    onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+                                    style="width:100%;background:linear-gradient(135deg,#7c3aed 0%,#4f46e5 100%);color:#fff;font-weight:700;padding:15px 20px;border-radius:14px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;font-size:15px;letter-spacing:0.01em;box-shadow:0 4px 22px rgba(139,92,246,0.38);transition:box-shadow 0.2s,transform 0.2s;"
+                                    onmouseover="this.style.boxShadow='0 6px 32px rgba(139,92,246,0.58)';this.style.transform='translateY(-1px)'"
+                                    onmouseout="this.style.boxShadow='0 4px 22px rgba(139,92,246,0.38)';this.style.transform='none'">
                                     <i class="fas fa-paper-plane"></i> Send Edit Request
                                 </button>
                             </div>
                             <!-- Success section (shown on submit) -->
-                            <div id="editSuccessR" style="display:none;padding:16px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);border-radius:14px;text-align:center;">
-                                <i class="fas fa-circle-check" style="color:#4ade80;font-size:28px;display:block;margin-bottom:10px;"></i>
+                            <div id="editSuccessR" style="display:none;padding:20px;background:rgba(34,197,94,0.1);border:1.5px solid rgba(34,197,94,0.3);border-radius:16px;text-align:center;">
+                                <i class="fas fa-circle-check" style="color:#4ade80;font-size:32px;display:block;margin-bottom:10px;"></i>
                                 <p id="editSuccessMsgR" style="color:#86efac;font-size:14px;font-weight:600;line-height:1.5;margin:0;"></p>
                             </div>
                         </div>
@@ -2596,13 +2634,6 @@
                         </a>
                     </div>
 
-                    <!-- Powered by Trade Engine -->
-                    <div class="mt-6 text-center">
-                        <a href="https://trade-engine.co.uk" target="_blank" style="display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,0.35);text-decoration:none;font-size:13px;" class="hover:opacity-70 transition">
-                            <i class="fas fa-bolt text-amber-400"></i>
-                            <span>Powered by <strong style="color:rgba(255,255,255,0.6);">Trade</strong> <strong style="color:#f59e0b;">Engine</strong></span>
-                        </a>
-                    </div>
 
                 </div>
             </div>
@@ -2623,6 +2654,23 @@
     const EDIT_ENDPOINT = _isDevDomain
         ? '/webhook-proxy/edit-request'
         : 'https://n8n.trade-engine.co.uk/webhook/edit-request';
+
+    /* Highlight the selected radio card */
+    function highlightEditOption(variant) {
+        const color = variant === 'R'
+            ? { border:'rgba(139,92,246,0.65)', bg:'rgba(139,92,246,0.1)' }
+            : { border:'rgba(99,102,241,0.65)',  bg:'rgba(99,102,241,0.1)' };
+        document.querySelectorAll('.edit-option-' + variant).forEach(label => {
+            const radio = label.querySelector('input[type="radio"]');
+            if (radio && radio.checked) {
+                label.style.borderColor = color.border;
+                label.style.background  = color.bg;
+            } else {
+                label.style.borderColor = 'rgba(255,255,255,0.1)';
+                label.style.background  = 'transparent';
+            }
+        });
+    }
 
     async function submitOverlayEditRequest(variant) {
         const instructions = document.getElementById('editInstructions' + variant).value.trim();
