@@ -2422,29 +2422,33 @@
                                 <span class="font-semibold text-white text-sm">Want to make changes?</span>
                             </div>
                             <p class="text-xs text-slate-400 mb-4">Tell us what you'd like to adjust and we'll update and resend automatically.</p>
-                            <div class="flex gap-4 mb-4 flex-wrap">
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="editTypeP" value="quote" checked style="accent-color:#6366f1;">
-                                    <span class="text-xs font-semibold text-slate-300">Quote only</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="editTypeP" value="image" style="accent-color:#a78bfa;">
-                                    <span class="text-xs font-semibold text-slate-300">Garden image only</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="editTypeP" value="combined" style="accent-color:#34d399;">
-                                    <span class="text-xs font-semibold text-slate-300">Quote + image</span>
-                                </label>
+                            <!-- Form section -->
+                            <div id="editFormP">
+                                <div class="flex flex-col gap-3 mb-4">
+                                    <label class="flex items-start gap-3 cursor-pointer" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 14px;">
+                                        <input type="radio" name="editTypeP" value="both" style="accent-color:#6366f1;margin-top:2px;flex-shrink:0;">
+                                        <span class="text-xs text-slate-200"><span class="font-semibold block mb-0.5">Update quote + garden design</span><span class="text-slate-400">Changes materials, quantities or budget — we'll regenerate both your PDF quote and AI garden image.</span></span>
+                                    </label>
+                                    <label class="flex items-start gap-3 cursor-pointer" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 14px;">
+                                        <input type="radio" name="editTypeP" value="image" style="accent-color:#a78bfa;margin-top:2px;flex-shrink:0;">
+                                        <span class="text-xs text-slate-200"><span class="font-semibold block mb-0.5">Update garden design only</span><span class="text-slate-400">Change how the garden looks visually — only the AI image is regenerated, your quote stays the same.</span></span>
+                                    </label>
+                                </div>
+                                <textarea id="editInstructionsP" rows="3" placeholder="e.g. swap sandstone for porcelain paving, add raised beds along the back fence, change artificial turf to real grass"
+                                    style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px 14px;color:#fff;font-size:13px;resize:none;outline:none;box-sizing:border-box;margin-bottom:10px;"
+                                    onfocus="this.style.borderColor='rgba(99,102,241,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'"></textarea>
+                                <div id="editStatusP" style="display:none;font-size:12px;margin-bottom:10px;padding:10px 14px;border-radius:10px;"></div>
+                                <button onclick="submitOverlayEditRequest('P')" id="editBtnP"
+                                    style="width:100%;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-weight:600;padding:12px 20px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;transition:opacity 0.2s;"
+                                    onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+                                    <i class="fas fa-paper-plane"></i> Send Edit Request
+                                </button>
                             </div>
-                            <textarea id="editInstructionsP" rows="3" placeholder="e.g. Swap porcelain patio for block paving, reduce area to 40m², keep the lighting…"
-                                style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px 14px;color:#fff;font-size:13px;resize:none;outline:none;box-sizing:border-box;margin-bottom:10px;"
-                                onfocus="this.style.borderColor='rgba(99,102,241,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'"></textarea>
-                            <div id="editStatusP" style="display:none;font-size:12px;margin-bottom:10px;padding:10px 14px;border-radius:10px;"></div>
-                            <button onclick="submitOverlayEditRequest('P')" id="editBtnP"
-                                style="width:100%;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-weight:600;padding:12px 20px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;transition:opacity 0.2s;"
-                                onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
-                                <i class="fas fa-paper-plane"></i> Send Edit Request
-                            </button>
+                            <!-- Success section (shown on submit) -->
+                            <div id="editSuccessP" style="display:none;padding:16px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);border-radius:14px;text-align:center;">
+                                <i class="fas fa-circle-check" style="color:#4ade80;font-size:28px;display:block;margin-bottom:10px;"></i>
+                                <p id="editSuccessMsgP" style="color:#86efac;font-size:14px;font-weight:600;line-height:1.5;margin:0;"></p>
+                            </div>
                         </div>
 
                         <div class="text-center">
@@ -2531,29 +2535,33 @@
                                 <span class="font-semibold text-white text-sm">Want to make changes?</span>
                             </div>
                             <p class="text-xs text-slate-400 mb-4">Tell us what you'd like to adjust and we'll update and resend automatically.</p>
-                            <div class="flex gap-4 mb-4 flex-wrap">
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="editTypeR" value="quote" checked style="accent-color:#8b5cf6;">
-                                    <span class="text-xs font-semibold text-slate-300">Quote only</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="editTypeR" value="image" style="accent-color:#a78bfa;">
-                                    <span class="text-xs font-semibold text-slate-300">Garden image only</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="editTypeR" value="combined" style="accent-color:#34d399;">
-                                    <span class="text-xs font-semibold text-slate-300">Quote + image</span>
-                                </label>
+                            <!-- Form section -->
+                            <div id="editFormR">
+                                <div class="flex flex-col gap-3 mb-4">
+                                    <label class="flex items-start gap-3 cursor-pointer" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 14px;">
+                                        <input type="radio" name="editTypeR" value="both" style="accent-color:#8b5cf6;margin-top:2px;flex-shrink:0;">
+                                        <span class="text-xs text-slate-200"><span class="font-semibold block mb-0.5">Update quote + garden design</span><span class="text-slate-400">Changes materials, quantities or budget — we'll regenerate both your PDF quote and AI garden image.</span></span>
+                                    </label>
+                                    <label class="flex items-start gap-3 cursor-pointer" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 14px;">
+                                        <input type="radio" name="editTypeR" value="image" style="accent-color:#a78bfa;margin-top:2px;flex-shrink:0;">
+                                        <span class="text-xs text-slate-200"><span class="font-semibold block mb-0.5">Update garden design only</span><span class="text-slate-400">Change how the garden looks visually — only the AI image is regenerated, your quote stays the same.</span></span>
+                                    </label>
+                                </div>
+                                <textarea id="editInstructionsR" rows="3" placeholder="e.g. swap sandstone for porcelain paving, add raised beds along the back fence, change artificial turf to real grass"
+                                    style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px 14px;color:#fff;font-size:13px;resize:none;outline:none;box-sizing:border-box;margin-bottom:10px;"
+                                    onfocus="this.style.borderColor='rgba(139,92,246,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'"></textarea>
+                                <div id="editStatusR" style="display:none;font-size:12px;margin-bottom:10px;padding:10px 14px;border-radius:10px;"></div>
+                                <button onclick="submitOverlayEditRequest('R')" id="editBtnR"
+                                    style="width:100%;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:600;padding:12px 20px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;transition:opacity 0.2s;"
+                                    onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+                                    <i class="fas fa-paper-plane"></i> Send Edit Request
+                                </button>
                             </div>
-                            <textarea id="editInstructionsR" rows="3" placeholder="e.g. Swap sandstone for porcelain tiles, reduce patio to 30m², add garden lighting…"
-                                style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px 14px;color:#fff;font-size:13px;resize:none;outline:none;box-sizing:border-box;margin-bottom:10px;"
-                                onfocus="this.style.borderColor='rgba(139,92,246,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'"></textarea>
-                            <div id="editStatusR" style="display:none;font-size:12px;margin-bottom:10px;padding:10px 14px;border-radius:10px;"></div>
-                            <button onclick="submitOverlayEditRequest('R')" id="editBtnR"
-                                style="width:100%;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:600;padding:12px 20px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;transition:opacity 0.2s;"
-                                onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
-                                <i class="fas fa-paper-plane"></i> Send Edit Request
-                            </button>
+                            <!-- Success section (shown on submit) -->
+                            <div id="editSuccessR" style="display:none;padding:16px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);border-radius:14px;text-align:center;">
+                                <i class="fas fa-circle-check" style="color:#4ade80;font-size:28px;display:block;margin-bottom:10px;"></i>
+                                <p id="editSuccessMsgR" style="color:#86efac;font-size:14px;font-weight:600;line-height:1.5;margin:0;"></p>
+                            </div>
                         </div>
 
                         <div class="text-center">
@@ -2611,68 +2619,78 @@
 
     <script>
     /* ── Inline Edit Request — appears on quote/design success overlay ── */
-    const _isDevDomain = window.location.hostname.includes('replit.dev') || window.location.hostname === 'localhost';
-    const _proxyBase   = '/webhook-proxy/';
-    const _n8nBase     = 'https://n8n.trade-engine.co.uk/webhook/';
-    function _ep(slug) { return _isDevDomain ? _proxyBase + slug : _n8nBase + slug; }
-
-    const EDIT_ENDPOINTS = {
-        quote:    _ep('quote-editor-test'),
-        image:    _ep('image-editor-test'),
-        combined: _ep('combined-editor-test')
-    };
+    const _isDevDomain  = window.location.hostname.includes('replit.dev') || window.location.hostname === 'localhost';
+    const EDIT_ENDPOINT = _isDevDomain
+        ? '/webhook-proxy/edit-request'
+        : 'https://n8n.trade-engine.co.uk/webhook/edit-request';
 
     async function submitOverlayEditRequest(variant) {
         const instructions = document.getElementById('editInstructions' + variant).value.trim();
-        const editType     = document.querySelector('input[name="editType' + variant + '"]:checked').value;
+        const radioEl      = document.querySelector('input[name="editType' + variant + '"]:checked');
         const btn          = document.getElementById('editBtn' + variant);
         const status       = document.getElementById('editStatus' + variant);
         const email        = (typeof quoteData !== 'undefined' && quoteData.email) ? quoteData.email : '';
-        const name         = (typeof quoteData !== 'undefined' && quoteData.name)  ? quoteData.name  : '';
 
-        if (!instructions) {
-            showEditStatus(status, 'error', 'Please describe what you\'d like to change.');
+        /* Validation */
+        if (!radioEl) {
+            showEditStatus(status, 'error', 'Please select what you\'d like to change.');
+            return;
+        }
+        if (instructions.length < 10) {
+            showEditStatus(status, 'error', 'Please describe your changes in a bit more detail.');
             return;
         }
 
+        const editType = radioEl.value; /* "both" or "image" */
+
+        /* Disable all inputs while processing */
         btn.disabled = true;
-        btn.innerHTML = '<span style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:editSpin 0.7s linear infinite;display:inline-block;"></span> Sending…';
-        showEditStatus(status, 'loading', 'Sending to our team — please wait up to 60 seconds…');
+        btn.innerHTML = '<span style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:editSpin 0.7s linear infinite;display:inline-block;"></span> Processing — this can take up to 90 seconds…';
+        document.getElementById('editInstructions' + variant).disabled = true;
+        document.querySelectorAll('input[name="editType' + variant + '"]').forEach(r => r.disabled = true);
+        status.style.display = 'none';
 
         try {
-            const res = await fetch(EDIT_ENDPOINTS[editType], {
+            const res = await fetch(EDIT_ENDPOINT, {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify({
                     customer_email:    email,
-                    customer_name:     name,
                     edit_instructions: instructions,
                     edit_type:         editType
                 })
             });
 
             if (res.ok) {
-                const label = editType === 'quote' ? 'quote' : editType === 'image' ? 'garden image' : 'quote and image';
-                showEditStatus(status, 'success', '✓ Done! Your updated ' + label + ' will be emailed to you shortly.');
-                document.getElementById('editInstructions' + variant).value = '';
+                /* Hide form, show green success panel */
+                document.getElementById('editForm' + variant).style.display = 'none';
+                const copy = editType === 'image'
+                    ? 'Done! Your updated garden design is on its way to your inbox.'
+                    : 'Done! Your updated quote and garden design are on their way to your inbox.';
+                document.getElementById('editSuccessMsg' + variant).textContent = copy;
+                document.getElementById('editSuccess'    + variant).style.display = 'block';
             } else {
-                showEditStatus(status, 'error', 'Something went wrong — please call us on 07877 934782 and we\'ll sort it right away.');
+                /* Re-enable all inputs, show error banner */
+                document.getElementById('editInstructions' + variant).disabled = false;
+                document.querySelectorAll('input[name="editType' + variant + '"]').forEach(r => r.disabled = false);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Edit Request';
+                showEditStatus(status, 'error', 'Something went wrong. Please try again or contact us directly.');
             }
         } catch (e) {
-            showEditStatus(status, 'error', 'Network error. Check your connection and try again.');
-        } finally {
+            document.getElementById('editInstructions' + variant).disabled = false;
+            document.querySelectorAll('input[name="editType' + variant + '"]').forEach(r => r.disabled = false);
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Edit Request';
+            showEditStatus(status, 'error', 'Something went wrong. Please try again or contact us directly.');
         }
     }
 
     function showEditStatus(el, type, msg) {
         const styles = {
-            success: 'background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.35);color:#86efac;',
-            error:   'background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);color:#fca5a5;',
-            loading: 'background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.35);color:#a5b4fc;'
+            error: 'background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);color:#fca5a5;'
         };
-        el.setAttribute('style', 'font-size:12px;margin-bottom:10px;padding:10px 14px;border-radius:10px;' + styles[type] + 'display:block;');
+        el.setAttribute('style', 'font-size:12px;margin-bottom:10px;padding:10px 14px;border-radius:10px;' + (styles[type] || '') + 'display:block;');
         el.textContent = msg;
     }
     </script>
