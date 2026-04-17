@@ -2285,7 +2285,7 @@
     </footer>
     
     <script src="scripts/config.js?v=1774476799"></script>
-    <script src="scripts/quote-engine.js?v=1776405001"></script>
+    <script src="scripts/quote-engine.js?v=1776405002"></script>
     <script src="scripts/main.js?v=1774476799"></script>
     <!-- Floating WhatsApp Button -->
     <a href="https://wa.me/447877934782?text=Hi%2C%20I%27d%20like%20a%20quote%20for%20my%20garden" 
@@ -2473,10 +2473,51 @@
                                     <i class="fas fa-paper-plane"></i> Send Edit Request
                                 </button>
                             </div>
-                            <!-- Success section (shown on submit) -->
+                            <!-- Processing section (shown while waiting) -->
+                            <div id="editProcessingP" style="display:none;">
+                                <div class="flex flex-col gap-2" id="editStepsP"></div>
+                                <p class="text-xs text-slate-500 text-center mt-3">This usually takes 60–90 seconds</p>
+                            </div>
+                            <!-- Results section (shown when n8n responds with data) -->
+                            <div id="editResultsP" style="display:none;">
+                                <div style="background:rgba(34,197,94,0.08);border:1.5px solid rgba(34,197,94,0.25);border-radius:16px;padding:16px;margin-bottom:14px;text-align:center;">
+                                    <i class="fas fa-circle-check" style="color:#4ade80;font-size:26px;display:block;margin-bottom:8px;"></i>
+                                    <p class="text-sm font-bold text-white mb-1">Your updates are ready!</p>
+                                    <p class="text-xs text-slate-400">A copy has also been sent to your inbox.</p>
+                                </div>
+                                <!-- Updated design image -->
+                                <div id="editImgWrapP" style="display:none;border-radius:14px;overflow:hidden;margin-bottom:10px;border:1px solid rgba(255,255,255,0.1);">
+                                    <img id="editDesignImgP" src="" alt="Updated garden design" style="width:100%;display:block;border-radius:14px;">
+                                    <div style="padding:10px 14px;background:rgba(255,255,255,0.05);display:flex;justify-content:flex-end;">
+                                        <a id="editViewImgBtnP" href="#" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.4);color:#a5b4fc;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;">
+                                            <i class="fas fa-expand-alt"></i> View Full Image
+                                        </a>
+                                    </div>
+                                </div>
+                                <!-- Updated PDF -->
+                                <div id="editPdfWrapP" style="display:none;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:12px 14px;margin-bottom:12px;display:none;align-items:center;justify-content:space-between;gap:10px;">
+                                    <div class="flex items-center gap-2">
+                                        <div style="width:32px;height:32px;border-radius:8px;background:rgba(239,68,68,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                            <i class="fas fa-file-pdf" style="color:#f87171;font-size:13px;"></i>
+                                        </div>
+                                        <span class="text-sm font-semibold text-white">Updated Quote PDF</span>
+                                    </div>
+                                    <a id="editPdfBtnP" href="#" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">
+                                        <i class="fas fa-download"></i> Download
+                                    </a>
+                                </div>
+                                <!-- Make another edit -->
+                                <button onclick="resetEditPanel('P')" style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-weight:600;padding:11px;border-radius:12px;cursor:pointer;font-size:13px;">
+                                    <i class="fas fa-rotate-left"></i> Make another edit
+                                </button>
+                            </div>
+                            <!-- Fallback success (no result data from n8n) -->
                             <div id="editSuccessP" style="display:none;padding:20px;background:rgba(34,197,94,0.1);border:1.5px solid rgba(34,197,94,0.3);border-radius:16px;text-align:center;">
                                 <i class="fas fa-circle-check" style="color:#4ade80;font-size:32px;display:block;margin-bottom:10px;"></i>
                                 <p id="editSuccessMsgP" style="color:#86efac;font-size:14px;font-weight:600;line-height:1.5;margin:0;"></p>
+                                <button onclick="resetEditPanel('P')" style="margin-top:14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-weight:600;padding:9px 18px;border-radius:10px;cursor:pointer;font-size:12px;">
+                                    <i class="fas fa-rotate-left"></i> Make another edit
+                                </button>
                             </div>
                         </div>
 
@@ -2596,10 +2637,51 @@
                                     <i class="fas fa-paper-plane"></i> Send Edit Request
                                 </button>
                             </div>
-                            <!-- Success section (shown on submit) -->
+                            <!-- Processing section (shown while waiting) -->
+                            <div id="editProcessingR" style="display:none;">
+                                <div class="flex flex-col gap-2" id="editStepsR"></div>
+                                <p class="text-xs text-slate-500 text-center mt-3">This usually takes 60–90 seconds</p>
+                            </div>
+                            <!-- Results section (shown when n8n responds with data) -->
+                            <div id="editResultsR" style="display:none;">
+                                <div style="background:rgba(34,197,94,0.08);border:1.5px solid rgba(34,197,94,0.25);border-radius:16px;padding:16px;margin-bottom:14px;text-align:center;">
+                                    <i class="fas fa-circle-check" style="color:#4ade80;font-size:26px;display:block;margin-bottom:8px;"></i>
+                                    <p class="text-sm font-bold text-white mb-1">Your updates are ready!</p>
+                                    <p class="text-xs text-slate-400">A copy has also been sent to your inbox.</p>
+                                </div>
+                                <!-- Updated design image -->
+                                <div id="editImgWrapR" style="display:none;border-radius:14px;overflow:hidden;margin-bottom:10px;border:1px solid rgba(255,255,255,0.1);">
+                                    <img id="editDesignImgR" src="" alt="Updated garden design" style="width:100%;display:block;border-radius:14px;">
+                                    <div style="padding:10px 14px;background:rgba(255,255,255,0.05);display:flex;justify-content:flex-end;">
+                                        <a id="editViewImgBtnR" href="#" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.4);color:#c4b5fd;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;">
+                                            <i class="fas fa-expand-alt"></i> View Full Image
+                                        </a>
+                                    </div>
+                                </div>
+                                <!-- Updated PDF -->
+                                <div id="editPdfWrapR" style="display:none;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:12px 14px;margin-bottom:12px;align-items:center;justify-content:space-between;gap:10px;">
+                                    <div class="flex items-center gap-2">
+                                        <div style="width:32px;height:32px;border-radius:8px;background:rgba(239,68,68,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                            <i class="fas fa-file-pdf" style="color:#f87171;font-size:13px;"></i>
+                                        </div>
+                                        <span class="text-sm font-semibold text-white">Updated Quote PDF</span>
+                                    </div>
+                                    <a id="editPdfBtnR" href="#" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">
+                                        <i class="fas fa-download"></i> Download
+                                    </a>
+                                </div>
+                                <!-- Make another edit -->
+                                <button onclick="resetEditPanel('R')" style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-weight:600;padding:11px;border-radius:12px;cursor:pointer;font-size:13px;">
+                                    <i class="fas fa-rotate-left"></i> Make another edit
+                                </button>
+                            </div>
+                            <!-- Fallback success (no result data from n8n) -->
                             <div id="editSuccessR" style="display:none;padding:20px;background:rgba(34,197,94,0.1);border:1.5px solid rgba(34,197,94,0.3);border-radius:16px;text-align:center;">
                                 <i class="fas fa-circle-check" style="color:#4ade80;font-size:32px;display:block;margin-bottom:10px;"></i>
                                 <p id="editSuccessMsgR" style="color:#86efac;font-size:14px;font-weight:600;line-height:1.5;margin:0;"></p>
+                                <button onclick="resetEditPanel('R')" style="margin-top:14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-weight:600;padding:9px 18px;border-radius:10px;cursor:pointer;font-size:12px;">
+                                    <i class="fas fa-rotate-left"></i> Make another edit
+                                </button>
                             </div>
                         </div>
 
@@ -2646,6 +2728,15 @@
     /* Always route through the local proxy — avoids browser CORS on all envs */
     const EDIT_ENDPOINT = '/webhook-proxy/image-editor-test';
 
+    /* Step definitions per edit type */
+    const EDIT_STEPS = {
+        both:  ['Receiving your request…', 'Applying your changes…', 'Regenerating your garden design…', 'Rebuilding your quote…', 'Preparing your documents…'],
+        image: ['Receiving your request…', 'Applying your changes…', 'Regenerating your garden design…', 'Preparing your results…']
+    };
+
+    /* Active step timers (so we can clear on reset) */
+    let _editStepTimers = [];
+
     /* Highlight the selected radio card */
     function highlightEditOption(variant) {
         const color = variant === 'R'
@@ -2663,72 +2754,160 @@
         });
     }
 
+    /* Render animated progress steps into #editSteps{variant} */
+    function startEditSteps(variant, editType) {
+        const container = document.getElementById('editSteps' + variant);
+        if (!container) return;
+        const steps = EDIT_STEPS[editType] || EDIT_STEPS.both;
+        container.innerHTML = '';
+        steps.forEach((label, i) => {
+            const el = document.createElement('div');
+            el.id = 'editStep_' + variant + '_' + i;
+            el.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);opacity:0.45;transition:all 0.4s;';
+            el.innerHTML = `<span style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;" id="editStepIcon_${variant}_${i}"><i class="fas fa-circle" style="color:rgba(255,255,255,0.2);font-size:6px;"></i></span><span style="font-size:13px;color:rgba(255,255,255,0.55);">${label}</span>`;
+            container.appendChild(el);
+        });
+        /* Animate steps sequentially */
+        const delays = [0, 4000, 14000, 28000, 45000];
+        steps.forEach((_, i) => {
+            const t = setTimeout(() => activateEditStep(variant, i, i === steps.length - 1), delays[i] || (i * 12000));
+            _editStepTimers.push(t);
+        });
+    }
+
+    function activateEditStep(variant, index, isLast) {
+        /* Mark previous step complete */
+        if (index > 0) {
+            const prev = document.getElementById('editStep_' + variant + '_' + (index - 1));
+            const prevIcon = document.getElementById('editStepIcon_' + variant + '_' + (index - 1));
+            if (prev)     { prev.style.opacity = '0.6'; prev.style.background = 'rgba(34,197,94,0.06)'; }
+            if (prevIcon) prevIcon.innerHTML = '<i class="fas fa-check" style="color:#4ade80;font-size:10px;"></i>';
+        }
+        const el   = document.getElementById('editStep_' + variant + '_' + index);
+        const icon = document.getElementById('editStepIcon_' + variant + '_' + index);
+        if (el) {
+            el.style.opacity    = '1';
+            el.style.background = 'rgba(99,102,241,0.1)';
+            el.style.border     = '1px solid rgba(99,102,241,0.3)';
+        }
+        if (icon) icon.innerHTML = '<span style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#a5b4fc;border-radius:50%;animation:editSpin 0.8s linear infinite;display:inline-block;"></span>';
+    }
+
+    /* Complete all steps with green ticks */
+    function completeEditSteps(variant) {
+        _editStepTimers.forEach(t => clearTimeout(t));
+        _editStepTimers = [];
+        const container = document.getElementById('editSteps' + variant);
+        if (!container) return;
+        Array.from(container.children).forEach((el, i) => {
+            const icon = document.getElementById('editStepIcon_' + variant + '_' + i);
+            el.style.opacity    = '0.7';
+            el.style.background = 'rgba(34,197,94,0.06)';
+            el.style.border     = '1px solid rgba(34,197,94,0.15)';
+            if (icon) icon.innerHTML = '<i class="fas fa-check" style="color:#4ade80;font-size:10px;"></i>';
+        });
+    }
+
     async function submitOverlayEditRequest(variant) {
         const instructions = document.getElementById('editInstructions' + variant).value.trim();
         const radioEl      = document.querySelector('input[name="editType' + variant + '"]:checked');
-        const btn          = document.getElementById('editBtn' + variant);
-        const status       = document.getElementById('editStatus' + variant);
+        const statusEl     = document.getElementById('editStatus' + variant);
         const email        = (typeof quoteData !== 'undefined' && quoteData.email) ? quoteData.email : '';
 
         /* Validation */
         if (!radioEl) {
-            showEditStatus(status, 'error', 'Please select what you\'d like to change.');
+            showEditStatus(statusEl, 'error', 'Please select what you\'d like to change.');
             return;
         }
         if (instructions.length < 10) {
-            showEditStatus(status, 'error', 'Please describe your changes in a bit more detail.');
+            showEditStatus(statusEl, 'error', 'Please describe your changes in a bit more detail.');
             return;
         }
 
-        const editType = radioEl.value; /* "both" or "image" */
+        const editType = radioEl.value;
 
-        /* Disable all inputs while processing */
-        btn.disabled = true;
-        btn.innerHTML = '<span style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:editSpin 0.7s linear infinite;display:inline-block;"></span> Processing — this can take up to 90 seconds…';
-        document.getElementById('editInstructions' + variant).disabled = true;
-        document.querySelectorAll('input[name="editType' + variant + '"]').forEach(r => r.disabled = true);
-        status.style.display = 'none';
+        /* Disable form, show processing */
+        document.getElementById('editForm'       + variant).style.display = 'none';
+        document.getElementById('editProcessing' + variant).style.display = 'block';
+        statusEl.style.display = 'none';
+        startEditSteps(variant, editType);
 
         try {
-            const res = await fetch(EDIT_ENDPOINT, {
+            const res  = await fetch(EDIT_ENDPOINT, {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({
-                    customer_email:    email,
-                    edit_instructions: instructions,
-                    edit_type:         editType
-                })
+                body:    JSON.stringify({ customer_email: email, edit_instructions: instructions, edit_type: editType })
             });
 
+            completeEditSteps(variant);
+
+            /* Try to parse result data from n8n */
+            let data = {};
+            try { data = await res.json(); } catch(_) {}
+            const imageUrl = data.imageUrl || data.image_url || data.design_url || '';
+            const pdfUrl   = data.pdfUrl   || data.pdf_url   || data.quote_url  || '';
+
+            document.getElementById('editProcessing' + variant).style.display = 'none';
+
             if (res.ok) {
-                /* Hide form, show green success panel */
-                document.getElementById('editForm' + variant).style.display = 'none';
-                const copy = editType === 'image'
-                    ? 'Done! Your updated garden design is on its way to your inbox.'
-                    : 'Done! Your updated quote and garden design are on their way to your inbox.';
-                document.getElementById('editSuccessMsg' + variant).textContent = copy;
-                document.getElementById('editSuccess'    + variant).style.display = 'block';
+                if (imageUrl || pdfUrl) {
+                    /* Show rich results panel */
+                    const results = document.getElementById('editResults' + variant);
+                    results.style.display = 'block';
+                    if (imageUrl) {
+                        const imgWrap = document.getElementById('editImgWrap'     + variant);
+                        const img     = document.getElementById('editDesignImg'   + variant);
+                        const viewBtn = document.getElementById('editViewImgBtn'  + variant);
+                        imgWrap.style.display = 'block';
+                        img.src      = imageUrl;
+                        viewBtn.href = imageUrl;
+                        viewBtn.onclick = e => { e.preventDefault(); window.open(imageUrl, '_blank'); };
+                    }
+                    if (pdfUrl) {
+                        const pdfWrap = document.getElementById('editPdfWrap' + variant);
+                        const pdfBtn  = document.getElementById('editPdfBtn'  + variant);
+                        pdfWrap.style.display = 'flex';
+                        pdfBtn.href  = pdfUrl;
+                        pdfBtn.onclick = e => { e.preventDefault(); window.open(pdfUrl, '_blank'); };
+                    }
+                } else {
+                    /* No result data — show fallback success */
+                    const copy = editType === 'image'
+                        ? 'Done! Your updated garden design is on its way to your inbox.'
+                        : 'Done! Your updated quote and garden design are on their way to your inbox.';
+                    document.getElementById('editSuccessMsg' + variant).textContent = copy;
+                    document.getElementById('editSuccess'    + variant).style.display = 'block';
+                }
             } else {
-                /* Re-enable all inputs, show error banner */
-                document.getElementById('editInstructions' + variant).disabled = false;
-                document.querySelectorAll('input[name="editType' + variant + '"]').forEach(r => r.disabled = false);
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Edit Request';
-                showEditStatus(status, 'error', 'Something went wrong. Please try again or contact us directly.');
+                /* n8n error — re-show form with error banner */
+                document.getElementById('editForm' + variant).style.display = 'block';
+                showEditStatus(statusEl, 'error', 'Something went wrong. Please try again or contact us directly.');
             }
         } catch (e) {
-            document.getElementById('editInstructions' + variant).disabled = false;
-            document.querySelectorAll('input[name="editType' + variant + '"]').forEach(r => r.disabled = false);
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Edit Request';
-            showEditStatus(status, 'error', 'Something went wrong. Please try again or contact us directly.');
+            completeEditSteps(variant);
+            document.getElementById('editProcessing' + variant).style.display = 'none';
+            document.getElementById('editForm'       + variant).style.display = 'block';
+            showEditStatus(statusEl, 'error', 'Something went wrong. Please try again or contact us directly.');
         }
     }
 
+    /* Reset edit panel back to the form */
+    function resetEditPanel(variant) {
+        _editStepTimers.forEach(t => clearTimeout(t));
+        _editStepTimers = [];
+        document.getElementById('editForm'       + variant).style.display = 'block';
+        document.getElementById('editProcessing' + variant).style.display = 'none';
+        document.getElementById('editResults'    + variant).style.display = 'none';
+        document.getElementById('editSuccess'    + variant).style.display = 'none';
+        document.getElementById('editStatus'     + variant).style.display = 'none';
+        document.getElementById('editInstructions' + variant).value    = '';
+        document.getElementById('editInstructions' + variant).disabled = false;
+        document.querySelectorAll('input[name="editType' + variant + '"]').forEach(r => { r.checked = false; r.disabled = false; });
+        document.querySelectorAll('.edit-option-' + variant).forEach(l => { l.style.borderColor = 'rgba(255,255,255,0.1)'; l.style.background = 'transparent'; });
+    }
+
     function showEditStatus(el, type, msg) {
-        const styles = {
-            error: 'background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);color:#fca5a5;'
-        };
+        const styles = { error: 'background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);color:#fca5a5;' };
         el.setAttribute('style', 'font-size:12px;margin-bottom:10px;padding:10px 14px;border-radius:10px;' + (styles[type] || '') + 'display:block;');
         el.textContent = msg;
     }
