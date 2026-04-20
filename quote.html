@@ -2725,8 +2725,8 @@
 
     <script>
     /* ── Inline Edit Request — appears on quote/design success overlay ── */
-    /* Always route through the local proxy — avoids browser CORS on all envs */
-    const EDIT_ENDPOINT = '/webhook-proxy/image-editor-test';
+    /* Call n8n directly — same pattern as the quote submission webhooks */
+    const EDIT_ENDPOINT = 'https://n8n.trade-engine.co.uk/webhook/image-editor-test';
 
     /* Step definitions per edit type */
     const EDIT_STEPS = {
