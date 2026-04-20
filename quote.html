@@ -2849,14 +2849,9 @@
             payload.image_edits = instructions;
         }
 
-        /* quote_edits — n8n requires at least one swap_products or add_products entry.
-           We pass the customer's free-text in swap_products so n8n AI can parse intent. */
+        /* quote_edits — instructions only; n8n handles parsing from free text */
         if (editType === 'both' || editType === 'quote_only') {
-            payload.quote_edits = {
-                instructions:  instructions,
-                swap_products: [{ from: 'current', to: instructions }],
-                add_products:  []
-            };
+            payload.quote_edits = { instructions: instructions };
         }
 
         /* Disable form, show processing */
