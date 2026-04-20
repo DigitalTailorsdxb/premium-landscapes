@@ -2449,11 +2449,18 @@
                                         <input type="radio" name="editTypeP" value="both" style="accent-color:#6366f1;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('P')">
                                         <span>
                                             <span class="text-sm font-semibold text-white block leading-tight">Quote + garden design</span>
-                                            <span class="text-xs text-slate-400">Regenerates both your PDF quote and AI garden image</span>
+                                            <span class="text-xs text-slate-400">Regenerates both your updated PDF quote and AI garden image</span>
                                         </span>
                                     </label>
                                     <label class="edit-option-P flex items-center gap-3 cursor-pointer" style="border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:13px 15px;transition:border-color 0.2s,background 0.2s;">
-                                        <input type="radio" name="editTypeP" value="image" style="accent-color:#6366f1;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('P')">
+                                        <input type="radio" name="editTypeP" value="quote_only" style="accent-color:#6366f1;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('P')">
+                                        <span>
+                                            <span class="text-sm font-semibold text-white block leading-tight">Quote only</span>
+                                            <span class="text-xs text-slate-400">Update the pricing and PDF — garden image stays the same</span>
+                                        </span>
+                                    </label>
+                                    <label class="edit-option-P flex items-center gap-3 cursor-pointer" style="border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:13px 15px;transition:border-color 0.2s,background 0.2s;">
+                                        <input type="radio" name="editTypeP" value="image_only" style="accent-color:#6366f1;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('P')">
                                         <span>
                                             <span class="text-sm font-semibold text-white block leading-tight">Garden design only</span>
                                             <span class="text-xs text-slate-400">Only the AI image is regenerated — your quote stays the same</span>
@@ -2613,11 +2620,18 @@
                                         <input type="radio" name="editTypeR" value="both" style="accent-color:#8b5cf6;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('R')">
                                         <span>
                                             <span class="text-sm font-semibold text-white block leading-tight">Quote + garden design</span>
-                                            <span class="text-xs text-slate-400">Regenerates both your PDF quote and AI garden image</span>
+                                            <span class="text-xs text-slate-400">Regenerates both your updated PDF quote and AI garden image</span>
                                         </span>
                                     </label>
                                     <label class="edit-option-R flex items-center gap-3 cursor-pointer" style="border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:13px 15px;transition:border-color 0.2s,background 0.2s;">
-                                        <input type="radio" name="editTypeR" value="image" style="accent-color:#8b5cf6;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('R')">
+                                        <input type="radio" name="editTypeR" value="quote_only" style="accent-color:#8b5cf6;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('R')">
+                                        <span>
+                                            <span class="text-sm font-semibold text-white block leading-tight">Quote only</span>
+                                            <span class="text-xs text-slate-400">Update the pricing and PDF — garden image stays the same</span>
+                                        </span>
+                                    </label>
+                                    <label class="edit-option-R flex items-center gap-3 cursor-pointer" style="border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:13px 15px;transition:border-color 0.2s,background 0.2s;">
+                                        <input type="radio" name="editTypeR" value="image_only" style="accent-color:#8b5cf6;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('R')">
                                         <span>
                                             <span class="text-sm font-semibold text-white block leading-tight">Garden design only</span>
                                             <span class="text-xs text-slate-400">Only the AI image is regenerated — your quote stays the same</span>
@@ -2725,13 +2739,14 @@
 
     <script>
     /* ── Inline Edit Request — appears on quote/design success overlay ── */
-    /* Call n8n directly — same pattern as the quote submission webhooks */
-    const EDIT_ENDPOINT = 'https://n8n.trade-engine.co.uk/webhook/image-editor-test';
+    /* Routes through the server-side proxy — avoids browser CORS on all envs  */
+    const EDIT_ENDPOINT = '/webhook-proxy/pl-editor';
 
-    /* Step definitions per edit type */
+    /* Step definitions per edit_type value */
     const EDIT_STEPS = {
-        both:  ['Receiving your request…', 'Applying your changes…', 'Regenerating your garden design…', 'Rebuilding your quote…', 'Preparing your documents…'],
-        image: ['Receiving your request…', 'Applying your changes…', 'Regenerating your garden design…', 'Preparing your results…']
+        both:       ['Receiving your request…', 'Applying your changes…', 'Regenerating your garden design…', 'Rebuilding your quote…', 'Preparing your documents…'],
+        quote_only: ['Receiving your request…', 'Applying your changes…', 'Recalculating your quote…', 'Generating your updated PDF…'],
+        image_only: ['Receiving your request…', 'Applying your changes…', 'Regenerating your garden design…', 'Preparing your results…']
     };
 
     /* Active step timers (so we can clear on reset) */
@@ -2824,7 +2839,25 @@
             return;
         }
 
-        const editType = radioEl.value;
+        const editType = radioEl.value; /* "both" | "quote_only" | "image_only" */
+
+        /* Build payload matching n8n pl-editor webhook spec */
+        const payload = { customer_email: email, edit_type: editType };
+
+        /* image_edits — free text description for AI image regeneration */
+        if (editType === 'both' || editType === 'image_only') {
+            payload.image_edits = instructions;
+        }
+
+        /* quote_edits — n8n requires at least one swap_products or add_products entry.
+           We pass the customer's free-text in swap_products so n8n AI can parse intent. */
+        if (editType === 'both' || editType === 'quote_only') {
+            payload.quote_edits = {
+                instructions:  instructions,
+                swap_products: [{ from: 'current', to: instructions }],
+                add_products:  []
+            };
+        }
 
         /* Disable form, show processing */
         document.getElementById('editForm'       + variant).style.display = 'none';
@@ -2833,31 +2866,46 @@
         startEditSteps(variant, editType);
 
         try {
-            const res  = await fetch(EDIT_ENDPOINT, {
+            const res = await fetch(EDIT_ENDPOINT, {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ customer_email: email, edit_instructions: instructions, edit_type: editType })
+                body:    JSON.stringify(payload)
             });
 
             completeEditSteps(variant);
 
-            /* Try to parse result data from n8n */
+            /* Parse result data — n8n returns snake_case field names */
             let data = {};
             try { data = await res.json(); } catch(_) {}
-            const imageUrl = data.imageUrl || data.image_url || data.design_url || '';
-            const pdfUrl   = data.pdfUrl   || data.pdf_url   || data.quote_url  || '';
+
+            const imageUrl      = data.image_url  || '';
+            const pdfUrl        = data.pdf_url    || '';
+            const newTotal      = data.new_total  || '';
+            const changeSummary = data.change_summary || '';
 
             document.getElementById('editProcessing' + variant).style.display = 'none';
 
-            if (res.ok) {
+            if (res.ok && data.success !== false) {
                 if (imageUrl || pdfUrl) {
-                    /* Show rich results panel */
+                    /* Show rich inline results panel */
                     const results = document.getElementById('editResults' + variant);
                     results.style.display = 'block';
+
+                    /* Inject change summary + new total into the success header if available */
+                    if (changeSummary || newTotal) {
+                        const headerEl = results.querySelector('p.text-xs.text-slate-400');
+                        if (headerEl) {
+                            let extra = '';
+                            if (changeSummary) extra += changeSummary + ' ';
+                            if (newTotal)      extra += '— New total: £' + parseFloat(newTotal).toLocaleString('en-GB', {minimumFractionDigits:2, maximumFractionDigits:2});
+                            headerEl.textContent = extra.trim() || 'A copy has also been sent to your inbox.';
+                        }
+                    }
+
                     if (imageUrl) {
-                        const imgWrap = document.getElementById('editImgWrap'     + variant);
-                        const img     = document.getElementById('editDesignImg'   + variant);
-                        const viewBtn = document.getElementById('editViewImgBtn'  + variant);
+                        const imgWrap = document.getElementById('editImgWrap'    + variant);
+                        const img     = document.getElementById('editDesignImg'  + variant);
+                        const viewBtn = document.getElementById('editViewImgBtn' + variant);
                         imgWrap.style.display = 'block';
                         img.src      = imageUrl;
                         viewBtn.href = imageUrl;
@@ -2871,17 +2919,18 @@
                         pdfBtn.onclick = e => { e.preventDefault(); window.open(pdfUrl, '_blank'); };
                     }
                 } else {
-                    /* No result data — show fallback success */
-                    const copy = editType === 'image'
+                    /* n8n responded OK but no URLs yet — show fallback */
+                    const copy = editType === 'image_only'
                         ? 'Done! Your updated garden design is on its way to your inbox.'
                         : 'Done! Your updated quote and garden design are on their way to your inbox.';
                     document.getElementById('editSuccessMsg' + variant).textContent = copy;
                     document.getElementById('editSuccess'    + variant).style.display = 'block';
                 }
             } else {
-                /* n8n error — re-show form with error banner */
+                /* n8n returned an error */
                 document.getElementById('editForm' + variant).style.display = 'block';
-                showEditStatus(statusEl, 'error', 'Something went wrong. Please try again or contact us directly.');
+                const errMsg = data.message || data.error || 'Something went wrong. Please try again or contact us directly.';
+                showEditStatus(statusEl, 'error', errMsg);
             }
         } catch (e) {
             completeEditSteps(variant);
