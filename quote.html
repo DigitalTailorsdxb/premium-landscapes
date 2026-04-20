@@ -2453,13 +2453,6 @@
                                         </span>
                                     </label>
                                     <label class="edit-option-P flex items-center gap-3 cursor-pointer" style="border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:13px 15px;transition:border-color 0.2s,background 0.2s;">
-                                        <input type="radio" name="editTypeP" value="quote_only" style="accent-color:#6366f1;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('P')">
-                                        <span>
-                                            <span class="text-sm font-semibold text-white block leading-tight">Quote only</span>
-                                            <span class="text-xs text-slate-400">Update the pricing and PDF — garden image stays the same</span>
-                                        </span>
-                                    </label>
-                                    <label class="edit-option-P flex items-center gap-3 cursor-pointer" style="border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:13px 15px;transition:border-color 0.2s,background 0.2s;">
                                         <input type="radio" name="editTypeP" value="image_only" style="accent-color:#6366f1;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('P')">
                                         <span>
                                             <span class="text-sm font-semibold text-white block leading-tight">Garden design only</span>
@@ -2624,13 +2617,6 @@
                                         </span>
                                     </label>
                                     <label class="edit-option-R flex items-center gap-3 cursor-pointer" style="border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:13px 15px;transition:border-color 0.2s,background 0.2s;">
-                                        <input type="radio" name="editTypeR" value="quote_only" style="accent-color:#8b5cf6;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('R')">
-                                        <span>
-                                            <span class="text-sm font-semibold text-white block leading-tight">Quote only</span>
-                                            <span class="text-xs text-slate-400">Update the pricing and PDF — garden image stays the same</span>
-                                        </span>
-                                    </label>
-                                    <label class="edit-option-R flex items-center gap-3 cursor-pointer" style="border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:13px 15px;transition:border-color 0.2s,background 0.2s;">
                                         <input type="radio" name="editTypeR" value="image_only" style="accent-color:#8b5cf6;width:16px;height:16px;flex-shrink:0;" onchange="highlightEditOption('R')">
                                         <span>
                                             <span class="text-sm font-semibold text-white block leading-tight">Garden design only</span>
@@ -2745,7 +2731,6 @@
     /* Step definitions per edit_type value */
     const EDIT_STEPS = {
         both:       ['Receiving your request…', 'Applying your changes…', 'Regenerating your garden design…', 'Rebuilding your quote…', 'Preparing your documents…'],
-        quote_only: ['Receiving your request…', 'Applying your changes…', 'Recalculating your quote…', 'Generating your updated PDF…'],
         image_only: ['Receiving your request…', 'Applying your changes…', 'Regenerating your garden design…', 'Preparing your results…']
     };
 
@@ -2850,7 +2835,7 @@
         }
 
         /* quote_edits — instructions only; n8n handles parsing from free text */
-        if (editType === 'both' || editType === 'quote_only') {
+        if (editType === 'both') {
             payload.quote_edits = { instructions: instructions };
         }
 
