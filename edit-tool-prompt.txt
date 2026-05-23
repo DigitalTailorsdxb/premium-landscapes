@@ -1,0 +1,303 @@
+================================================================================
+PROMPT: Add Quote Edit Request Tool to a Trade/Service Website
+================================================================================
+
+You are adding an "Edit My Quote / Design" feature to a service business website
+that already has a multi-step quote form. Customers receive a quote (and
+optionally an AI garden/room design image) by email, then return to the results
+page and can request edits without starting over.
+
+This feature sends a structured request to a backend n8n webhook which
+re-processes the quote and/or regenerates the AI design, then returns updated
+results inline on the page.
+
+────────────────────────────────────────────────────────────────────────────────
+WHAT TO BUILD
+────────────────────────────────────────────────────────────────────────────────
+
+1. An "Edit My Quote / Design" button on the quote results page.
+2. A slide-in or modal edit panel containing:
+   a) A radio button to choose edit type:
+      - "Quote + design" (value: "both") — updates both quote and regenerates image
+      - "Design only" (value: "image_only") — regenerates the AI image only
+   b) A text area for image edit instructions (always shown).
+   c) A text area for quote edit instructions (shown only when type is "both").
+   d) A customer email field (pre-filled if already collected in step 5 of form).
+   e) A "Submit Changes" button.
+3. An animated progress panel (shown while the webhook is processing):
+   - For "both": 5 steps — Receiving… / Applying changes… / Regenerating design… /
+     Rebuilding quote… / Preparing documents…
+   - For "image_only": 4 steps — Receiving… / Applying changes… / Regenerating
+     design… / Preparing results…
+   - Each step lights up sequentially with a spinner icon, then a green tick when
+     the next step starts. Approximate delays: 0s, 4s, 14s, 28s, 45s.
+4. A results panel (shown when the webhook responds) displaying:
+   - Updated AI design image (if returned).
+   - "View Full Design" button (opens image in new tab).
+   - Green PDF download card (if pdf_url returned).
+   - A text summary of changes made (if change_summary returned).
+   - A "Make Another Edit" button that resets back to the edit form.
+
+────────────────────────────────────────────────────────────────────────────────
+BACKEND PROXY SETUP (server.py / Express / etc.)
+────────────────────────────────────────────────────────────────────────────────
+
+Create a server-side proxy endpoint at /webhook-proxy/pl-editor that:
+- Accepts POST requests from the frontend (to avoid CORS issues on the live site).
+- Forwards the request body as JSON to:
+    https://n8n.trade-engine.co.uk/webhook/pl-editor
+- Sets a 180-second timeout (the n8n workflow can take up to 90 seconds).
+- Returns the n8n response body and status code directly to the frontend.
+
+Python (Flask/http.server) example:
+    PROXY_TARGETS = {
+        'pl-editor': 'https://n8n.trade-engine.co.uk/webhook/pl-editor',
+    }
+    # POST /webhook-proxy/<slug> → forward body to PROXY_TARGETS[slug]
+
+If the site is static (Cloudflare Pages, GitHub Pages, Netlify), use a
+Cloudflare Worker or Netlify Function instead of a Python server.
+
+────────────────────────────────────────────────────────────────────────────────
+WEBHOOK PAYLOAD (sent to /webhook-proxy/pl-editor)
+────────────────────────────────────────────────────────────────────────────────
+
+For edit_type "both":
+{
+  "customer_email": "customer@example.com",
+  "edit_type": "both",
+  "quote_edits": {
+    "instructions": "Remove the artificial grass, add a water feature instead"
+  },
+  "image_edits": {
+    "instructions": "Modern garden with water feature, porcelain paving, no grass"
+  }
+}
+
+For edit_type "image_only":
+{
+  "customer_email": "customer@example.com",
+  "edit_type": "image_only",
+  "image_edits": {
+    "instructions": "Make the design more contemporary, add outdoor lighting"
+  }
+}
+
+Notes:
+- Do NOT include quote_edits when edit_type is "image_only".
+- The customer_email is used by n8n to look up the original quote in the CRM.
+- All fields are strings. Do not send arrays.
+
+────────────────────────────────────────────────────────────────────────────────
+WEBHOOK RESPONSE (from n8n, returned via proxy)
+────────────────────────────────────────────────────────────────────────────────
+
+n8n returns JSON. Expect these fields (all optional, check before using):
+
+{
+  "success": true,
+  "image_url": "https://storage.example.com/designs/updated-garden.jpg",
+  "pdf_url": "https://storage.example.com/quotes/Q-2026-001.pdf",
+  "new_total": "£14,232",
+  "change_summary": "Removed artificial grass section (saving £1,800). Added water feature (£2,400). New total: £14,232."
+}
+
+If success is false or the request fails, show an error message with a retry
+option. Do not expose raw error details to the user.
+
+────────────────────────────────────────────────────────────────────────────────
+HTML STRUCTURE — EDIT PANEL
+────────────────────────────────────────────────────────────────────────────────
+
+Give each panel a unique ID suffix (e.g. "P" for Products quote, "R" for
+Redesign/Full Makeover quote, or just a single panel if you have one quote type).
+
+Required element IDs (replace SUFFIX with your chosen suffix letter):
+  editFormSUFFIX          — the edit form (radio + textareas + email + submit)
+  editProcessingSUFFIX    — the animated steps panel (hidden until submit)
+  editResultsSUFFIX       — the results panel (hidden until webhook responds)
+  editStepsSUFFIX         — container where step <div>s are injected by JS
+  editImgWrapSUFFIX       — wrapper div for the updated image (hidden if no image)
+  editDesignImgSUFFIX     — <img> tag for the updated garden design
+  editViewImgBtnSUFFIX    — "View Full Design" <a> button (href set by JS)
+  editPdfWrapSUFFIX       — wrapper div for the PDF download (hidden if no pdf)
+  editPdfBtnSUFFIX        — "Download PDF" <a> button (href set by JS)
+
+Design the panel with a dark semi-transparent background (e.g. rgba(15,23,42,0.95))
+to overlay the results page. The processing and results panels should match the
+dark overlay aesthetic.
+
+────────────────────────────────────────────────────────────────────────────────
+JAVASCRIPT LOGIC OUTLINE
+────────────────────────────────────────────────────────────────────────────────
+
+const EDIT_ENDPOINT = '/webhook-proxy/pl-editor';
+
+const EDIT_STEPS = {
+  both:       ['Receiving your request…', 'Applying your changes…',
+               'Regenerating your design…', 'Rebuilding your quote…',
+               'Preparing your documents…'],
+  image_only: ['Receiving your request…', 'Applying your changes…',
+               'Regenerating your design…', 'Preparing your results…']
+};
+
+// On submit button click:
+async function submitEditRequest(variant) {
+  const email    = document.getElementById('editEmail' + variant).value.trim();
+  const radioEl  = document.querySelector('input[name="editType' + variant + '"]:checked');
+  const editType = radioEl ? radioEl.value : 'both';
+
+  const payload = { customer_email: email, edit_type: editType };
+
+  if (editType === 'both' || editType === 'image_only') {
+    const imgInstr = document.getElementById('editImgInstr' + variant).value.trim();
+    if (imgInstr) payload.image_edits = { instructions: imgInstr };
+  }
+  if (editType === 'both') {
+    const quoteInstr = document.getElementById('editQuoteInstr' + variant).value.trim();
+    if (quoteInstr) payload.quote_edits = { instructions: quoteInstr };
+  }
+
+  // Switch panels
+  document.getElementById('editForm' + variant).style.display = 'none';
+  document.getElementById('editProcessing' + variant).style.display = 'block';
+
+  // Start animated steps
+  startEditSteps(variant, editType);
+
+  try {
+    const res  = await fetch(EDIT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    completeEditSteps(variant);
+
+    // After a short delay show results
+    setTimeout(() => {
+      document.getElementById('editProcessing' + variant).style.display = 'none';
+      populateEditResults(variant, data);
+      document.getElementById('editResults' + variant).style.display = 'block';
+    }, 800);
+
+  } catch (err) {
+    // Show error state and reset form
+    console.error('Edit request failed:', err);
+    resetEditPanel(variant);
+    alert('Something went wrong. Please try again.');
+  }
+}
+
+function populateEditResults(variant, data) {
+  // Image
+  const imgWrap = document.getElementById('editImgWrap' + variant);
+  const img     = document.getElementById('editDesignImg' + variant);
+  const viewBtn = document.getElementById('editViewImgBtn' + variant);
+  if (data.image_url && imgWrap && img) {
+    img.src = data.image_url;
+    if (viewBtn) { viewBtn.href = data.image_url; }
+    imgWrap.style.display = 'block';
+  }
+
+  // PDF
+  const pdfWrap = document.getElementById('editPdfWrap' + variant);
+  const pdfBtn  = document.getElementById('editPdfBtn' + variant);
+  if (data.pdf_url && pdfWrap && pdfBtn) {
+    pdfBtn.href = data.pdf_url;
+    pdfBtn.onclick = e => { e.preventDefault(); window.open(data.pdf_url, '_blank'); };
+    pdfWrap.style.display = 'flex';
+  }
+
+  // Change summary / new total (optional — add an element with id editSummaryTEXT)
+  const summaryEl = document.getElementById('editSummary' + variant);
+  if (summaryEl && (data.change_summary || data.new_total)) {
+    summaryEl.textContent = data.change_summary || ('New total: ' + data.new_total);
+    summaryEl.style.display = 'block';
+  }
+}
+
+function resetEditPanel(variant) {
+  document.getElementById('editResults'    + variant).style.display = 'none';
+  document.getElementById('editProcessing' + variant).style.display = 'none';
+  document.getElementById('editForm'       + variant).style.display = 'block';
+  document.querySelectorAll('input[name="editType' + variant + '"]')
+    .forEach(r => { r.checked = false; r.disabled = false; });
+}
+
+────────────────────────────────────────────────────────────────────────────────
+ANIMATED STEPS — startEditSteps / activateEditStep / completeEditSteps
+────────────────────────────────────────────────────────────────────────────────
+
+function startEditSteps(variant, editType) {
+  const container = document.getElementById('editSteps' + variant);
+  const steps = EDIT_STEPS[editType] || EDIT_STEPS.both;
+  container.innerHTML = '';
+  steps.forEach((label, i) => {
+    const el = document.createElement('div');
+    el.id = 'editStep_' + variant + '_' + i;
+    el.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 14px;'
+      + 'border-radius:12px;background:rgba(255,255,255,0.04);'
+      + 'border:1px solid rgba(255,255,255,0.08);opacity:0.45;transition:all 0.4s;';
+    el.innerHTML = `
+      <span id="editStepIcon_${variant}_${i}"
+        style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.1);
+               display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="fas fa-circle" style="color:rgba(255,255,255,0.2);font-size:6px;"></i>
+      </span>
+      <span style="font-size:13px;color:rgba(255,255,255,0.55);">${label}</span>`;
+    container.appendChild(el);
+  });
+  const delays = [0, 4000, 14000, 28000, 45000];
+  steps.forEach((_, i) => {
+    setTimeout(() => activateEditStep(variant, i, i === steps.length - 1),
+      delays[i] !== undefined ? delays[i] : i * 12000);
+  });
+}
+
+function activateEditStep(variant, index, isLast) {
+  if (index > 0) {
+    const prev     = document.getElementById('editStep_' + variant + '_' + (index-1));
+    const prevIcon = document.getElementById('editStepIcon_' + variant + '_' + (index-1));
+    if (prev)     { prev.style.opacity = '0.6'; prev.style.background = 'rgba(34,197,94,0.06)'; }
+    if (prevIcon) prevIcon.innerHTML = '<i class="fas fa-check" style="color:#4ade80;font-size:10px;"></i>';
+  }
+  const el   = document.getElementById('editStep_' + variant + '_' + index);
+  const icon = document.getElementById('editStepIcon_' + variant + '_' + index);
+  if (el) { el.style.opacity = '1'; el.style.background = 'rgba(99,102,241,0.1)'; el.style.border = '1px solid rgba(99,102,241,0.3)'; }
+  if (icon) icon.innerHTML = '<span style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#a5b4fc;border-radius:50%;animation:editSpin 0.8s linear infinite;display:inline-block;"></span>';
+}
+
+function completeEditSteps(variant) {
+  const container = document.getElementById('editSteps' + variant);
+  if (!container) return;
+  Array.from(container.children).forEach((el, i) => {
+    const icon = document.getElementById('editStepIcon_' + variant + '_' + i);
+    el.style.opacity = '0.7';
+    el.style.background = 'rgba(34,197,94,0.06)';
+    el.style.border = '1px solid rgba(34,197,94,0.15)';
+    if (icon) icon.innerHTML = '<i class="fas fa-check" style="color:#4ade80;font-size:10px;"></i>';
+  });
+}
+
+// Add this CSS for the spinner animation:
+// @keyframes editSpin { to { transform: rotate(360deg); } }
+
+────────────────────────────────────────────────────────────────────────────────
+CUSTOMISATION CHECKLIST
+────────────────────────────────────────────────────────────────────────────────
+
+[ ] Replace "pl-editor" webhook slug with the correct n8n endpoint for this client.
+[ ] Update the proxy target URL in server.py / Cloudflare Worker.
+[ ] Adjust colour scheme to match the client's brand (indigo/purple → their primary).
+[ ] Update step labels to match the service (garden design → room design, etc.).
+[ ] Pre-fill the email field from the quote form submission data if available.
+[ ] Show/hide the quote instructions textarea based on edit_type radio selection.
+[ ] Add a "change_summary" display element if you want to show what changed.
+[ ] Test with a real n8n webhook that accepts the payload format above.
+[ ] On the live (static) site, use a Cloudflare Worker instead of Python proxy.
+
+================================================================================
+END OF PROMPT
+================================================================================
