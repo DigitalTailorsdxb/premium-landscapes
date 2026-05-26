@@ -111,6 +111,25 @@ All 17 pages have complete SEO: index, quote, about, services, gallery, contact,
 - **5 individual cost guide pages**: `patio-cost-per-m2.html`, `artificial-grass-cost.html`, `composite-decking-cost.html`, `garden-design-cost.html`, `landscaping-cost-uk.html` — deep-dive pricing pages with material comparison tables, real Leicester project examples, BreadcrumbList schema and cross-links.
 - **6 interactive cost calculator pages**: `patio-cost-calculator.html`, `artificial-grass-cost-calculator.html`, `composite-decking-cost-calculator.html`, `garden-design-cost-calculator.html`, `garden-makeover-cost-calculator.html`, `garden-landscaping-cost-calculator.html` — JS-powered slider + material selector with live price range calculation, CTA to free quote.
 
+### SEO/GEO Audit Fixes (May 2026)
+
+**Phase A — Foundational cleanup (pushed in commit 2da2918):**
+- Hardcoded real NAP (`07877 934782`, `Leicester, Leicestershire`) in footers of gallery, services, about, contact (span IDs preserved for white-label config.js render)
+- Removed "Leicestershire & Leicestershire" duplicate text across all 16 location pages
+- Fixed JSON-LD `areaServed: "Midlands & Home Counties"` → `"Leicester & Leicestershire"` on ~20 pages
+- Corrected 67 `og:url` `.html` mismatches with `canonical` URLs
+- Stripped `.html` from 2544+160 internal hrefs sitewide; converted 326 `href="index"` → `href="/"` for canonical homepage URL
+- Added 6 pre-rendered crawlable `<article>` review cards on `index.html` (bots see static content; config.js still re-renders for white-label)
+- Fixed invalid JSON-LD on `ai-garden-design.html` (escaped inner double quotes in FAQ answer)
+
+**Phase B — Hero polish + entity GEO page (pushed in commit 09a091d):**
+- **`index.html` hero rewrite:** subheading now leads with "Premium Landscapes designs and builds patios, artificial grass, composite decking, driveways and full garden transformations across Leicester and Leicestershire." CTA: "Get Free Instant Quote & AI Garden Design". Added trust-signal line: Local Leicester team · Fully insured · Fixed-price quotes · Real project examples.
+- **`index.html` about section:** added Premium Landscapes opening sentence + link "Read the full Premium Landscapes company profile →" pointing at the new entity page.
+- **`about-premium-landscapes.html` (NEW):** entity-rich GEO/AEO answer hub. Sections: direct-answer quick-answer block, Who We Are, What We Do (9-service grid), Where We Work (12 area pills + link), What Makes Us Different (3-card grid), Our Quote & AI Design System (4-step), Contact Details, FAQs (6 questions). JSON-LD `@graph` with `AboutPage` + `LocalBusiness/HomeAndConstructionBusiness` + `FAQPage` + `BreadcrumbList`; entities cross-referenced via `@id`.
+- Page registered in `sitemap.xml` (priority 0.9) and `_redirects` (`.html` → clean URL 301).
+
+**Phases C/D pending real local detail from owner** — unique 250–400 words per area page, real case studies, blog posts with real Leicester project specifics. Audit explicitly says do not invent content.
+
 ### Reviews / Social Proof (March 2026)
 - **config.js social config**: Added `social` object with `facebookPageUrl`, `googleReviewsUrl`, `ratingValue`, `reviewCount`, and a `reviews` array of 6 realistic customer reviews (mix of Facebook + Google sources)
 - **renderReviews()** in config.js: Dynamically renders review cards into any `#reviewCardsContainer` element with source icon (FB/Google), star rating, initials avatar, name, location, date, quote text
