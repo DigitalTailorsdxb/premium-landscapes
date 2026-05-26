@@ -3,7 +3,7 @@
   <url>
     <loc>https://www.premium-landscapes.co.uk/</loc>
     <lastmod>2026-05-26</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
@@ -31,12 +31,6 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://www.premium-landscapes.co.uk/garden-design</loc>
-    <lastmod>2026-05-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
     <loc>https://www.premium-landscapes.co.uk/garden-lighting</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>monthly</changefreq>
@@ -51,7 +45,7 @@
   <url>
     <loc>https://www.premium-landscapes.co.uk/quote</loc>
     <lastmod>2026-05-26</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
@@ -87,7 +81,7 @@
   <url>
     <loc>https://www.premium-landscapes.co.uk/blog</loc>
     <lastmod>2026-05-26</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
@@ -470,6 +464,12 @@
   </url>
   <url>
     <loc>https://www.premium-landscapes.co.uk/blog-9</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.premium-landscapes.co.uk/garden-design</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

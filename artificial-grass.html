@@ -92,14 +92,6 @@
                 },
                 {
                         "@type": "Question",
-                        "name": "Is artificial grass safe for children and pets?",
-                        "acceptedAnswer": {
-                                "@type": "Answer",
-                                "text": "Yes — all our turf is non-toxic, lead-free and tested to EN71 toy safety standards. Pet-specific grades include anti-bacterial treatment and enhanced drainage."
-                        }
-                },
-                {
-                        "@type": "Question",
                         "name": "Does artificial grass drain well?",
                         "acceptedAnswer": {
                                 "@type": "Answer",
@@ -145,6 +137,23 @@
     </script>
     <link rel="stylesheet" href="styles/mobile.css">
     <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+<script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "serviceType": "Artificial Grass Installation",
+      "provider": {
+        "@type": "LocalBusiness",
+        "name": "Premium Landscapes",
+        "url": "https://www.premium-landscapes.co.uk"
+      },
+      "areaServed": {
+        "@type": "City",
+        "name": "Leicester"
+      },
+      "url": "https://www.premium-landscapes.co.uk/artificial-grass"
+    }
+    </script>
 </head>
 <body class="bg-white text-gray-800">
     <!-- Navigation -->
@@ -401,6 +410,14 @@
         </div>
     </section>
 
+    <!-- Coverage Area Section -->
+    <section class="py-16 bg-white">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Artificial Grass Installation Across Leicester & Leicestershire</h2>
+            <p class="text-gray-700 leading-relaxed text-lg">We install artificial grass across Leicester city centre and all surrounding areas — including Oadby, Wigston, Narborough, Birstall, Syston, Hinckley, Loughborough, Glenfield and Kirby Muxloe. Every installation uses premium-grade turf and a properly compacted sub-base. No subcontractors, no shortcuts — the same experienced team on every job.</p>
+        </div>
+    </section>
+
     <!-- Installation Day Section -->
     <section class="py-16 bg-white">
         <div class="max-w-4xl mx-auto px-4">
@@ -526,24 +543,6 @@
                     </button>
                     <div id="faq-3" class="hidden mt-3 text-gray-600 leading-relaxed">Artificial grass can feel warm in direct sunlight. A quick spray with water cools it down instantly. Shade-tolerant grades are also available.</div>
                 </div>
-                <div class="border border-gray-200 rounded-xl overflow-hidden">
-                    <button class="w-full text-left px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 transition flex justify-between items-center" onclick="this.nextElementSibling.classList.toggle('hidden')">
-                        <h3 class="font-semibold text-gray-900 pr-4">Is artificial grass safe for children and pets?</h3>
-                        <i class="fas fa-chevron-down text-primary flex-shrink-0"></i>
-                    </button>
-                    <div class="hidden px-6 pb-4">
-                        <p class="text-gray-600">Yes. All our artificial grass is non-toxic, lead-free, and safe for children and pets. The drainage layer means no standing water, and the surface stays clean with occasional rinsing.</p>
-                    </div>
-                </div>
-                <div class="border border-gray-200 rounded-xl overflow-hidden">
-                    <button class="w-full text-left px-6 py-4 font-semibold text-gray-900 hover:bg-gray-50 transition flex justify-between items-center" onclick="this.nextElementSibling.classList.toggle('hidden')">
-                        <h3 class="font-semibold text-gray-900 pr-4">Does artificial grass get hot in summer?</h3>
-                        <i class="fas fa-chevron-down text-primary flex-shrink-0"></i>
-                    </button>
-                    <div class="hidden px-6 pb-4">
-                        <p class="text-gray-600">Artificial grass can get warm on very hot days — as does any dark surface including decking and patios. A quick spray with water cools it immediately. Our premium ranges include heat-reducing technology in the fibre construction.</p>
-                    </div>
-                </div>
                 <div class="faq-item py-5">
                     <button onclick="toggleFaq(4)" class="flex items-center justify-between w-full text-left">
                         <h3 class="font-semibold text-gray-900 pr-4">Can artificial grass be laid on slopes?</h3>
@@ -588,18 +587,26 @@
         </div>
     </section>
     <!-- Related Reading -->
-    <section class="py-8 px-4 bg-white">
-        <div class="max-w-4xl mx-auto">
-            <div class="border border-gray-200 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <div class="flex-shrink-0 bg-gradient-to-br from-primary to-accent rounded-xl w-12 h-12 flex items-center justify-center">
-                    <i class="fas fa-book-open text-white"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="text-xs text-primary font-semibold uppercase tracking-wide mb-1">From the blog — Artificial Grass Guide</p>
-                    <a href="blog-3.html" class="font-bold text-gray-800 hover:text-primary transition text-lg leading-tight">Artificial Grass vs Natural Turf: Which is Right for You?</a>
-                    <p class="text-sm text-gray-500 mt-1">Helpful reading before you commit to your project.</p>
-                </div>
-                <a href="blog-3.html" class="flex-shrink-0 text-primary font-semibold hover:text-accent transition text-sm whitespace-nowrap">Read article →</a>
+    <section class="py-16 bg-gradient-to-br from-blue-50 to-white">
+        <div class="max-w-5xl mx-auto px-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">Related Guides From Our Blog</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <a href="/blog-3" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition flex items-start gap-4 group">
+                    <div class="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center"><i class="fas fa-book-open text-primary"></i></div>
+                    <div class="flex-1">
+                        <p class="text-xs uppercase tracking-wide text-primary font-semibold mb-1">From the Blog</p>
+                        <p class="font-bold text-gray-900 group-hover:text-primary transition text-lg leading-tight mb-2">Artificial Grass vs Natural Turf: Which is Right for You?</p>
+                        <span class="text-primary font-semibold text-sm">Read article →</span>
+                    </div>
+                </a>
+                <a href="/blog-7" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition flex items-start gap-4 group">
+                    <div class="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center"><i class="fas fa-book-open text-primary"></i></div>
+                    <div class="flex-1">
+                        <p class="text-xs uppercase tracking-wide text-primary font-semibold mb-1">From the Blog</p>
+                        <p class="font-bold text-gray-900 group-hover:text-primary transition text-lg leading-tight mb-2">Family Garden Design Ideas for UK Homes</p>
+                        <span class="text-primary font-semibold text-sm">Read article →</span>
+                    </div>
+                </a>
             </div>
         </div>
     </section>
