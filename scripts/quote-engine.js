@@ -3195,11 +3195,13 @@ function populateResultShowcase(data, suffix) {
 
     // --- Design image ---
     if (parsed.imageUrl) {
-        const imgWrap = document.getElementById('resultImageWrap' + suffix);
-        const img     = document.getElementById('resultDesignImg' + suffix);
-        const viewBtn = document.getElementById('resultViewDesignBtn' + suffix);
-        if (imgWrap) imgWrap.classList.remove('hidden');
-        if (img)     img.src = parsed.imageUrl;
+        const imgWrap    = document.getElementById('resultImageWrap' + suffix);
+        const img        = document.getElementById('resultDesignImg' + suffix);
+        const designWrap = document.getElementById('resultDesignWrap' + suffix);
+        const viewBtn    = document.getElementById('resultViewDesignBtn' + suffix);
+        if (imgWrap)    imgWrap.classList.remove('hidden');
+        if (designWrap) designWrap.classList.remove('hidden');
+        if (img)        img.src = parsed.imageUrl;
         if (viewBtn) {
             viewBtn.href = parsed.imageUrl;
             viewBtn.setAttribute('target', '_blank');
