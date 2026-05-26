@@ -8,14 +8,24 @@
     function updateGA(granted) {
         if (typeof window.gtag === 'function') {
             window.gtag('consent', 'update', {
-                analytics_storage: granted ? 'granted' : 'denied',
-                ad_storage:        granted ? 'granted' : 'denied'
+                analytics_storage:  granted ? 'granted' : 'denied',
+                ad_storage:         granted ? 'granted' : 'denied',
+                ad_user_data:       granted ? 'granted' : 'denied',
+                ad_personalization: granted ? 'granted' : 'denied'
             });
         }
     }
 
+    function fireMarketingPixels(granted) {
+        if (!granted) return;
+        // Facebook Pixel — only fires init + PageView after consent
+        if (typeof window.__plFireFbPixel === 'function') {
+            window.__plFireFbPixel();
+        }
+    }
+
     var existing = getConsent();
-    if (existing === 'accepted') { updateGA(true);  return; }
+    if (existing === 'accepted') { updateGA(true);  fireMarketingPixels(true);  return; }
     if (existing === 'rejected') { updateGA(false); return; }
 
     var banner = document.createElement('div');
@@ -59,6 +69,7 @@
     function dismiss(consent) {
         setConsent(consent);
         updateGA(consent === 'accepted');
+        fireMarketingPixels(consent === 'accepted');
         banner.style.transform   = 'translateY(100%)';
         banner.style.transition  = 'transform 0.3s ease';
         setTimeout(function () {
