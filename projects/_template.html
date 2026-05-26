@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  CASE-STUDY DRAFT TEMPLATE — DO NOT PUBLISH AS-IS
+  ============================================================================
+  This file is a scaffold for creating a new project case study. It is
+  intentionally marked noindex,nofollow and is NOT listed in sitemap.xml or
+  linked from case-studies.html, so it will not be indexed by search engines
+  while it remains in draft form.
+
+  HOW TO PUBLISH A NEW CASE STUDY:
+  --------------------------------------------------------------------------
+  1. COPY this file to a new filename in /projects/, e.g.
+     /projects/porcelain-patio-stoneygate.html
+     (use the pattern: <project-type>-<area>.html, lowercase, hyphens only)
+
+  2. REPLACE every {{PLACEHOLDER}} value below with real project content.
+     Required fields (must NOT be left as placeholders):
+       - {{TITLE}}           e.g. "Porcelain Patio Installation, Stoneygate"
+       - {{SLUG}}            same as filename without .html
+       - {{META_DESC}}       155-160 characters, real description
+       - {{AREA}}            e.g. "Stoneygate"
+       - {{POSTCODE}}        e.g. "LE2"
+       - {{SUBTITLE}}        one-paragraph hero subtitle, real project facts
+       - {{HERO_IMAGE}}      path to real photo, e.g. images/projects/.../X.jpg
+       - {{HERO_ALT}}        descriptive alt text of the actual photo
+       - {{DURATION}}        e.g. "5 days"
+       - {{SIZE_LABEL}}      e.g. "32 m\u00b2" or "Wrap-Around Deck"
+       - {{OVERVIEW_P1..P3}} 3 paragraphs of real project context
+       - {{MATERIALS}}       list of real materials/products used
+       - {{SCOPE_ITEMS}}     real scope-of-work bullets
+       - {{STEP_1..6}}       6 build-process steps with real photos
+       - {{GALLERY_IMAGES}}  real photo URLs and alts
+       - {{RESULTS_P1..P2}}  honest results summary, no invented quotes
+       - {{RELATED_SERVICE}} link to /services-... page that matches
+       - {{RELATED_AREA}}    link to /landscaping-{{AREA-SLUG}} page
+
+  3. REMOVE the <meta name="robots" content="noindex,nofollow"> line below
+     and replace with: <meta name="robots" content="index, follow">
+
+  4. UPDATE the JSON-LD Article block: real headline, real description, real
+     image URL, real datePublished.
+
+  5. ADD the new page to sitemap.xml (priority 0.7) and _redirects
+     (.html -> clean URL 301).
+
+  6. ADD a card for the new project to case-studies.html (the grid block
+     starting at the "py-16" section) AND add a corresponding entry in the
+     ItemList JSON-LD on that page.
+
+  7. RULES (do not break these):
+     - No invented customers, no invented testimonials, no invented quotes.
+     - No stock imagery — every photo must be from the actual project.
+     - Every factual claim (timeline, size, materials, cost if shown) must be
+       verifiable from the real install.
+     - Do not publish until owner has approved the photos and copy.
+  ============================================================================
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}} | Premium Landscapes</title>
+    <meta name="description" content="{{META_DESC}}">
+    <!-- DRAFT: this page must remain noindex until owner approval -->
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="https://www.premium-landscapes.co.uk/projects/{{SLUG}}">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="apple-touch-icon" href="../images/logo.png">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://www.premium-landscapes.co.uk/projects/{{SLUG}}">
+    <meta property="og:title" content="{{TITLE}} | Premium Landscapes">
+    <meta property="og:description" content="{{META_DESC}}">
+    <meta property="og:image" content="https://premium-landscapes.co.uk/{{HERO_IMAGE}}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{TITLE}} | Premium Landscapes">
+    <meta name="twitter:description" content="{{META_DESC}}">
+    <meta name="twitter:image" content="https://premium-landscapes.co.uk/{{HERO_IMAGE}}">
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "{{TITLE}}",
+      "description": "{{META_DESC}}",
+      "author": {"@type": "Organization", "name": "Premium Landscapes"},
+      "publisher": {"@type": "Organization", "name": "Premium Landscapes", "url": "https://premium-landscapes.co.uk"},
+      "image": "https://premium-landscapes.co.uk/{{HERO_IMAGE}}",
+      "datePublished": "{{YYYY-MM-DD}}",
+      "url": "https://premium-landscapes.co.uk/projects/{{SLUG}}"
+    }</script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type":"ListItem","position":1,"name":"Home","item":"https://premium-landscapes.co.uk/"},
+            {"@type":"ListItem","position":2,"name":"Case Studies","item":"https://premium-landscapes.co.uk/case-studies"},
+            {"@type":"ListItem","position":3,"name":"{{TITLE_SHORT}}","item":"https://premium-landscapes.co.uk/projects/{{SLUG}}"}
+        ]
+    }
+    </script>
+    <script src="../scripts/tailwind.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    <link rel="stylesheet" href="../styles/liquid-glass.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {primary: '#2563eb','primary-dark': '#1d4ed8',secondary: '#3b82f6',accent: '#8b5cf6'},
+                    fontFamily: {heading: ['Inter','sans-serif'],body: ['Open Sans','sans-serif']}
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Open Sans', sans-serif; }
+        h1,h2,h3,h4 { font-family: 'Inter', sans-serif; }
+        .hero-gradient { background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #7c3aed 100%); }
+        .draft-banner { background: repeating-linear-gradient(45deg, #fee2e2, #fee2e2 12px, #fecaca 12px, #fecaca 24px); }
+    </style>
+    <link rel="stylesheet" href="../styles/mobile.css">
+</head>
+<body class="bg-white text-gray-800">
+
+    <div class="draft-banner text-center py-3 text-red-800 font-bold border-y-2 border-red-300">
+        DRAFT TEMPLATE — NOT FOR PUBLICATION. Remove this banner and the noindex meta tag once content is finalised.
+    </div>
+
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="/"><img src="../images/logo.png" alt="Premium Landscapes" class="h-10"></a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="../about" class="text-gray-600 hover:text-primary transition font-medium">About</a>
+                <a href="../services" class="text-gray-600 hover:text-primary transition font-medium">Services</a>
+                <a href="../gallery" class="text-gray-600 hover:text-primary transition font-medium">Gallery</a>
+                <a href="../quote" class="bg-primary text-white px-5 py-2 rounded-full font-semibold hover:bg-primary-dark transition flex items-center gap-2">
+                    <span class="bg-green-400 text-white text-xs px-2 py-0.5 rounded-full font-bold">FREE</span>
+                    Instant Quote &amp; Design
+                </a>
+                <a href="../contact" class="text-gray-600 hover:text-primary transition font-medium">Contact</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="bg-gray-50 border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-4 py-3 text-sm text-gray-500">
+            <a href="/" class="hover:text-primary">Home</a>
+            <span class="mx-2">/</span>
+            <a href="../case-studies" class="hover:text-primary">Case Studies</a>
+            <span class="mx-2">/</span>
+            <span class="text-gray-800 font-medium">{{TITLE_SHORT}}</span>
+        </div>
+    </div>
+
+    <section class="hero-gradient text-white py-16">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <span class="bg-white/20 text-white text-sm px-3 py-1 rounded-full font-medium mb-4 inline-block">
+                <i class="fas fa-map-marker-alt mr-1"></i> {{AREA}}, {{POSTCODE}}
+            </span>
+            <h1 class="text-3xl md:text-4xl font-bold mb-4 mt-3">{{TITLE}}</h1>
+            <p class="text-blue-100 text-lg max-w-2xl mx-auto">{{SUBTITLE}}</p>
+        </div>
+    </section>
+
+    <section class="py-8 bg-white border-b border-gray-100">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="grid grid-cols-3 md:grid-cols-3 gap-6 text-center">
+                <div><p class="text-2xl font-bold text-primary">{{SIZE_LABEL}}</p><p class="text-gray-500 text-sm">Project Size</p></div>
+                <div><p class="text-2xl font-bold text-primary">{{DURATION}}</p><p class="text-gray-500 text-sm">Completion Time</p></div>
+                <div><p class="text-2xl font-bold text-primary">{{RATING}}</p><p class="text-gray-500 text-sm">Customer Rating</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16 bg-gray-50">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold mb-3">The Finished Project</h2>
+                <p class="text-gray-600">{{FINISHED_INTRO}}</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="md:col-span-2">
+                    <img src="../{{HERO_IMAGE}}" alt="{{HERO_ALT}}" class="w-full h-72 object-cover rounded-2xl shadow-lg">
+                </div>
+                <div class="grid grid-rows-2 gap-4">
+                    <img loading="lazy" src="../{{IMG_2}}" alt="{{ALT_2}}" class="w-full h-32 object-cover rounded-2xl shadow-lg">
+                    <img loading="lazy" src="../{{IMG_3}}" alt="{{ALT_3}}" class="w-full h-32 object-cover rounded-2xl shadow-lg">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-6">Project Overview</h2>
+            <div class="prose max-w-none text-gray-700 leading-relaxed space-y-4">
+                <p>{{OVERVIEW_P1}}</p>
+                <p>{{OVERVIEW_P2}}</p>
+                <p>{{OVERVIEW_P3}}</p>
+            </div>
+            <div class="mt-8">
+                <h3 class="font-bold text-lg mb-3">Materials Used</h3>
+                <div class="flex flex-wrap gap-2">
+                    <!-- Repeat for each real material: -->
+                    <span class="inline-block bg-blue-50 text-primary px-3 py-1 rounded-full text-sm font-medium">{{MATERIAL_1}}</span>
+                    <span class="inline-block bg-blue-50 text-primary px-3 py-1 rounded-full text-sm font-medium">{{MATERIAL_2}}</span>
+                    <span class="inline-block bg-blue-50 text-primary px-3 py-1 rounded-full text-sm font-medium">{{MATERIAL_3}}</span>
+                </div>
+            </div>
+            <div class="mt-6">
+                <h3 class="font-bold text-lg mb-3">Scope of Work</h3>
+                <ul class="space-y-2">
+                    <li class="flex items-start gap-2"><i class="fas fa-check text-primary mt-1 flex-shrink-0"></i><span class="text-gray-700">{{SCOPE_1}}</span></li>
+                    <li class="flex items-start gap-2"><i class="fas fa-check text-primary mt-1 flex-shrink-0"></i><span class="text-gray-700">{{SCOPE_2}}</span></li>
+                    <li class="flex items-start gap-2"><i class="fas fa-check text-primary mt-1 flex-shrink-0"></i><span class="text-gray-700">{{SCOPE_3}}</span></li>
+                    <li class="flex items-start gap-2"><i class="fas fa-check text-primary mt-1 flex-shrink-0"></i><span class="text-gray-700">{{SCOPE_4}}</span></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16 bg-gray-50">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold mb-3">How We Did It</h2>
+                <p class="text-gray-600">A step-by-step look at the build process.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Repeat for each real build step (typically 4-6 steps): -->
+                <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                    <img loading="lazy" src="../{{STEP_1_IMG}}" alt="{{STEP_1_ALT}}" class="w-full h-48 object-cover rounded-xl mb-3">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">1</span>
+                        <h3 class="font-bold text-gray-900">{{STEP_1_TITLE}}</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm leading-relaxed">{{STEP_1_BODY}}</p>
+                </div>
+                <!-- ... repeat for steps 2-6 ... -->
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16 bg-white">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold mb-3">Full Photo Gallery</h2>
+                <p class="text-gray-600">Click any photo to view full size.</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <!-- Repeat for each real project photo: -->
+                <a href="../{{GALLERY_1}}" target="_blank" class="group overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <img loading="lazy" src="../{{GALLERY_1}}" alt="{{GALLERY_1_ALT}}" class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300">
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-6">The Results</h2>
+            <div class="bg-blue-50 rounded-2xl p-8 border border-blue-100">
+                <div class="prose max-w-none text-gray-700 leading-relaxed space-y-3">
+                    <p><strong>{{RESULTS_HEADLINE}}</strong></p>
+                    <p>{{RESULTS_P1}}</p>
+                    <p>{{RESULTS_P2}}</p>
+                </div>
+            </div>
+            <div class="mt-8 text-center text-gray-600">
+                Related: <a href="../{{RELATED_SERVICE}}" class="text-primary font-semibold hover:underline">{{RELATED_SERVICE_LABEL}}</a> &nbsp;|&nbsp; <a href="../{{RELATED_AREA}}" class="text-primary font-semibold hover:underline">Landscaping in {{AREA}}</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="hero-gradient py-16 text-white text-center">
+        <div class="max-w-3xl mx-auto px-4">
+            <span class="bg-green-400 text-white text-sm px-3 py-1 rounded-full font-bold mb-4 inline-block">100% FREE</span>
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Want a Similar Transformation?</h2>
+            <p class="text-blue-100 text-lg mb-8">Get a free AI-powered design preview and instant quote for your garden in 90 seconds.</p>
+            <a href="../quote" class="bg-white text-primary font-bold px-10 py-4 rounded-full text-lg hover:bg-blue-50 transition inline-block shadow-lg">
+                <i class="fas fa-magic mr-2"></i> Get My Free Quote &amp; Design
+            </a>
+        </div>
+    </section>
+
+    <footer class="bg-white border-t border-gray-100 py-10">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <p class="text-sm text-gray-500">&copy; 2026 Premium Landscapes. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
