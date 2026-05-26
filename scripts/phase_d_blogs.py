@@ -28,7 +28,7 @@ TOPICS = [
         "hero_subtitle": "Front-garden driveways larger than 5 m² in England still need planning permission unless they meet the SuDS rules — here is what those rules actually require in 2026.",
         "image": "images/services-driveway.webp",
         "image_alt": "Permeable resin-bound driveway compliant with UK SuDS rules",
-        "service_link": ("services-driveway-block-paving", "driveways service page"),
+        "service_link": ("driveways", "driveways service page"),
         "area_links": [("landscaping-leicester", "Leicester"), ("landscaping-narborough", "Narborough"), ("landscaping-glenfield", "Glenfield")],
         "related_blog": (5, "Composite vs Timber Decking: UK Buyer's Guide"),
         "sections": [
@@ -70,7 +70,7 @@ TOPICS = [
         "hero_subtitle": "Why the build-up under your patio matters more than the slab on top — a homeowner's guide to BS 7533, MOT Type 1, and the right sub-base for Leicestershire clay soil.",
         "image": "images/services-patio.webp",
         "image_alt": "Cross-section showing patio sub-base build-up: MOT Type 1, bedding and paving",
-        "service_link": ("services-patio-installation", "patios service page"),
+        "service_link": ("patios", "patios service page"),
         "area_links": [("landscaping-oadby", "Oadby"), ("landscaping-wigston", "Wigston"), ("landscaping-stoneygate", "Stoneygate")],
         "related_blog": (4, "Choosing the Best Patio Materials for UK Weather"),
         "sections": [
@@ -114,7 +114,7 @@ TOPICS = [
         "hero_subtitle": "Most garden projects don't need planning permission — but the rules are full of traps. Here's a clear 2026 guide to permitted development for UK homeowners.",
         "image": "images/services-garden.webp",
         "image_alt": "UK garden makeover within permitted development rights — patio, lawn and decking",
-        "service_link": ("services-full-garden-makeover", "garden makeover service"),
+        "service_link": ("full-garden-makeover", "garden makeover service"),
         "area_links": [("landscaping-leicester", "Leicester"), ("landscaping-kirby-muxloe", "Kirby Muxloe"), ("landscaping-loughborough", "Loughborough")],
         "related_blog": (1, "How Much Does a Garden Redesign Cost in the UK"),
         "sections": [
@@ -158,7 +158,7 @@ TOPICS = [
         "hero_subtitle": "Living in a Leicester conservation area changes what you can do in your garden — here's what's restricted, what's allowed, and how we handle the paperwork.",
         "image": "images/services-garden.webp",
         "image_alt": "Edwardian property in Stoneygate conservation area with natural stone landscaping",
-        "service_link": ("services-full-garden-makeover", "full garden makeover service"),
+        "service_link": ("full-garden-makeover", "full garden makeover service"),
         "area_links": [("landscaping-stoneygate", "Stoneygate"), ("landscaping-clarendon-park", "Clarendon Park"), ("landscaping-oadby", "Oadby"), ("landscaping-kirby-muxloe", "Kirby Muxloe")],
         "related_blog": (13, "Permitted Development for Gardens"),
         "sections": [
@@ -200,7 +200,7 @@ TOPICS = [
         "hero_subtitle": "Most of Leicestershire sits on clay — and that means drainage is something you fix at the design stage, not after the patio is down.",
         "image": "images/services-garden.webp",
         "image_alt": "French drain trench with perforated pipe and aggregate — Leicestershire clay garden",
-        "service_link": ("services-full-garden-makeover", "garden makeover service"),
+        "service_link": ("full-garden-makeover", "garden makeover service"),
         "area_links": [("landscaping-narborough", "Narborough"), ("landscaping-birstall", "Birstall"), ("landscaping-thurmaston", "Thurmaston")],
         "related_blog": (12, "Patio Sub-Bases Explained"),
         "sections": [
@@ -240,9 +240,9 @@ TOPICS = [
         "meta_desc": "Honest UK 2026 buyer's guide comparing Millboard, Trex, Cladco and other leading composite decking brands. Costs per m\u00b2, warranties, finish quality and which to pick.",
         "category": "Materials & Engineering",
         "hero_subtitle": "Not all composite decking is the same — and the difference between the cheapest and the best can be £80 per m\u00b2. A 2026 UK buyer's guide.",
-        "image": "images/services-decking.webp",
+        "image": "images/composite-decking.webp",
         "image_alt": "Composite decking installation showing Millboard, Trex and Cladco board comparison",
-        "service_link": ("services-composite-decking", "composite decking service"),
+        "service_link": ("composite-decking", "composite decking service"),
         "area_links": [("landscaping-kirby-muxloe", "Kirby Muxloe"), ("landscaping-wigston", "Wigston"), ("landscaping-glenfield", "Glenfield")],
         "related_blog": (5, "Composite vs Timber Decking: Complete UK Buyer's Guide"),
         "sections": [
@@ -282,9 +282,9 @@ TOPICS = [
         "meta_desc": "2026 UK technical buyer's guide to artificial grass: what pile height means, density (Dtex), backings, infill, drainage and how to read a spec sheet honestly.",
         "category": "Materials & Engineering",
         "hero_subtitle": "Artificial grass spec sheets are full of jargon — pile height, Dtex, gauge, backing. Here's what each number actually means and which ones matter for a UK garden.",
-        "image": "images/services-grass.webp",
+        "image": "images/artificial-grass.webp",
         "image_alt": "Cross-section of artificial grass showing pile, backing, sub-base and drainage layers",
-        "service_link": ("services-artificial-grass", "artificial grass service"),
+        "service_link": ("artificial-grass", "artificial grass service"),
         "area_links": [("landscaping-leicester", "Leicester"), ("landscaping-oadby", "Oadby"), ("landscaping-syston", "Syston")],
         "related_blog": (3, "Artificial Grass vs Natural Turf: Which is Right for Your Garden?"),
         "sections": [
@@ -328,7 +328,7 @@ TOPICS = [
         "hero_subtitle": "Three driveway surfaces dominate the UK market — but only two of them are SuDS-compliant, and only one actually feels good underfoot. A 2026 comparison.",
         "image": "images/services-driveway.webp",
         "image_alt": "Side-by-side comparison: resin-bound driveway, resin-bonded surface and block paving",
-        "service_link": ("services-driveway-block-paving", "driveways service"),
+        "service_link": ("driveways", "driveways service"),
         "area_links": [("landscaping-kirby-muxloe", "Kirby Muxloe"), ("landscaping-enderby", "Enderby"), ("landscaping-blaby", "Blaby")],
         "related_blog": (11, "SuDS Driveway Rules 2026"),
         "sections": [
@@ -370,7 +370,7 @@ TOPICS = [
         "hero_subtitle": "Garden lighting looks beautiful — but get the regulations wrong and you've invalidated your home insurance. A 2026 guide to Part P, IP ratings and voltage choices.",
         "image": "images/garden-lighting.webp",
         "image_alt": "Professional garden lighting installation with IP-rated fittings and low-voltage transformer",
-        "service_link": ("services-garden-lighting", "garden lighting service"),
+        "service_link": ("garden-lighting", "garden lighting service"),
         "area_links": [("landscaping-stoneygate", "Stoneygate"), ("landscaping-knighton", "Knighton"), ("landscaping-oadby", "Oadby")],
         "related_blog": (6, "Outdoor Garden Lighting Ideas"),
         "sections": [
@@ -414,7 +414,7 @@ TOPICS = [
         "hero_subtitle": "Choosing patio material for a Leicestershire garden isn't just an aesthetic call — clay soil changes how each material performs over 10 years. Here's what we recommend and why.",
         "image": "images/services-patio.webp",
         "image_alt": "Porcelain, Indian sandstone, limestone and granite patio samples on Leicestershire clay",
-        "service_link": ("services-patio-installation", "patios service"),
+        "service_link": ("patios", "patios service"),
         "area_links": [("landscaping-oadby", "Oadby"), ("landscaping-wigston", "Wigston"), ("landscaping-syston", "Syston"), ("landscaping-glenfield", "Glenfield")],
         "related_blog": (12, "Patio Sub-Bases Explained: BS 7533"),
         "sections": [
