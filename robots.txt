@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://premium-landscapes.co.uk/sitemap.xml
+Sitemap: https://www.premium-landscapes.co.uk/sitemap.xml
