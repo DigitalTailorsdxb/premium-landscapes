@@ -128,7 +128,14 @@ All 17 pages have complete SEO: index, quote, about, services, gallery, contact,
 - **`about-premium-landscapes.html` (NEW):** entity-rich GEO/AEO answer hub. Sections: direct-answer quick-answer block, Who We Are, What We Do (9-service grid), Where We Work (12 area pills + link), What Makes Us Different (3-card grid), Our Quote & AI Design System (4-step), Contact Details, FAQs (6 questions). JSON-LD `@graph` with `AboutPage` + `LocalBusiness/HomeAndConstructionBusiness` + `FAQPage` + `BreadcrumbList`; entities cross-referenced via `@id`.
 - Page registered in `sitemap.xml` (priority 0.9) and `_redirects` (`.html` → clean URL 301).
 
-**Phases C/D pending real local detail from owner** — unique 250–400 words per area page, real case studies, blog posts with real Leicester project specifics. Audit explicitly says do not invent content.
+**Phase C — Unique factual content on all area pages (pushed in commit TBD):**
+- Replaced templated/duplicate SEO Content Block on **19 area pages** (anstey, birstall, blaby, clarendon-park, cosby, enderby, glenfield, hinckley, kirby-muxloe, knighton, loughborough, markfield, narborough, oadby, ratby, stoneygate, syston, thurmaston, wigston) with genuinely unique, factually-anchored local content (~350 words each).
+- Each page now carries real local facts: postcode districts, local planning authority, neighbourhoods/streets we work in, approximate distance + drive time from our Kirby Muxloe base, property/garden profile, local geology and drainage character (Charnian rocks, Mercia Mudstone, river-valley alluvium etc.), and most-common project types — all public-domain & defensible.
+- Replaced templated FAQ section on the same 19 pages with 5 unique town-specific Q&A pairs (postcodes covered, distance from base, planning authority, ground conditions, most-common projects). Matching `FAQPage` JSON-LD regenerated for each.
+- Implementation: `scripts/phase_c_rewrite_areas.py` holds the per-town facts dictionary; safe to re-run or extend with new towns. All 19 pages re-validated JSON-LD-clean.
+- Duplicate-content audit confirmed: 20 pages now have 20 distinct opening paragraphs (vs 1 templated paragraph across all of them before).
+
+**Phase D pending real owner content** — case studies and blog posts with real Leicester project specifics. Audit explicitly says do not invent content here.
 
 ### Reviews / Social Proof (March 2026)
 - **config.js social config**: Added `social` object with `facebookPageUrl`, `googleReviewsUrl`, `ratingValue`, `reviewCount`, and a `reviews` array of 6 realistic customer reviews (mix of Facebook + Google sources)
