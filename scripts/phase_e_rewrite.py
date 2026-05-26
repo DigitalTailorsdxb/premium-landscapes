@@ -619,27 +619,34 @@ GALLERY_TAG_RE = re.compile(
 )
 
 def insert_blog_nav(html):
+    """Insert <a href="blog">Blog</a> directly after the Gallery anchor.
+
+    Safer inline insertion — never copies surrounding content as "indent".
+    Works equally well on pretty-printed multi-line navs and minified
+    single-line navs. Idempotent: skips if a Blog link already exists in
+    the short window immediately after Gallery.
+    """
     changes = 0
 
     def repl(match):
         nonlocal changes
         full_tag = match.group(1)
         classes = match.group(3)
-        # Look ahead in the original html: check there's no Blog href in the same nav block
-        # We do a local check on the surrounding 600 chars
-        start = max(0, match.start() - 50)
-        end = min(len(html), match.end() + 600)
-        window = html[start:end]
-        if re.search(r'<a\s+href="/?blog"', window):
-            return full_tag  # already has Blog nearby, leave untouched
-        blog_link = f'<a href="blog" class="{classes}">Blog</a>'
-        # Preserve indentation style (newline + whitespace prefix) from after the gallery tag
-        # by inserting on a new line with same indent
-        # We look at the leading whitespace of the original line
+        # Look forward 300 chars only — if Blog already follows Gallery, skip.
+        end = min(len(html), match.end() + 300)
+        window_after = html[match.end():end]
+        if re.search(r'<a\s+href="/?blog"[^>]*>\s*Blog\s*<', window_after):
+            return full_tag
+        # Detect indent style of the gallery line — only whitespace chars,
+        # never arbitrary content. If gallery sits on a multi-line block,
+        # mirror the indent on a new line; otherwise stay inline.
         line_start = html.rfind("\n", 0, match.start()) + 1
-        indent = html[line_start:match.start()]
+        prefix = html[line_start:match.start()]
+        blog_link = f'<a href="blog" class="{classes}">Blog</a>'
         changes += 1
-        return f"{full_tag}\n{indent}{blog_link}"
+        if prefix and re.fullmatch(r"[ \t]+", prefix):
+            return f"{full_tag}\n{prefix}{blog_link}"
+        return f"{full_tag}{blog_link}"
 
     new_html = GALLERY_TAG_RE.sub(repl, html)
     return new_html, changes
