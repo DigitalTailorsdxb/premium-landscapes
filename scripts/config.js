@@ -20,74 +20,13 @@ const brandConfig = {
         // To find your link: Google Business Profile dashboard → "Get more reviews" → copy the link
         googleReviewsUrl: "https://www.google.com/maps/search/Premium+Landscapes+Kirby+Muxloe+Leicester",
 
-        // Aggregate rating displayed in the reviews section header
-        ratingValue: "4.9",
-        reviewCount: "87",
+        // Aggregate rating — update with real figures once Google Business reviews are live
+        ratingValue: null,
+        reviewCount: null,
 
-        // Reviews displayed in the social proof carousel
-        // To customise: replace these with real customer reviews
-        reviews: [
-            {
-                name: "Sarah Mitchell",
-                location: "Oadby, Leicester",
-                rating: 5,
-                date: "January 2026",
-                text: "Absolutely transformed our garden. The porcelain patio looks stunning and the artificial grass is indistinguishable from the real thing. The team were professional, tidy and finished exactly on schedule. Would highly recommend.",
-                initials: "SM",
-                avatarColor: "#2563eb",
-                source: "facebook"
-            },
-            {
-                name: "James & Karen Whitfield",
-                location: "Wigston, Leicester",
-                rating: 5,
-                date: "December 2025",
-                text: "We had our full front garden redone with block paving and new garden lighting. The AI quote tool was brilliant — gave us an accurate price instantly. No pushy sales, honest advice and beautiful results.",
-                initials: "JW",
-                avatarColor: "#7c3aed",
-                source: "google"
-            },
-            {
-                name: "David Patel",
-                location: "Narborough",
-                rating: 5,
-                date: "November 2025",
-                text: "The composite decking is exceptional quality. I've had decking done before by another company and there's no comparison. These guys know what they're doing. Very clean, very professional. Already recommended them to my neighbours.",
-                initials: "DP",
-                avatarColor: "#059669",
-                source: "facebook"
-            },
-            {
-                name: "Helen Forsyth",
-                location: "Birstall, Leicester",
-                rating: 5,
-                date: "October 2025",
-                text: "I used the free AI design tool before committing and it gave me such a clear picture of how my garden would look. The finished result matched it perfectly. Brilliant concept and brilliant execution.",
-                initials: "HF",
-                avatarColor: "#dc2626",
-                source: "google"
-            },
-            {
-                name: "Tom & Lisa Brady",
-                location: "Loughborough",
-                rating: 5,
-                date: "September 2025",
-                text: "We had a full garden makeover — patio, lawn, raised beds, fencing and lighting. The project manager was outstanding, kept us informed throughout. Finished on time and within budget. Couldn't be happier.",
-                initials: "TB",
-                avatarColor: "#d97706",
-                source: "facebook"
-            },
-            {
-                name: "Anita Sharma",
-                location: "Hinckley",
-                rating: 5,
-                date: "August 2025",
-                text: "Our driveway and front garden look completely different — in the best way. The resin bound surface is gorgeous and the new planted borders make the house look twice as impressive. Fantastic team.",
-                initials: "AS",
-                avatarColor: "#0891b2",
-                source: "google"
-            }
-        ]
+        // Reviews — add real verified customer reviews here once collected
+        // Format: { name, location, rating, date, text, initials, avatarColor, source }
+        reviews: []
     },
     
     // ============================================================================
