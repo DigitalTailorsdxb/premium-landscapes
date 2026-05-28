@@ -725,7 +725,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             color: #10b981;
         }
     </style>
-    <link rel="stylesheet" href="styles/mobile.css?v=2">
+    <link rel="stylesheet" href="styles/mobile.css?v=3">
     <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
     <style>
     /* ═══════════════════════════════════════════
@@ -934,10 +934,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         .quote-form-column > div.bg-white { padding: 1.125rem !important; border-radius: 1.25rem !important; }
         .quote-form-column > div { overflow-x: hidden; }
 
-        /* Step headers */
-        .qsh { margin-bottom: 1.25rem !important; padding-bottom: 1rem !important; }
-        .qsh-title { font-size: 1.25rem !important; }
-        .qsh-sub   { font-size: 0.78rem !important; margin-top: 0.2rem !important; }
+        /* ── A. STEP HEADER — single-line, app-like.
+              The sticky progress bar already shows "Step N of 6" plus numbered
+              pips, so hide the duplicate numbered circle + gradient line.       */
+        .qsh-num,
+        .qsh-line { display: none !important; }
+        .qsh-row  { margin-bottom: 0.2rem !important; gap: 0 !important; }
+        .qsh {
+            margin-bottom: 1rem !important;
+            padding-bottom: 0.75rem !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+        }
+        .qsh-title { font-size: 1.15rem !important; line-height: 1.2 !important; }
+        .qsh-sub   { font-size: 0.72rem !important; color: #94a3b8 !important; margin-top: 0.15rem !important; }
+        .qsh-badge { margin-left: 0.4rem !important; font-size: 0.55rem !important; padding: 0.15rem 0.45rem !important; }
         .mobile-step-spacer { display: block !important; height: 8px !important; }
 
         /* Product grid */
@@ -945,6 +955,130 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         #productGrid .feature-card { padding: 0.625rem 0.5rem !important; }
         #productGrid .feature-card i { font-size: 1.35rem !important; }
         #productGrid .feature-card p { font-size: 0.7rem !important; }
+
+        /* ── B. REDUNDANT EXPLAINER BANNERS — hide on mobile only ── */
+
+        /* Step 1 — green "INCLUDES DESIGN" pill is redundant with the orange
+           MOST POPULAR ribbon and the card body. Quieter on mobile. */
+        .quote-mode-card[data-mode="full-redesign"] span.bg-green-500 { display: none !important; }
+
+        /* Step 2 Full Redesign — kill the purple/blue "AI-Powered Understanding"
+           banner AND the lightbulb hint paragraph. Step header + textarea
+           placeholder already communicate the same idea. */
+        #step2FullRedesign .bg-gradient-to-r.from-purple-50,
+        #step2FullRedesign p.text-sm.text-gray-600 { display: none !important; }
+        #step2FullRedesign label { font-size: 0.72rem !important; margin-bottom: 0.5rem !important; }
+
+        /* Step 2 Individual Products — strip the gradient wrapper around search;
+           drop heading + sub-text; let the placeholder do its job. */
+        #step2Standard > div.bg-gradient-to-r {
+            background: transparent !important;
+            padding: 0 !important;
+            margin-bottom: 1rem !important;
+            border-radius: 0 !important;
+        }
+        #step2Standard > div.bg-gradient-to-r h3,
+        #step2Standard > div.bg-gradient-to-r > p.text-gray-600 { display: none !important; }
+
+        /* Step 5 — collapse blue helper boxes to single-line muted inline hints */
+        .quote-form-column .bg-blue-50.border-blue-200 {
+            background: transparent !important;
+            border: 0 !important;
+            padding: 0.3rem 0 0 0 !important;
+            gap: 0.35rem !important;
+        }
+        .quote-form-column .bg-blue-50.border-blue-200 i {
+            font-size: 0.7rem !important; color: #94a3b8 !important; margin-top: 0.2rem !important;
+        }
+        .quote-form-column .bg-blue-50.border-blue-200 p {
+            color: #64748b !important; font-size: 0.7rem !important;
+        }
+        .quote-form-column .text-xs.text-gray-500 { color: #94a3b8 !important; }
+
+        /* Step 6 — kill the redundant description paragraph inside the upload
+           card (the 4-bullet card above already explains exactly the same thing) */
+        #step6UploadDesc { display: none !important; }
+        /* Tighter upload card on mobile */
+        #aiDesignSection { padding: 1rem !important; }
+        #aiDesignSection > div:first-child { margin-bottom: 0.75rem !important; }
+        #aiDesignSection .border-dashed { padding: 1.5rem 1rem !important; }
+        #aiDesignSection .border-dashed i { font-size: 2.5rem !important; margin-bottom: 0.5rem !important; }
+        #aiDesignSection .border-dashed p.font-medium { font-size: 0.95rem !important; }
+
+        /* ── C. STEP 3 — UNLIMITED BUDGET as a slim chip, not a giant card ── */
+        #unlimitedBudgetBtn {
+            background: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+            padding: 0.6rem 0.875rem !important;
+            border-radius: 0.75rem !important;
+            box-shadow: none !important;
+            margin-top: 0.5rem !important;
+            gap: 0.625rem !important;
+        }
+        #unlimitedBudgetBtn .w-11.h-11 {
+            width: 28px !important; height: 28px !important;
+            background: linear-gradient(135deg,#7c3aed,#2563eb) !important;
+            border-radius: 0.5rem !important;
+        }
+        #unlimitedBudgetBtn .w-11.h-11 i { font-size: 0.85rem !important; color: white !important; }
+        #unlimitedBudgetBtn p.font-bold { color: #0f172a !important; font-size: 0.82rem !important; }
+        #unlimitedBudgetBtn p#unlimitedBudgetBtnText { color: #64748b !important; font-size: 0.68rem !important; }
+        #unlimitedBudgetBtn .w-7.h-7 {
+            width: 22px !important; height: 22px !important; border-color: #cbd5e1 !important;
+        }
+        #unlimitedBudgetBtn .w-7.h-7 i { color: #94a3b8 !important; }
+        /* Active-state styling — JS toggles Tailwind ring utilities */
+        #unlimitedBudgetBtn.ring-green-400 {
+            background: linear-gradient(135deg,#ecfdf5,#eff6ff) !important;
+            border-color: #10b981 !important;
+        }
+        #budgetHintText { margin-top: 0.5rem !important; font-size: 0.68rem !important; color: #94a3b8 !important; }
+        /* Tighter Step 3 area card */
+        #step3 .bg-gray-50.rounded-xl { padding: 0.875rem !important; }
+
+        /* ── D. STEP 6 — match nav button layout of other steps ── */
+        #step6 > div.flex.flex-col.gap-3 {
+            flex-direction: row !important;
+            gap: 0.5rem !important;
+            padding-left: 0 !important; padding-right: 0 !important;
+        }
+        #step6 > div.flex.flex-col.gap-3 > button[onclick="prevStep()"] {
+            width: auto !important;
+            flex: 0 0 auto !important;
+            padding: 0.875rem 1.125rem !important;
+            border-radius: 0.875rem !important;
+        }
+        #step6 > div.flex.flex-col.gap-3 > button[onclick="prevStep()"] i { margin-right: 0 !important; }
+        #step6 > div.flex.flex-col.gap-3 > button[onclick="prevStep()"] span.step6-back-label { display: none !important; }
+        #step6 > div.flex.flex-col.gap-3 > #submitWithAIBtn {
+            flex: 1 1 auto !important;
+            width: auto !important;
+            border-radius: 0.875rem !important;
+            font-size: 0.95rem !important;
+        }
+        /* Quieter skip link */
+        #step6 > .text-center.mb-6 { margin-bottom: 1rem !important; }
+        #step6 > .text-center.mb-6 button { font-size: 0.78rem !important; color: #94a3b8 !important; }
+
+        /* ── E. UNIFY ELEVATION — kill mismatched glow/glow-ring shadows ── */
+        /* Browse-by-category wrapper has a heavy Tailwind arbitrary blue glow */
+        #step2Standard div.border.border-gray-200.rounded-xl.overflow-hidden {
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+        }
+        #browseCategoriesToggle {
+            background: #f8fafc !important;
+            border-left: 3px solid #cbd5e1 !important;
+        }
+        #browseCategoriesToggle:active { background: #f1f5f9 !important; }
+
+        /* Quote-mode cards: consistent restrained elevation, no scale on tap */
+        .quote-mode-card { box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important; }
+        .quote-mode-card.selected,
+        .quote-mode-card[data-mode="full-redesign"].selected,
+        .quote-mode-card[data-mode="individual-products"].selected {
+            box-shadow: 0 4px 16px -4px rgba(37,99,235,0.18) !important;
+            transform: none !important;
+        }
     }
     </style>
 
@@ -1773,7 +1907,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             
                             <div class="flex flex-col gap-3 px-2">
                                 <button onclick="prevStep()" class="w-full px-6 py-4 rounded-xl text-base font-semibold border-2 border-gray-300 hover:border-primary transition flex items-center justify-center">
-                                    <i class="fas fa-arrow-left mr-2"></i> Back
+                                    <i class="fas fa-arrow-left mr-2"></i><span class="step6-back-label">Back</span>
                                 </button>
                                 <button onclick="submitQuote()" id="submitWithAIBtn" class="w-full bg-gradient-to-r from-primary to-accent text-white px-6 py-4 rounded-xl text-base font-semibold hover:shadow-xl transition flex items-center justify-center">
                                     <i class="fas fa-magic mr-2"></i> <span id="submitWithAIBtnLabel">Get Quote + AI Design</span>
