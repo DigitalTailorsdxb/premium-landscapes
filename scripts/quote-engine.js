@@ -2158,31 +2158,25 @@ function nextStep() {
         }
         quoteData.postcode = postcodeInput.value.trim().toUpperCase();
         
-        // Capture all address fields from manual entry
-        const cityInput = document.getElementById('city');
+        // Capture address fields from manual entry (city field removed — postcode
+        // alone is enough for our service-area + costing logic). We still send
+        // `city: ''` in the n8n payload below to keep the schema stable.
         const streetInput = document.getElementById('street');
         const houseNumberInput = document.getElementById('houseNumber');
         
-        if (cityInput) quoteData.city = cityInput.value.trim();
         if (streetInput) quoteData.street = streetInput.value.trim();
         if (houseNumberInput) quoteData.houseNumber = houseNumberInput.value.trim();
     }
     
     // Step 5: Validate contact details
     if (currentStep === 5) {
-        const firstNameInput = document.getElementById('firstName');
-        const surnameInput = document.getElementById('surname');
+        const fullNameInput = document.getElementById('fullName');
         const emailInput = document.getElementById('email');
         const phoneInput = document.getElementById('phone');
         
-        if (!firstNameInput.value.trim()) {
-            alert('Please enter your first name');
-            firstNameInput.focus();
-            return;
-        }
-        if (!surnameInput.value.trim()) {
-            alert('Please enter your surname');
-            surnameInput.focus();
+        if (!fullNameInput.value.trim()) {
+            alert('Please enter your full name');
+            fullNameInput.focus();
             return;
         }
         if (!emailInput.value.trim() || !emailInput.value.includes('@')) {
@@ -2196,10 +2190,13 @@ function nextStep() {
             return;
         }
         
-        // Store contact details
-        quoteData.firstName = firstNameInput.value.trim();
-        quoteData.surname = surnameInput.value.trim();
-        quoteData.name = `${quoteData.firstName} ${quoteData.surname}`;
+        // Store contact details. Split full name into firstName / surname so the
+        // downstream n8n payload + CRM dealname template keep working unchanged.
+        const fullName = fullNameInput.value.trim().replace(/\s+/g, ' ');
+        const nameParts = fullName.split(' ');
+        quoteData.name = fullName;
+        quoteData.firstName = nameParts[0] || '';
+        quoteData.surname = nameParts.slice(1).join(' ') || '';
         quoteData.email = emailInput.value.trim();
         quoteData.phone = phoneInput.value.trim();
     }
@@ -2604,18 +2601,10 @@ async function submitQuote() {
     console.log('Current quoteData:', quoteData);
     
     // Validation
-    const firstNameInput = document.getElementById('firstName');
-    if (!firstNameInput.value.trim()) {
-        alert('Please enter your first name');
-        firstNameInput.focus();
-        isSubmittingQuote = false;
-        return;
-    }
-    
-    const surnameInput = document.getElementById('surname');
-    if (!surnameInput.value.trim()) {
-        alert('Please enter your surname');
-        surnameInput.focus();
+    const fullNameInput = document.getElementById('fullName');
+    if (!fullNameInput.value.trim()) {
+        alert('Please enter your full name');
+        fullNameInput.focus();
         isSubmittingQuote = false;
         return;
     }
@@ -2628,9 +2617,12 @@ async function submitQuote() {
         return;
     }
     
-    quoteData.firstName = firstNameInput.value.trim();
-    quoteData.surname = surnameInput.value.trim();
-    quoteData.name = `${quoteData.firstName} ${quoteData.surname}`;
+    // Split full name into firstName/surname for backward-compatible n8n payload
+    const fullName = fullNameInput.value.trim().replace(/\s+/g, ' ');
+    const nameParts = fullName.split(' ');
+    quoteData.name = fullName;
+    quoteData.firstName = nameParts[0] || '';
+    quoteData.surname = nameParts.slice(1).join(' ') || '';
     quoteData.email = emailInput.value.trim();
     
     const phoneInput = document.getElementById('phone');
