@@ -54,13 +54,13 @@ const brandConfig = {
     webhooks: {
         quote: "https://n8n.trade-engine.co.uk/webhook/premium-landscapes-quote",
         quoteFullRedesign: "https://n8n.trade-engine.co.uk/webhook/premium-landscapes-full-redesign",
-        // Mobile fallback: when iOS/cellular drops the long-poll, the page calls this
-        // endpoint every 5s (GET ?requestId=REQ-…) until it gets the price + image URL.
-        // n8n dev: see comment in scripts/quote-engine.js (startQuoteResultPolling)
-        // for the exact request/response shape this endpoint must implement.
-        // Leave as a placeholder string until the n8n workflow is built — the polling
-        // code detects "your-" / "-webhook-url" and silently skips.
-        quoteStatus: "https://n8n.trade-engine.co.uk/webhook/your-quote-status-webhook-url",
+        // Mobile fallback: when iOS/cellular drops the long-poll on the main quote
+        // webhook, the page calls this endpoint every 5s (GET ?requestId=REQ-…)
+        // until it gets the price + image URL. n8n workflow "Premium Landscapes –
+        // Quote Status" (ID: p3l04UQ2Kl7YFKWN) handles the lookup; the parallel
+        // FGR / IP Persist Quote nodes write the result into n8n static-data
+        // store with a 24h TTL.
+        quoteStatus: "https://n8n.trade-engine.co.uk/webhook/premium-landscapes-quote-status",
         email: "https://hook.eu2.make.com/your-email-webhook-url",
         contact: "https://hook.eu2.make.com/your-contact-webhook-url",
         securityToken: "8f3c9a7e41b24d0ab6e5c9f0a2d7e18b9c6a4f7e23d15b9c0e4a6d8f2b1c97e"
