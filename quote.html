@@ -1470,7 +1470,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                                 <p class="text-sm text-gray-500 mb-3">m² = length × width</p>
                                 <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
                                     <div class="text-center mb-4">
-                                        <span class="text-3xl font-bold text-emerald-600"><span id="areaValue">100</span> m²</span>
+                                        <div class="flex items-center justify-center gap-2">
+                                            <input type="number" id="areaInput" value="100" min="1" max="9999"
+                                                class="text-3xl font-bold text-emerald-600 text-center bg-transparent border-b-2 border-emerald-300 focus:border-emerald-600 focus:outline-none w-28 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
+                                            <span class="text-3xl font-bold text-emerald-600">m²</span>
+                                        </div>
+                                        <p class="text-xs text-gray-400 mt-1">tap the number to type an exact value</p>
                                     </div>
                                     <div class="slider-container mb-3">
                                         <div class="slider-track"></div>

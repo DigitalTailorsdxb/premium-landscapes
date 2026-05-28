@@ -1854,27 +1854,48 @@ function initializeAddProductButtons() {
 // Area slider
 function initializeAreaSlider() {
     const slider = document.getElementById('areaSlider');
-    const valueDisplay = document.getElementById('areaValue');
+    const areaInput = document.getElementById('areaInput');
     const progressBar = document.getElementById('sliderProgress');
-    
-    function updateSliderProgress(slider) {
-        const min = parseInt(slider.min) || 30;
-        const max = parseInt(slider.max) || 400;
-        const value = parseInt(slider.value);
+
+    function updateSliderProgress(sliderEl) {
+        const min = parseInt(sliderEl.min) || 30;
+        const max = parseInt(sliderEl.max) || 400;
+        const value = Math.min(parseInt(sliderEl.value), max);
         const progress = ((value - min) / (max - min)) * 100;
         if (progressBar) {
             progressBar.style.width = progress + '%';
         }
     }
-    
+
     if (slider) {
         updateSliderProgress(slider);
-        
+
         slider.addEventListener('input', function() {
-            quoteData.area = this.value;
-            valueDisplay.textContent = this.value;
+            const val = parseInt(this.value);
+            quoteData.area = val;
+            if (areaInput) areaInput.value = val;
             updateSliderProgress(this);
             updateSummary();
+        });
+    }
+
+    if (areaInput) {
+        areaInput.addEventListener('input', function() {
+            const raw = parseInt(this.value);
+            if (isNaN(raw) || raw < 1) return;
+            quoteData.area = raw;
+            if (slider) {
+                slider.value = Math.min(Math.max(raw, parseInt(slider.min)), parseInt(slider.max));
+                updateSliderProgress(slider);
+            }
+            updateSummary();
+        });
+
+        areaInput.addEventListener('blur', function() {
+            const raw = parseInt(this.value);
+            if (isNaN(raw) || raw < 1) {
+                this.value = slider ? parseInt(slider.value) : 100;
+            }
         });
     }
 }
