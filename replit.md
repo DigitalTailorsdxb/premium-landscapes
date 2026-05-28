@@ -169,6 +169,24 @@ Added `Service` JSON-LD to the 3 of 12 listed pages that lacked it: `natural-sto
 ### Homepage title/meta tightening (May 2026)
 `index.html` title shortened from 86 → 53 chars (`Landscaping Company in Leicester | Premium Landscapes`) and meta from 175 → 150 chars to stop SERP truncation.
 
+### Phase F — Area×service combo SEO pages (May 2026)
+5 new high-intent area×service landing pages built via `scripts/build_area_service_pages.py`:
+- `/artificial-grass-oadby` (LE2)
+- `/block-paving-wigston` (LE18)
+- `/patios-narborough` (LE19)
+- `/composite-decking-birstall` (LE4)
+- `/driveways-hinckley` (LE10)
+
+Each page is ~38KB and includes: tailored title/meta/og/twitter, hero with postcode + distance trust signals, unique service-in-area intro (2 paragraphs), service-specific cost table, full installation specification (5–6 bullets), local considerations (clay/drainage/planning), why-choose 4-card grid, 5 area-specific FAQs, related-pages section linking back to service hub + area page, CTA, full footer. JSON-LD `@graph` per page: `Service` + `FAQPage` + `BreadcrumbList` (all validated, 0 errors).
+
+- `sitemap.xml` — 5 new `<url>` entries (priority 0.8, lastmod 2026-05-28). Total now 104 URLs.
+- `_redirects` — 5 new `.html → clean URL` rules appended under "Phase F" comment.
+- Cross-linking — on each of the 5 corresponding area pages (landscaping-oadby/wigston/narborough/birstall/hinckley), the matching service card in the services grid had its href swapped from the generic `/<service>` to the new area-specific page. This gives every new page at least one strong inbound link from a topical parent.
+
+**Notes / observed gaps for future work:**
+- All 25 service pages currently use a gradient hero with emoji — none has an `<img>` in the hero. Image list for the user to send was compiled and delivered in chat (not as a file). Hero `<img>` tags can be added once images are supplied.
+- Phase F generator script is idempotent and re-runnable — adding new towns is just a new dict entry in `PAGES`.
+
 ### Reviews / Social Proof (March 2026)
 - **config.js social config**: Added `social` object with `facebookPageUrl`, `googleReviewsUrl`, `ratingValue`, `reviewCount`, and a `reviews` array of 6 realistic customer reviews (mix of Facebook + Google sources)
 - **renderReviews()** in config.js: Dynamically renders review cards into any `#reviewCardsContainer` element with source icon (FB/Google), star rating, initials avatar, name, location, date, quote text
