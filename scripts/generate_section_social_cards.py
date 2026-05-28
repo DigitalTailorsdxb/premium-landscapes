@@ -270,6 +270,208 @@ PAGES: dict[str, tuple[str, str, str, str]] = {
 }
 
 
+# Extra pages that need a dedicated path (e.g. project case-study pages live
+# under projects/) and/or special meta-tag handling because they lack some of
+# the OG / Twitter tags the simple PAGES path expects.
+#   slug -> (
+#       page_path_rel,
+#       source_image,
+#       headline,
+#       sub_left,
+#       og:image:alt,
+#       url_path,        # used if we need to *insert* a new og:url
+#       short_title,     # used for og/twitter:title if we have to insert
+#       description,     # used for og/twitter:description if we have to insert
+#   )
+EXTRA_PAGES: dict[str, tuple[str, str, str, str, str, str, str, str]] = {
+    # Homepage + key conversion pages
+    "home": (
+        "index.html",
+        "images/hero-garden.webp",
+        "Landscaping & Garden Design Leicester",
+        "Patios · Driveways · Decking · Full Makeovers",
+        "Landscaping and garden design in Leicester by Premium Landscapes — patios, driveways, decking and full makeovers.",
+        "/",
+        "Premium Landscapes Leicester",
+        "Leicester landscapers specialising in patios, artificial grass, composite decking and full garden makeovers.",
+    ),
+    "quote": (
+        "quote.html",
+        "images/ai-design-mediterranean.webp",
+        "Free Quote & AI Garden Design",
+        "Photorealistic preview · 90 seconds · No cost",
+        "Free instant landscaping quote and AI garden design preview from Premium Landscapes.",
+        "/quote",
+        "Free AI Garden Quote",
+        "Free instant landscaping quote and photorealistic AI garden design preview from Premium Landscapes.",
+    ),
+    "about": (
+        "about.html",
+        "images/about-hero.webp",
+        "About Premium Landscapes",
+        "Leicester landscaping specialists",
+        "About Premium Landscapes — Leicester landscaping and garden design specialists.",
+        "/about",
+        "About Premium Landscapes",
+        "Meet Premium Landscapes — Leicester landscaping specialists building patios, driveways, decking and full garden makeovers.",
+    ),
+    "about-premium-landscapes": (
+        "about-premium-landscapes.html",
+        "images/about-garden.webp",
+        "Premium Landscapes — Company Profile",
+        "Who we are · What we do · Where we work",
+        "Premium Landscapes company profile — Leicester landscaping and garden design.",
+        "/about-premium-landscapes",
+        "Premium Landscapes Company Profile",
+        "Premium Landscapes — Leicester landscaping company profile: services, areas covered and how our quote process works.",
+    ),
+    "contact": (
+        "contact.html",
+        "images/services-garden.webp",
+        "Contact Premium Landscapes",
+        "Leicester · 07877 934782 · Free quotes",
+        "Contact Premium Landscapes Leicester for a free landscaping quote.",
+        "/contact",
+        "Contact Premium Landscapes",
+        "Get in touch with Premium Landscapes Leicester for a free landscaping quote, AI garden design preview or site visit.",
+    ),
+    "gallery": (
+        "gallery.html",
+        "images/gallery-garden-pergola.webp",
+        "Garden Transformations Gallery",
+        "Real Leicester projects · Before & after",
+        "Garden transformations gallery — real Leicester projects by Premium Landscapes.",
+        "/gallery",
+        "Garden Transformations Gallery",
+        "Real garden transformation projects by Premium Landscapes in Leicester and Leicestershire — before and after photos.",
+    ),
+    "case-studies": (
+        "case-studies.html",
+        "images/after-garden.webp",
+        "Project Case Studies",
+        "Real Leicestershire transformations",
+        "Landscaping project case studies — real Leicestershire transformations by Premium Landscapes.",
+        "/case-studies",
+        "Project Case Studies",
+        "Real landscaping case studies from Premium Landscapes — patios, decking, driveways and full garden makeovers across Leicestershire.",
+    ),
+    "areas-we-cover": (
+        "areas-we-cover.html",
+        "images/about-hero.webp",
+        "Areas We Cover",
+        "Leicester · Leicestershire · 20-mile radius",
+        "Areas covered by Premium Landscapes — Leicester, Leicestershire and surrounding villages.",
+        "/areas-we-cover",
+        "Areas We Cover",
+        "Premium Landscapes covers Leicester and surrounding villages including Oadby, Wigston, Narborough, Hinckley and Loughborough.",
+    ),
+
+    # Project case-study pages (projects/*.html). Slugs prefixed with
+    # "project-" so the generated JPG sits at images/social/project-*.jpg
+    # and never clashes with a top-level page slug.
+    "project-artificial-grass-narborough": (
+        "projects/artificial-grass-narborough.html",
+        "images/artificial-turf-family.webp",
+        "Artificial Grass, Narborough",
+        "Real project · Premium Landscapes",
+        "Artificial grass installation in Narborough — real project case study by Premium Landscapes.",
+        "/projects/artificial-grass-narborough",
+        "Artificial Grass Installation, Narborough",
+        "Real artificial grass installation in Narborough by Premium Landscapes — pet- and family-friendly lawn case study.",
+    ),
+    "project-back-garden-patio-birstall": (
+        "projects/back-garden-patio-birstall.html",
+        "images/projects/birstall/birstall-4.jpg",
+        "Back Garden Patio, Birstall",
+        "Porcelain · Sleeper planters · Real project",
+        "Back garden porcelain patio transformation in Birstall by Premium Landscapes.",
+        "/projects/back-garden-patio-birstall",
+        "Back Garden Patio Transformation, Birstall",
+        "Back garden patio transformation in Birstall — grey porcelain, sleeper planters and hydrangea planting by Premium Landscapes.",
+    ),
+    "project-composite-decking-kirby-muxloe": (
+        "projects/composite-decking-kirby-muxloe.html",
+        "images/projects/kirby-muxloe/kirby-4.jpg",
+        "Composite Decking, Kirby Muxloe",
+        "Millboard · Real project · Premium Landscapes",
+        "Composite decking installation in Kirby Muxloe — real project case study by Premium Landscapes.",
+        "/projects/composite-decking-kirby-muxloe",
+        "Composite Decking Installation, Kirby Muxloe",
+        "Composite decking installation in Kirby Muxloe by Premium Landscapes — full project case study.",
+    ),
+    "project-composite-decking-wigston": (
+        "projects/composite-decking-wigston.html",
+        "images/decking-hero.webp",
+        "Composite Decking, Wigston",
+        "Real project · Premium Landscapes",
+        "Composite decking project in Wigston by Premium Landscapes — full case study.",
+        "/projects/composite-decking-wigston",
+        "Composite Decking Project, Wigston",
+        "Composite decking project in Wigston by Premium Landscapes — full case study.",
+    ),
+    "project-driveway-kirby-muxloe": (
+        "projects/driveway-kirby-muxloe.html",
+        "images/projects/kirby-muxloe-driveway/driveway-3.jpg",
+        "Driveway, Kirby Muxloe",
+        "Gravel · Block paving · Real project",
+        "Gravel driveway with block paving in Kirby Muxloe — case study by Premium Landscapes.",
+        "/projects/driveway-kirby-muxloe",
+        "Gravel Driveway with Block Paving, Kirby Muxloe",
+        "Gravel driveway with block paving edging in Kirby Muxloe by Premium Landscapes — full project case study.",
+    ),
+    "project-front-garden-renovation-wigston": (
+        "projects/front-garden-renovation-wigston.html",
+        "images/projects/wigston/wigston-1.jpg",
+        "Front Garden Renovation, Wigston",
+        "Real project · Premium Landscapes",
+        "Front garden renovation in Wigston — real project case study by Premium Landscapes.",
+        "/projects/front-garden-renovation-wigston",
+        "Front Garden Renovation, Wigston",
+        "Front garden renovation in Wigston by Premium Landscapes — full case study.",
+    ),
+    "project-full-garden-design-evington": (
+        "projects/full-garden-design-evington.html",
+        "images/projects/evington/evington-6.jpg",
+        "Full Garden Design, Evington",
+        "Design · Build · Plant · Real project",
+        "Full garden design in Evington, Leicester — real project case study by Premium Landscapes.",
+        "/projects/full-garden-design-evington",
+        "Full Garden Design, Evington Leicester",
+        "Full garden design and build in Evington, Leicester by Premium Landscapes — complete project case study.",
+    ),
+    "project-full-garden-makeover-oadby": (
+        "projects/full-garden-makeover-oadby.html",
+        "images/after-garden.webp",
+        "Full Garden Makeover, Oadby",
+        "Design · Build · Real project",
+        "Full garden makeover in Oadby — real project case study by Premium Landscapes.",
+        "/projects/full-garden-makeover-oadby",
+        "Full Garden Makeover, Oadby",
+        "Full garden makeover in Oadby by Premium Landscapes — design, build, plant and finish case study.",
+    ),
+    "project-porcelain-patio-leicester": (
+        "projects/porcelain-patio-leicester.html",
+        "images/gallery-patio.webp",
+        "Porcelain Patio, Leicester",
+        "Real project · Premium Landscapes",
+        "Porcelain patio transformation in Leicester — real project case study by Premium Landscapes.",
+        "/projects/porcelain-patio-leicester",
+        "Porcelain Patio Transformation, Leicester",
+        "Porcelain patio transformation in Leicester by Premium Landscapes — full project case study.",
+    ),
+    "project-tiered-garden-makeover-peterborough": (
+        "projects/tiered-garden-makeover-peterborough.html",
+        "images/projects/peterborough/peterborough-3.jpg",
+        "Tiered Garden Makeover, Peterborough",
+        "Levels · Build · Real project",
+        "Tiered full garden makeover in Peterborough — real project case study by Premium Landscapes.",
+        "/projects/tiered-garden-makeover-peterborough",
+        "Tiered Full Garden Makeover, Peterborough",
+        "Tiered full garden makeover in Peterborough by Premium Landscapes — multi-level design and build case study.",
+    ),
+}
+
+
 def cover_resize(src: Image.Image, w: int, h: int) -> Image.Image:
     sw, sh = src.size
     scale = max(w / sw, h / sh)
@@ -420,6 +622,89 @@ def update_html(slug: str, alt: str) -> None:
     fn.write_text(new_text2, encoding="utf-8")
 
 
+def update_html_extra(
+    page_path: Path,
+    slug: str,
+    alt: str,
+    short_title: str,
+    description: str,
+    url_path: str,
+) -> None:
+    """Like update_html() but for pages that may be missing some/all of the
+    OG / Twitter meta tags (e.g. areas-we-cover.html has none; case-studies.html
+    has og:* but no twitter:*). Inserts whatever's missing in a sensible spot."""
+    text = page_path.read_text(encoding="utf-8")
+
+    host_match = re.search(r'<meta property="og:url" content="(https?://[^/"]+)', text)
+    if host_match:
+        host = host_match.group(1)
+    else:
+        canon = re.search(r'<link rel="canonical" href="(https?://[^/"]+)', text)
+        host = canon.group(1) if canon else BASE_URL
+
+    card_url = f"{host}/images/social/{slug}.jpg"
+    page_url = f"{host}{url_path}"
+    full_title = f"{short_title} | Premium Landscapes"
+
+    og_image_block = (
+        f'    <meta property="og:image" content="{card_url}">\n'
+        f'    <meta property="og:image:secure_url" content="{card_url}">\n'
+        f'    <meta property="og:image:alt" content="{alt}">\n'
+        f'    <meta property="og:image:width" content="{CARD_W}">\n'
+        f'    <meta property="og:image:height" content="{CARD_H}">\n'
+    )
+    new_text, n_og = OG_BLOCK_RE.subn(og_image_block, text, count=1)
+
+    if n_og == 0:
+        # No existing og:image — insert a complete OG block after the
+        # apple-touch-icon link (a stable anchor present on every page).
+        og_full = (
+            f'    <meta property="og:type" content="website">\n'
+            f'    <meta property="og:url" content="{page_url}">\n'
+            f'    <meta property="og:title" content="{full_title}">\n'
+            f'    <meta property="og:description" content="{description}">\n'
+            + og_image_block
+        )
+        anchor_re = re.compile(r'(    <link rel="apple-touch-icon"[^>]*>\n)')
+        new_text, n_anchor = anchor_re.subn(lambda m: m.group(1) + og_full, text, count=1)
+        if n_anchor == 0:
+            raise RuntimeError(f"{page_path}: no apple-touch-icon anchor to insert OG block")
+
+    tw_image_block = (
+        f'    <meta name="twitter:image" content="{card_url}">\n'
+        f'    <meta name="twitter:image:alt" content="{alt}">\n'
+    )
+    new_text2, n_tw = TW_BLOCK_RE.subn(tw_image_block, new_text, count=1)
+
+    if n_tw == 0:
+        if re.search(r'<meta name="twitter:card"', new_text2):
+            # twitter:card present but no twitter:image — slot it in after card
+            new_text2 = re.sub(
+                r'(    <meta name="twitter:card" content="[^"]+">\n)',
+                lambda m: m.group(1) + tw_image_block,
+                new_text2,
+                count=1,
+            )
+        else:
+            tw_full = (
+                f'    <meta name="twitter:card" content="summary_large_image">\n'
+                f'    <meta name="twitter:url" content="{page_url}">\n'
+                f'    <meta name="twitter:title" content="{full_title}">\n'
+                f'    <meta name="twitter:description" content="{description}">\n'
+                + tw_image_block
+            )
+            new_text2, n_after = re.subn(
+                r'(    <meta property="og:image:height" content="\d+">\n)',
+                lambda m: m.group(1) + tw_full,
+                new_text2,
+                count=1,
+            )
+            if n_after == 0:
+                raise RuntimeError(f"{page_path}: cannot place twitter block")
+
+    page_path.write_text(new_text2, encoding="utf-8")
+
+
 def main() -> None:
     for slug, (src_rel, headline, sub_left, alt) in PAGES.items():
         src = ROOT / src_rel
@@ -432,7 +717,20 @@ def main() -> None:
         render_card(src, headline, sub_left, out)
         update_html(slug, alt)
         print(f"{slug:40s} -> {out.relative_to(ROOT)}")
-    print(f"\nGenerated {len(PAGES)} social cards.")
+
+    for slug, (page_rel, src_rel, headline, sub_left, alt, url_path, short_title, description) in EXTRA_PAGES.items():
+        src = ROOT / src_rel
+        if not src.exists():
+            raise FileNotFoundError(f"Source image missing: {src}")
+        page = ROOT / page_rel
+        if not page.exists():
+            raise FileNotFoundError(f"Page missing: {page}")
+        out = OUT_DIR / f"{slug}.jpg"
+        render_card(src, headline, sub_left, out)
+        update_html_extra(page, slug, alt, short_title, description, url_path)
+        print(f"{slug:40s} -> {out.relative_to(ROOT)}")
+
+    print(f"\nGenerated {len(PAGES) + len(EXTRA_PAGES)} social cards.")
 
 
 if __name__ == "__main__":
