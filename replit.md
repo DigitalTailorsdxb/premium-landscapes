@@ -145,6 +145,30 @@ All 17 pages have complete SEO: index, quote, about, services, gallery, contact,
 - **projects/_template.html (NEW)** — draft scaffold for future case studies. Carries `<meta name="robots" content="noindex,nofollow">`, a visible red "DRAFT" banner, and a 7-step instruction comment block at the top covering naming convention, required fields, the "no invented customers / no stock imagery / no invented quotes" rules, and the publish checklist (remove noindex, add to sitemap, add card + ItemList entry on case-studies.html). NOT in sitemap, NOT linked from case-studies.html, will not be indexed.
 - **Coverage**: of 12 changed/new HTML files validated — 0 JSON-LD errors. blog.html lists blogs 1–20 in order.
 
+### Phase E — Blog URL rename + thin-content rewrites (May 2026)
+
+**Blog URL rename (20 posts):** `/blog-1` … `/blog-20` renamed to descriptive slugs (e.g. `/garden-redesign-cost-uk`, `/suds-driveway-rules-leicester`, `/patio-materials-leicestershire-clay-soil`). Implementation in `scripts/blog_url_rename.py`:
+- 20 files renamed `blog-N.html` → `<slug>.html`
+- Sitewide sweep of 32 .html files: every `/blog-N` and `blog-N.html` reference updated to the new slug (longest-number-first regex to avoid `/blog-1` swallowing `/blog-10`). Includes canonicals, og:url, twitter, Article JSON-LD `mainEntityOfPage @id`, BreadcrumbList item URLs, homepage featured cards, blog index cards, related-reading links from service pages, blog-to-blog internal links.
+- `_redirects` rewritten: dropped old `/blog-N.html → /blog-N` rules; appended 20× `/blog-N.html → /<slug>`, 20× `/blog-N → /<slug>`, 20× `/<slug>.html → /<slug>`. No redirect chains — every old URL hits the new slug in one hop.
+- `sitemap.xml` updated: 20 blog `<loc>` entries now reference new slugs.
+- Verified: 0 stale `/blog-N` references anywhere, all 20 slug files present, all JSON-LD valid.
+
+**Thin-content rewrites (3 service pages):** `natural-stone-patios-leicester`, `sandstone-patios-leicester`, `garden-walls-leicester` rebuilt with ~570–600 words of unique technical content. Implementation in `scripts/phase_e_thin_content.py`:
+- New title/meta/og/twitter copy per brief.
+- Hero subheading rewritten to lead with material/build promise.
+- Existing "Options/Materials" grid replaced with brief's "Types we install" / "Colour options" H3 cards (5–6 per page).
+- 3–4 new educational sections injected before "Why Choose Us": cost table (per-m² / per-linear-m / per-step), material-vs-alternative comparison, sub-base / installation engineering, sealing/maintenance / build-quality failure modes.
+- FAQ accordion replaced with 5 new Q&As per page; matching FAQPage JSON-LD `mainEntity` array regenerated.
+- Existing "Why Choose Us", "How It Works", "Related Services", "Locations" and "CTA" sections kept intact.
+- Note: titles 86–90 chars and metas 165–172 chars — slightly over Google's display limits but used as supplied in the brief.
+
+### Service schema additions (May 2026)
+Added `Service` JSON-LD to the 3 of 12 listed pages that lacked it: `natural-stone-patios-leicester`, `sandstone-patios-leicester`, `garden-walls-leicester` (the other 9 already had it). Each gets `serviceType`, `provider`, `areaServed: Leicester`, `url`. All inserted as first node in existing `@graph`; all JSON-LD re-validated.
+
+### Homepage title/meta tightening (May 2026)
+`index.html` title shortened from 86 → 53 chars (`Landscaping Company in Leicester | Premium Landscapes`) and meta from 175 → 150 chars to stop SERP truncation.
+
 ### Reviews / Social Proof (March 2026)
 - **config.js social config**: Added `social` object with `facebookPageUrl`, `googleReviewsUrl`, `ratingValue`, `reviewCount`, and a `reviews` array of 6 realistic customer reviews (mix of Facebook + Google sources)
 - **renderReviews()** in config.js: Dynamically renders review cards into any `#reviewCardsContainer` element with source icon (FB/Google), star rating, initials avatar, name, location, date, quote text
