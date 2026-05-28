@@ -25,8 +25,8 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 CARD_W, CARD_H = 1200, 630
 
-FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-FONT_REG = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+FONT_BOLD = str(ROOT / "assets" / "fonts" / "Inter-Bold.ttf")
+FONT_REG = str(ROOT / "assets" / "fonts" / "Inter-Regular.ttf")
 
 # slug -> (source image path relative to repo root, Town display name)
 LOCATIONS: dict[str, tuple[str, str]] = {
