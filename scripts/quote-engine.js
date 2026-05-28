@@ -205,17 +205,21 @@ const SubmissionOverlay = {
         if (emailQuote) emailQuote.textContent = userEmail;
         if (emailRedesign) emailRedesign.textContent = userEmail;
         
-        if (this.hasImage) {
-            document.getElementById('overlaySuccessRedesign').classList.remove('hidden');
-            // Populate the redesign overlay showcase (OverlayR) from n8n response
-            if (typeof populateResultShowcase === 'function') {
-                populateResultShowcase(lastWebhookResult, 'OverlayR');
-            }
-        } else {
-            document.getElementById('overlaySuccessProducts').classList.remove('hidden');
-            // Populate the products overlay showcase (OverlayP) from n8n response
-            if (typeof populateResultShowcase === 'function') {
-                populateResultShowcase(lastWebhookResult, 'OverlayP');
+        const suffix = this.hasImage ? 'OverlayR' : 'OverlayP';
+        const panelId = this.hasImage ? 'overlaySuccessRedesign' : 'overlaySuccessProducts';
+        document.getElementById(panelId).classList.remove('hidden');
+
+        // Populate the overlay showcase from n8n response.
+        // If lastWebhookResult is null/empty (mobile-side fetch was killed by iOS
+        // background suspension or cellular NAT), populateResultShowcase will hide
+        // the showcase card so the success screen reads as a clean "check your
+        // email" confirmation rather than a broken stub. We then kick off the
+        // polling fallback to try to recover the data and re-show the card if it
+        // arrives within ~2 min.
+        if (typeof populateResultShowcase === 'function') {
+            const populated = populateResultShowcase(lastWebhookResult, suffix);
+            if (!populated && typeof startQuoteResultPolling === 'function') {
+                startQuoteResultPolling(suffix);
             }
         }
     },
@@ -453,6 +457,139 @@ function advanceIndividualProgressStep(stepIndex) {
 // Called when webhook completes for individual products
 // Shared store for the most recent webhook result — used by overlay showSuccess()
 let lastWebhookResult = null;
+// Stored at submission time so the mobile-fallback polling can fetch by requestId
+// even when the original fetch was killed by iOS background suspension / cellular NAT.
+let lastSubmissionRequestId = null;
+
+// ============================================================================
+// MOBILE FALLBACK — RESULT POLLING
+// ----------------------------------------------------------------------------
+// Why this exists:
+//   On iOS Safari + cellular data the initial POST to the n8n quote webhook is
+//   frequently killed by the OS (background suspension) or by NAT (idle long-
+//   poll dropped) well before n8n's 60–180 s image-generation finishes. n8n
+//   still completes server-side and emails the customer, but the browser never
+//   receives the response, so the inline price + image never render. Desktop
+//   works fine because desktop browsers don't suspend foreground network
+//   requests anywhere near as aggressively.
+//
+// What this does:
+//   After the submission overlay finishes its animation, if we have no usable
+//   data yet, we poll a small read-only n8n endpoint by requestId every 5 s
+//   for up to ~2 min. As soon as it returns the price + image, we re-show
+//   the showcase card. Silent no-op until the n8n dev wires up the endpoint
+//   (the placeholder URL contains "your-" and is skipped automatically).
+//
+// ----------------------------------------------------------------------------
+// N8N DEVELOPER — endpoint to build (`webhooks.quoteStatus` in config.js):
+//
+//   METHOD : GET (POST also fine — same query/body)
+//   URL    : https://n8n.trade-engine.co.uk/webhook/premium-landscapes-quote-status
+//   HEADER : X-Webhook-Secret: <same securityToken as the main quote webhook>
+//   QUERY  : ?requestId=REQ-1730000000000-ab12cd        (forwarded by the page)
+//
+//   Flow:
+//     1. The main quote workflow already receives `metadata.requestId` in its
+//        POST body. Store the final result (customerName, quoteTotal, imageUrl,
+//        pdfUrl, quoteRef) in a small persistent store keyed by requestId —
+//        e.g. a Postgres / Airtable / Google Sheets row, or n8n's built-in
+//        data store. Write it AS SOON AS the image + price are ready.
+//     2. This new status webhook reads that store and responds with the same
+//        flat JSON shape the main webhook already returns:
+//
+//          { "success": true,
+//            "customerName": "Lewis",
+//            "quoteTotal":   "£8,450",
+//            "imageUrl":     "https://…/design.png",
+//            "pdfUrl":       "https://…/quote.pdf",
+//            "quoteRef":     "PL-2026-0481" }
+//
+//     3. If the requestId isn't ready yet, return 200 with an empty shape:
+//          { "success": false, "pending": true }
+//        (the page treats both 404 and pending-true as "keep polling")
+//
+//   That's all — no auth user, no rate limit beyond the existing securityToken.
+//   Once it's live, swap the placeholder URL in scripts/config.js for the real
+//   one and mobile customers will see the inline preview again.
+// ============================================================================
+const POLLING_MAX_ATTEMPTS = 24;       // 24 × 5 s = 2 min total polling window
+const POLLING_INTERVAL_MS  = 5000;
+const POLLING_FIRST_DELAY_MS = 3000;   // brief grace so n8n can finish writing
+let pollingState = { active: false, attempts: 0, timer: null };
+
+function stopQuoteResultPolling() {
+    pollingState.active = false;
+    if (pollingState.timer) { clearTimeout(pollingState.timer); pollingState.timer = null; }
+}
+
+function startQuoteResultPolling(suffix) {
+    // Need a requestId to ask about
+    if (!lastSubmissionRequestId) {
+        console.log('⏭️ Polling skipped — no requestId stored for this submission');
+        return;
+    }
+    // Need a configured status endpoint
+    const rawUrl = window.brandConfig?.webhooks?.quoteStatus;
+    if (!rawUrl || rawUrl.includes('your-') || rawUrl.includes('-webhook-url')) {
+        console.log('⏭️ Polling skipped — webhooks.quoteStatus not configured in config.js (waiting on n8n dev)');
+        return;
+    }
+
+    // Route through the local dev proxy when running on replit.dev (CORS), same
+    // pattern the main submission uses.
+    const isDevDomain = window.location.hostname.includes('replit.dev') || window.location.hostname === 'localhost';
+    const baseUrl = isDevDomain
+        ? rawUrl.replace('https://n8n.trade-engine.co.uk/webhook/', '/webhook-proxy/')
+        : rawUrl;
+
+    // Reset any previous polling session
+    stopQuoteResultPolling();
+    pollingState = { active: true, attempts: 0, timer: null };
+    console.log('🔄 Polling started for requestId:', lastSubmissionRequestId, '— max', POLLING_MAX_ATTEMPTS, 'attempts');
+
+    const tick = async () => {
+        if (!pollingState.active) return;
+        pollingState.attempts++;
+        try {
+            const ctrl = new AbortController();
+            const abortTimer = setTimeout(() => ctrl.abort(), 10000); // each poll capped at 10s
+            const url = baseUrl + (baseUrl.includes('?') ? '&' : '?') + 'requestId=' + encodeURIComponent(lastSubmissionRequestId);
+            const res = await fetch(url, {
+                method: 'GET',
+                headers: { 'X-Webhook-Secret': window.brandConfig?.webhooks?.securityToken || '' },
+                signal: ctrl.signal
+            });
+            clearTimeout(abortTimer);
+            if (res.ok) {
+                let result = null;
+                try { result = await res.json(); } catch (e) { /* non-JSON, treat as pending */ }
+                const parsed = result ? parseWebhookResponse(result) : { quoteTotal:'', imageUrl:'', pdfUrl:'' };
+                if (parsed.quoteTotal || parsed.imageUrl || parsed.pdfUrl) {
+                    console.log('✅ Polling recovered result on attempt', pollingState.attempts, parsed);
+                    lastWebhookResult = result;
+                    populateResultShowcase(result, suffix);
+                    stopQuoteResultPolling();
+                    return;
+                }
+                console.log('⏳ Poll attempt', pollingState.attempts, '— n8n says still pending');
+            } else if (res.status === 404) {
+                console.log('⏳ Poll attempt', pollingState.attempts, '— not stored yet (404)');
+            } else {
+                console.log('⏳ Poll attempt', pollingState.attempts, '— status', res.status);
+            }
+        } catch (e) {
+            console.log('⏳ Poll attempt', pollingState.attempts, '— error', e.message);
+        }
+        if (pollingState.attempts >= POLLING_MAX_ATTEMPTS) {
+            console.log('⏹️ Polling stopped — max attempts reached, customer will rely on email delivery');
+            stopQuoteResultPolling();
+            return;
+        }
+        pollingState.timer = setTimeout(tick, POLLING_INTERVAL_MS);
+    };
+
+    pollingState.timer = setTimeout(tick, POLLING_FIRST_DELAY_MS);
+}
 
 function onIndividualWebhookComplete(success, result) {
     progressStateIndividual.webhookComplete = true;
@@ -3097,7 +3234,12 @@ function prepareWebhookPayload() {
         // Add metadata for n8n workflow tracking
         // Generate unique request ID to trace duplicates
         const requestId = 'REQ-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8);
-        
+
+        // Stash globally so the mobile-fallback polling can ask n8n for the result
+        // by ID after the initial fetch has been killed (iOS background suspension /
+        // cellular NAT drops). Always overwritten on each new submission.
+        lastSubmissionRequestId = requestId;
+
         payload.metadata = {
             source: 'website_quote_form',
             formVersion: '2.0',
@@ -3192,9 +3334,21 @@ function parseWebhookResponse(data) {
 function populateResultShowcase(data, suffix) {
     const parsed = parseWebhookResponse(data);
     const showcase = document.getElementById('resultShowcase' + suffix);
-    if (!showcase) return;
+    if (!showcase) return false;
 
-    // Always show the showcase card
+    // If we have no useful data (no price, no image, no PDF), hide the showcase
+    // card entirely. The "Check your email" confirmation panel below it already
+    // tells the customer their design + quote is on its way, which reads cleanly
+    // — far better than a stub card with "—" placeholders that looks broken.
+    // This is the mobile-fallback path: returning false signals showSuccess() to
+    // start polling for the result and re-show the card if it arrives later.
+    const hasUsefulData = !!(parsed.quoteTotal || parsed.imageUrl || parsed.pdfUrl);
+    if (!hasUsefulData) {
+        showcase.classList.add('hidden');
+        console.log(`⏭️ Showcase [${suffix}] hidden — no usable data from webhook (mobile fallback active)`);
+        return false;
+    }
+
     showcase.classList.remove('hidden');
 
     // --- Customer name ---
