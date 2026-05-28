@@ -2734,14 +2734,22 @@ async function submitQuote() {
         if (isFullRedesignMode) {
             // FULL REDESIGN: Fire-and-forget - UI runs on fixed timer
             // Animation: 60s (quote only) or 120s (with AI design)
+            // Mobile networks (cellular NAT, iOS Safari background throttling) can drop
+            // an idle long-poll well before n8n's 60–120s image-gen completes — without
+            // an explicit AbortController the .catch fires invisibly and the UI never
+            // populates the inline image/price. 240s gives n8n full headroom.
+            const ctrl = new AbortController();
+            const fetchTimeout = setTimeout(() => ctrl.abort(), 240000);
             fetch(webhookUrl, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
                     'X-Webhook-Secret': window.brandConfig?.webhooks?.securityToken || ''
                 },
-                body: JSON.stringify(webhookPayload)
+                body: JSON.stringify(webhookPayload),
+                signal: ctrl.signal
             }).then(async response => {
+                clearTimeout(fetchTimeout);
                 console.log('📩 Webhook response status:', response.status);
                 isSubmittingQuote = false;
                 let result = {};
@@ -2759,9 +2767,14 @@ async function submitQuote() {
                     onWebhookComplete(false, result);
                 }
             }).catch(error => {
-                console.error('❌ Webhook network error — n8n unreachable:', error.message);
+                clearTimeout(fetchTimeout);
+                const aborted = error?.name === 'AbortError';
+                console.error(`❌ Webhook ${aborted ? 'aborted after 240s timeout' : 'network error'} — n8n may still complete server-side:`, error.message);
                 isSubmittingQuote = false;
-                // Don't show error screen — webhook may still have been received; proceed to success
+                // Notify UI so the success panel can show the "still preparing" fallback
+                // instead of permanently empty inline slots. n8n likely still completes
+                // (email arrives) but the browser never saw the response.
+                onWebhookComplete(false, { networkError: true, aborted, message: error.message });
             });
             
             // UI animation runs independently - don't wait for webhook
@@ -3204,7 +3217,10 @@ function populateResultShowcase(data, suffix) {
         if (!isNaN(num) && num > 0) {
             const formatted = '£' + Math.round(num).toLocaleString('en-GB');
             const priceEl = document.getElementById('resultPrice' + suffix);
+            const badge   = document.getElementById('resultPriceBadge' + suffix);
             if (priceEl) priceEl.textContent = formatted;
+            // Re-show badge if a previous (empty) call had hidden it
+            if (badge) badge.classList.remove('hidden');
         } else {
             const badge = document.getElementById('resultPriceBadge' + suffix);
             if (badge) badge.classList.add('hidden');
