@@ -563,6 +563,15 @@ function startQuoteResultPolling(suffix) {
             if (res.ok) {
                 let result = null;
                 try { result = await res.json(); } catch (e) { /* non-JSON, treat as pending */ }
+                // n8n caveat: auth failures may come back as HTTP 200 with
+                // { success:false, error:'unauthorized' } instead of a real 401
+                // (typeVersion limitation on the responseCode field). Stop polling
+                // in that case — retrying won't help, the security token is wrong.
+                if (result && result.success === false && result.error === 'unauthorized') {
+                    console.error('🛑 Polling stopped — n8n rejected security token (check webhooks.securityToken in config.js)');
+                    stopQuoteResultPolling();
+                    return;
+                }
                 const parsed = result ? parseWebhookResponse(result) : { quoteTotal:'', imageUrl:'', pdfUrl:'' };
                 if (parsed.quoteTotal || parsed.imageUrl || parsed.pdfUrl) {
                     console.log('✅ Polling recovered result on attempt', pollingState.attempts, parsed);
