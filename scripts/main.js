@@ -96,9 +96,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     <i class="fas fa-phone"></i>
                     <span>Call</span>
                 </a>
-                <a href="quote.html" class="cta-quote" aria-label="Get free quote and AI design">
+                <a href="quote.html" class="cta-quote" aria-label="Get instant quote and AI design">
                     <i class="fas fa-magic"></i>
-                    <span>Free Quote &amp; Design</span>
+                    <span>Instant Quote &amp; Design</span>
                 </a>`;
             document.body.appendChild(bar);
         }
