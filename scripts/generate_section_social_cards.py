@@ -267,6 +267,150 @@ PAGES: dict[str, tuple[str, str, str, str]] = {
         "Instant estimate · UK pricing · Free",
         "Garden landscaping cost calculator — instant UK 2026 price estimate by Premium Landscapes.",
     ),
+
+    # --- Hubs / general pages (4) ---
+    "blog": (
+        "images/about-garden.webp",
+        "Landscaping & Garden Design Blog",
+        "Guides · Tips · Pricing · Leicester",
+        "Premium Landscapes blog — landscaping and garden design guides, tips and UK pricing.",
+    ),
+    "services": (
+        "images/services-garden.webp",
+        "Landscaping Services in Leicester",
+        "Patios · Decking · Driveways · Lighting",
+        "Landscaping services in Leicester and Leicestershire by Premium Landscapes.",
+    ),
+    "garden-design": (
+        "images/ai-design-mediterranean.webp",
+        "Garden Design in Leicester",
+        "AI-powered concepts · Detailed plans",
+        "Garden design in Leicester by Premium Landscapes — AI-powered concepts and detailed plans.",
+    ),
+    "privacy-policy": (
+        "images/about-hero.webp",
+        "Privacy Policy",
+        "Premium Landscapes · Leicester",
+        "Privacy policy for Premium Landscapes Leicester.",
+    ),
+
+    # --- Patio service-detail pages (5) ---
+    "porcelain-patios-leicester": (
+        "images/gallery-patio.webp",
+        "Porcelain Patios in Leicester",
+        "Large-format slabs · Frost-proof · Low-maintenance",
+        "Porcelain patio installation in Leicester by Premium Landscapes — large-format, frost-proof slabs.",
+    ),
+    "sandstone-patios-leicester": (
+        "images/natural-stone-patio.webp",
+        "Sandstone Patios in Leicester",
+        "Indian sandstone · Riven & sawn finishes",
+        "Indian sandstone patio installation in Leicester by Premium Landscapes.",
+    ),
+    "limestone-patios-leicester": (
+        "images/natural-stone-patio.webp",
+        "Limestone Patios in Leicester",
+        "Honed & tumbled finishes · Natural stone",
+        "Limestone patio installation in Leicester by Premium Landscapes.",
+    ),
+    "granite-patios-leicester": (
+        "images/natural-stone-patio.webp",
+        "Granite Patios in Leicester",
+        "Hard-wearing · Flamed & honed finishes",
+        "Granite patio installation in Leicester by Premium Landscapes — hard-wearing flamed and honed finishes.",
+    ),
+    "natural-stone-patios-leicester": (
+        "images/natural-stone-patio.webp",
+        "Natural Stone Patios in Leicester",
+        "Sandstone · Limestone · Granite · Slate",
+        "Natural stone patio installation in Leicester by Premium Landscapes — sandstone, limestone, granite and slate.",
+    ),
+
+    # --- Driveway service-detail pages (2) ---
+    "resin-driveways-leicester": (
+        "images/driveway-block-paving.webp",
+        "Resin Driveways in Leicester",
+        "Resin-bound · SuDS-compliant · UV stable",
+        "Resin-bound driveway installation in Leicester by Premium Landscapes — SuDS-compliant and UV-stable.",
+    ),
+    "block-paving-driveways-leicester": (
+        "images/driveway-block-paving.webp",
+        "Block Paving Driveways in Leicester",
+        "Marshalls · Tobermore · Brett · Real installs",
+        "Block paving driveway installation in Leicester by Premium Landscapes — Marshalls, Tobermore and Brett ranges.",
+    ),
+
+    # --- Lawn / decking service-detail pages (3) ---
+    "turfing-leicester": (
+        "images/artificial-turf-family.webp",
+        "Turfing in Leicester",
+        "Natural lawns · Soil prep · Real turf",
+        "Lawn turfing in Leicester by Premium Landscapes — soil preparation and high-quality natural turf.",
+    ),
+    "raised-decking-leicester": (
+        "images/decking-hero.webp",
+        "Raised Decking in Leicester",
+        "Composite & timber · Built to take levels",
+        "Raised decking installation in Leicester by Premium Landscapes — composite and timber, built for sloped gardens.",
+    ),
+    "timber-decking-leicester": (
+        "images/decking-hero.webp",
+        "Timber Decking in Leicester",
+        "Hardwood & softwood · Bespoke builds",
+        "Timber decking installation in Leicester by Premium Landscapes — hardwood and softwood bespoke builds.",
+    ),
+
+    # --- Structural / boundary service-detail pages (5) ---
+    "fencing-leicester": (
+        "images/gallery-garden-pergola.webp",
+        "Fencing in Leicester",
+        "Closeboard · Featheredge · Slatted · Concrete posts",
+        "Garden and boundary fencing installation in Leicester by Premium Landscapes.",
+    ),
+    "pergolas-leicester": (
+        "images/gallery-garden-pergola.webp",
+        "Pergolas in Leicester",
+        "Timber · Aluminium · Louvered designs",
+        "Pergola installation in Leicester by Premium Landscapes — timber, aluminium and louvered designs.",
+    ),
+    "garden-walls-leicester": (
+        "images/projects/birstall/birstall-4.jpg",
+        "Garden Walls in Leicester",
+        "Brick · Stone · Rendered · Sleeper",
+        "Garden wall building in Leicester by Premium Landscapes — brick, stone, rendered and sleeper walls.",
+    ),
+    "retaining-walls-leicester": (
+        "images/projects/peterborough/peterborough-3.jpg",
+        "Retaining Walls in Leicester",
+        "Engineered · Drainage · Tiered gardens",
+        "Retaining wall construction in Leicester by Premium Landscapes — engineered tiered garden solutions.",
+    ),
+    "garden-makeovers-leicester": (
+        "images/after-garden.webp",
+        "Garden Makeovers in Leicester",
+        "Design · Build · Plant · Finish",
+        "Full garden makeovers in Leicester by Premium Landscapes — design, build, plant and finish.",
+    ),
+
+    # --- Design / front garden / commercial (3) ---
+    "front-garden-landscaping-leicester": (
+        "images/projects/wigston/wigston-1.jpg",
+        "Front Garden Landscaping Leicester",
+        "Driveways · Paths · Planting · Kerb appeal",
+        "Front garden landscaping in Leicester by Premium Landscapes — driveways, paths, planting and kerb appeal.",
+    ),
+    "garden-design-leicester": (
+        "images/projects/evington/evington-6.jpg",
+        "Garden Design in Leicester",
+        "Concept · Detailed plans · Build-ready",
+        "Garden design in Leicester by Premium Landscapes — concept, detailed plans and build-ready drawings.",
+    ),
+    "commercial-astroturf-leicester": (
+        "images/artificial-turf-family.webp",
+        "Commercial Astroturf Leicester",
+        "Schools · Offices · Hospitality · Hard-wearing",
+        "Commercial astroturf installation in Leicester by Premium Landscapes — schools, offices and hospitality.",
+    ),
 }
 
 
