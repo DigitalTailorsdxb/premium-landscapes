@@ -1067,3 +1067,47 @@
     padding: 1.25rem 3rem;
     font-size: 1.25rem;
 }
+
+/* Hero trust-badge strip — used on location pages below hero subtitle */
+.hero-trust-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.625rem;
+    margin: 0 auto 1.75rem;
+    max-width: 48rem;
+}
+
+.hero-trust-badges .trust-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 9999px;
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.hero-trust-badges .trust-badge .trust-badge-icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+@media (max-width: 480px) {
+    .hero-trust-badges {
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+    }
+    .hero-trust-badges .trust-badge {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.8125rem;
+    }
+}
