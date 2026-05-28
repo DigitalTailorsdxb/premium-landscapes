@@ -97,10 +97,10 @@ const SubmissionOverlay = {
     
     animateSteps() {
         const steps = this.hasImage ? this.stepsWithDesign : this.stepsQuoteOnly;
-        // 120 seconds with image (8 steps @ 15s each), 15 seconds for quote only (6 steps @ 2.5s each)
-        const stepDuration = this.hasImage ? 15000 : 2500;
+        // 95s total with image (8 steps @ 11.625s each + 2s success), 15s for quote only (6 steps @ 2.5s each)
+        const stepDuration = this.hasImage ? 11625 : 2500;
         
-        console.log(`⏱️ OVERLAY: Animation duration - ${this.hasImage ? '90s (with design)' : '30s (quote only)'}`);
+        console.log(`⏱️ OVERLAY: Animation duration - ${this.hasImage ? '95s (with design)' : '15s (quote only)'}`);
         
         // Start with first step loading
         this.setStepLoading(0);
