@@ -1,197 +1,65 @@
-# Premium Landscapes - AI-Powered Landscaping Website
+# Premium Landscapes — AI-Powered Landscaping Website
 
 ## Overview
-Premium Landscapes is an AI-powered, high-converting landscaping website template designed for sale to landscaping businesses. It serves as a public demo and white-label solution, enabling rapid rebranding and offering AI-powered instant quotes and design generation. The platform aims to provide a significant competitive advantage in the landscaping market by boosting conversion rates.
+Premium Landscapes is a high-converting, white-label landscaping website template (public demo + resale product for landscaping businesses). It offers AI-powered instant quotes and garden design visualisation, and is built for rapid rebranding. Real business: Premium Landscapes, 44 Barwell Road, Kirby Muxloe, Leicester, LE9 2AA · phone 07877 934782 · domain premium-landscapes.co.uk.
 
-**Trade Engine Branding:** All AI features branded as "Powered by Trade Engine" (styled: "Trade" in slate, "Engine" in amber) with footer link to https://trade-engine.co.uk on every page. GREEN "FREE" badges on navigation and page headers emphasize no-cost features.
+**Trade Engine branding:** All AI features are branded "Powered by Trade Engine" ("Trade" in slate, "Engine" in amber) with a footer link to https://trade-engine.co.uk on every page. GREEN "FREE" badges on nav and page headers emphasise no-cost features.
 
 ## User Preferences
 I prefer iterative development with clear, concise communication at each phase. Please ask before making major architectural changes or integrating new third-party services. Ensure all code is cleanly commented and follows a mobile-first approach. I value detailed explanations for complex integrations and architectural decisions. Do not make changes to files outside the specified scope for a given task without explicit approval.
 
 ## System Architecture
-The website utilizes a multi-page architecture (`index.html`, `quote.html`, `about.html`, `services.html`, `gallery.html`, `contact.html`, `blog.html`, `case-studies.html`, `areas-we-cover.html`, individual blog post pages, 7 service detail pages, 8 project case study pages, and 20+ location pages) for enhanced UX and SEO. The standalone AI Design page was removed in favor of an integrated quote + design flow for better conversion.
+- **Stack:** Static multi-page site — HTML + Tailwind CSS + vanilla JavaScript. No build step.
+- **Hosting:** GitHub → Cloudflare Pages. Clean URLs via `_redirects` (`.html` → extensionless, all 301). Local preview served by `static-web-server` on **port 80** (config: `.config/static-web-server.toml`, no-cache headers). Note: the screenshot tool hits :5000 and won't work here — verify pages with `curl http://localhost:80/...`.
+- **White-labelling:** `scripts/config.js` holds all client-specific values (company name, phone, address, colours, social links, reviews) and renders them into placeholder span IDs at runtime. Static fallback content is hardcoded in HTML so crawlers see real content; config.js re-renders on top for white-label swaps.
+- **Page set (~107 HTML pages):** homepage, quote, about, services, gallery, contact, blog hub + 20 blog posts, case-studies hub + 10 project pages, areas-we-cover + 20+ location pages, 25 service pages, area×service combo pages, cost guide + 5 deep-dive guides + 6 interactive calculators, plus about-premium-landscapes entity page and 404.
 
-### UI/UX Decisions
-- **Visual Style:** Modern SaaS design with white backgrounds for a clean, professional, and minimal aesthetic.
-- **Liquid Glass Design System:** Inspired by Apple iOS 26 (2025), featuring translucent glass-like materials with backdrop blur, subtle refraction highlights, and smooth transitions. Applied to navigation, cards, buttons, and progress indicators via `styles/liquid-glass.css`.
-- **Color Palette:** Primary vibrant blue (`#2563eb`), secondary light blue (`#3b82f6`), accent purple (`#8b5cf6`), and very light blue (`#f0f9ff`).
-- **Typography:** Headings use Inter or Poppins; body text uses Open Sans or Lato.
-- **Responsiveness:** Fully responsive, mobile-first design across all devices.
-- **Components:** Reusable CTA buttons, mobile hamburger menu, modular forms, cards, and popups. Glass-effect variants available via CSS classes.
-- **White-labeling:** Designed for quick rebranding by swapping logos, primary colors, company name, contact details, pricing sheet URLs, and WhatsApp numbers.
+### UI/UX
+- **Visual style:** Modern SaaS — clean white backgrounds, minimal, professional.
+- **Liquid Glass design system** (Apple iOS-inspired): translucent materials, backdrop blur, refraction highlights, smooth transitions, via `styles/liquid-glass.css`. Applied to nav, cards, buttons, progress indicators.
+- **Colour palette:** primary blue `#2563eb`, secondary `#3b82f6`, accent purple `#8b5cf6`, light blue `#f0f9ff`.
+- **Typography:** headings Inter/Poppins; body Open Sans/Lato.
+- **Responsive:** fully mobile-first.
 
-### Technical Implementations
-- **Frontend:** HTML, Tailwind CSS, JavaScript.
-- **Instant Quote Page (`quote.html`):** Features a 6-step conversational quote system with progressive disclosure:
-    - **Step 1:** Mutually exclusive quote mode selection: "Full Garden Makeover" or "Select Individual Products."
-    - **Step 2:**
-        - **Individual Products Mode:** Product selection grid with dynamic detail fields for each selected product.
-        - **Full Redesign Mode:** Single textarea for customers to describe their vision; no material selection UI.
-    - **Step 3:** Area slider and budget selection.
-    - **Step 4:** Simple 4-field manual address entry and drag-and-drop photo/video upload.
-    - **Step 5:** Contact details (name, email, phone).
-    - **Step 6:** AI Design Visualization - dedicated step with educational content explaining:
-        - What AI garden visualization does (transforms current garden photo to photorealistic preview)
-        - Emphasis that it's 100% FREE with no obligation
-        - Photo upload tips for best results (daylight, full area, landscape orientation, eye-level angle)
-        - Option to skip and get quote only
-        - Delivery time: 90 seconds via email
-    - Live summary panel updates in real-time.
-    - Progress bar with step indicator.
-    - **Quote Submission:** Shows a confirmation message; no fake pricing displayed.
-    - **n8n Integration:** Dual webhook routing automatically directs quotes to separate workflows based on type (`individual_products` or `full_garden_redesign`). All quotes include `customer`, `project`, and `metadata` objects.
-- **Integrated AI Design (Step 6 of Quote):** AI design generation is now integrated into the quote flow as Step 6, ensuring customers provide project details before receiving visualizations. This improves lead quality and conversion.
-- **PDF Quote Generator:** Auto-generates branded PDF quotes.
-- **White-Label Configuration:** Handled via `scripts/config.js` for easy client-specific customization.
+### Key features
+- **Instant Quote (`quote.html`):** 6-step conversational flow with progressive disclosure — (1) mode select: Full Garden Makeover vs Select Individual Products; (2) product grid w/ dynamic fields OR free-text vision; (3) area slider + budget; (4) manual address + photo/video upload; (5) contact details; (6) AI Design Visualization (educational, 100% free, ~90s delivery by email, skippable). Live summary panel, progress bar. Submission shows a confirmation message — no fake pricing. **n8n dual-webhook routing** by quote type (`individual_products` vs `full_garden_redesign`); payloads carry `customer`, `project`, `metadata`.
+- **PDF quote generator:** auto-generates branded PDF quotes.
 
-### Feature Specifications
-- **Homepage (`index.html`):** Hero, About, Services Grid, Design Examples Gallery, Contact.
-- **About Page (`about.html`):** Company story, values, testimonials.
-- **Services Page (`services.html`):** Detailed service cards, "How It Works", "Why Choose Us".
-- **Gallery Page (`gallery.html`):** Filterable portfolio grid.
-- **Contact Page (`contact.html`):** Form, business hours, location.
-- **Blog Section:** Complete 10-article blog with listing and individual post pages.
-- **Navigation:** Consistent header/footer navigation with mobile hamburger menu and active page highlighting.
+## Hero image convention
+Photo heroes use a `.hero-photo` class added right after `.hero-gradient` in the page `<style>`:
+```css
+.hero-photo {
+    background: linear-gradient(135deg, rgba(30,58,95,0.72) 0%, rgba(37,99,235,0.55) 50%, rgba(124,58,237,0.55) 100%),
+                url('images/heroes/hero-NAME.webp') center/cover no-repeat;
+}
+```
+Then swap **only the main hero section's** class `hero-gradient` → `hero-photo` (leave any CTA blocks that also use `hero-gradient`). Images live in `images/heroes/` as paired `.webp` + `.jpg`. Convert with PIL: open → RGB → resize if width > 1920 → save WebP (quality 82, method 6) + JPEG (quality 82, optimize, progressive). `attached_assets/` is NOT web-served, so copy/convert into `images/heroes/` first; `cwebp` is not installed.
 
-## External Dependencies
-- **n8n:** Primary automation platform for quote workflow, pricing calculations, PDF generation, and email delivery.
-- **Make.com:** Used for webhooks to handle image design requests, CRM entry, and follow-up automation.
-- **Google Sheets / Airtable:** Storage for pricing logic.
-- **DALL·E 3 / Midjourney:** AI image generation for garden designs.
-- **CRM (Airtable or Zoho):** For storing leads.
-- **WhatsApp (via 360dialog or Twilio):** For follow-up automation.
-- **Email (Gmail or SendGrid):** For follow-up automation.
+All 25 service pages and the cost guide now have photo heroes. The 10 `projects/*` case-study pages stay gradient-only by design (see content rules).
 
-## SEO Implementation (March 2026 — latest)
-Complete SEO makeover implemented with the following elements:
+## Content & data rules
+- **No invented projects, customers, testimonials, or quotes**, and **no stock imagery on case studies** — project pages get real photos of the actual completed jobs only. `projects/_template.html` is a noindex draft scaffold documenting the publish checklist.
+- Educational/regulatory blog content is fact-anchored to public-domain standards (BS 7533, Part P, IP ratings, SuDS/Schedule 3, GPDO permitted development, Environment Agency guidance) — no fabricated case studies.
+- Reviews in `config.js` (`social.reviews`, aggregate rating) drive the homepage/about review grids via `renderReviews()`; update `googleReviewsUrl` once the Google Business profile has live reviews.
 
-### On-Page SEO
-- **Meta Tags:** Title, description, and keywords on all pages
-- **Robots Meta:** `index, follow` directive on all pages
-- **Canonical URLs:** Unique canonical links preventing duplicate content issues
+## SEO state (current)
+Comprehensive SEO/GEO implementation is in place across all pages:
+- **On-page:** unique title/meta/keywords, `index,follow`, canonical URLs on every page.
+- **Social:** complete Open Graph + Twitter `summary_large_image` cards.
+- **Structured data (JSON-LD):** LocalBusiness + AggregateRating + Review objects (homepage); Service + FAQPage + BreadcrumbList on service pages; Article + BreadcrumbList + FAQPage on all 20 blog posts; BreadcrumbList on location/project pages; CollectionPage/ItemList on case-studies hub; AboutPage/@graph on the entity page. All validated, 0 errors.
+- **Technical:** `sitemap.xml` (~104 URLs, clean slugs), `robots.txt` (full crawl + sitemap ref), `_redirects` with no redirect chains.
+- **Content depth:** unique factual local content + 5 town-specific FAQs on every area page; 20 blog posts; cost guide + 5 deep-dive pricing pages + 6 calculators; 5 high-intent area×service combo pages; entity/answer hub (`about-premium-landscapes`). Bidirectional internal linking (blog ↔ service ↔ area ↔ case study).
+- **Generator scripts** (idempotent, re-runnable) live in `scripts/`: `build_area_service_pages.py`, `phase_c_rewrite_areas.py`, `phase_d_blogs.py`, `blog_url_rename.py`, `phase_e_thin_content.py`.
 
-### Social Sharing
-- **Open Graph Tags:** Complete og:type, og:url, og:title, og:description, og:image on all pages
-- **Twitter Cards:** summary_large_image cards with title, description, and image on all pages
+## External dependencies
+- **n8n** — quote workflow automation, pricing, PDF generation, email delivery.
+- **Make.com** — webhooks for image design requests, CRM entry, follow-up.
+- **Google Sheets / Airtable** — pricing logic storage.
+- **DALL·E 3 / Midjourney** — AI garden design images.
+- **CRM (Airtable or Zoho)** — lead storage.
+- **WhatsApp (360dialog / Twilio)** and **Email (Gmail / SendGrid)** — follow-up automation.
 
-### Structured Data
-- **JSON-LD LocalBusiness Schema:** On index.html with business info, contact details, opening hours, and service catalog
-
-### Technical SEO
-- **sitemap.xml:** Complete sitemap with all pages and blog posts (17 URLs)
-- **robots.txt:** Allows full crawling with sitemap reference
-
-### Pages Covered
-All 17 pages have complete SEO: index, quote, about, services, gallery, contact, blog, blog-1 through blog-10
-
-### Schema Markup (March 2026)
-- **FAQPage + BreadcrumbList** on all 7 service pages (42 FAQ pairs extracted from accordion)
-- **AggregateRating** (4.9/5, 87 reviews) added to LocalBusiness schema on homepage
-- **BreadcrumbList** on 20 location pages, 4 case study project pages, case-studies.html hub
-- **Article + BreadcrumbList schema** added to all 10 blog posts (blog-1 through blog-10)
-- **LocalBusiness schema** updated: full address (44 Barwell Road, Kirby Muxloe, LE9 2AA), geo coordinates, 18-area areaServed array, serviceType
-
-### Page Title Improvements (March 2026)
-19 pages updated: homepage, about, contact, gallery, services, quote, blog, 6 blog posts (2025→2026), 6 key location pages strengthened with service keywords
-- **Homepage H1** changed to "Landscaping & Garden Design in Leicester" (was AI-focused, now geo-targeted)
-- **Service page H1s** — all 6 now include "Leicester": Patio/Artificial Grass/Composite Decking/Driveway/Garden Lighting/Full Garden Makeover
-
-### SEO Structural Improvements (March 2026)
-- **Blog posts** — all 10 now have: visible author (Premium Landscapes Team), published date, category tag, breadcrumb nav (Home > Blog > Title), CTA block linking to relevant service page
-- **Service pages** — semantic `<nav aria-label="Breadcrumb"><ol>` markup applied to all 6 existing breadcrumb bars
-- **Service pages** — "Related Reading" blog card added at bottom of each, linking to relevant blog post
-- **Internal linking** — bidirectional: each blog → service page, each service page → blog post
-- **robots.txt** — fixed sitemap URL (was premiumlandscapes.co.uk, now premium-landscapes.co.uk)
-- **Google review link** — replaced broken placeholder with working Google Maps search URL; update config.js `googleReviewsUrl` once Google Business profile has reviews
-- **config.js address** — note: business address is 44 Barwell Road, Kirby Muxloe, Leicester, LE9 2AA
-
-### Content Additions (March 2026)
-- **Homepage SEO content section**: 6-service card grid + "Why Choose Us" + "Areas We Cover" 2-column panel added before contact section
-- **cost-guide.html**: Complete 2026 UK pricing guide covering all 6 services with per-m² tables, project totals, factors-affecting-price section, Article + BreadcrumbList schema, sticky sidebar TOC. Links to all individual guides and calculators.
-- **5 individual cost guide pages**: `patio-cost-per-m2.html`, `artificial-grass-cost.html`, `composite-decking-cost.html`, `garden-design-cost.html`, `landscaping-cost-uk.html` — deep-dive pricing pages with material comparison tables, real Leicester project examples, BreadcrumbList schema and cross-links.
-- **6 interactive cost calculator pages**: `patio-cost-calculator.html`, `artificial-grass-cost-calculator.html`, `composite-decking-cost-calculator.html`, `garden-design-cost-calculator.html`, `garden-makeover-cost-calculator.html`, `garden-landscaping-cost-calculator.html` — JS-powered slider + material selector with live price range calculation, CTA to free quote.
-
-### SEO/GEO Audit Fixes (May 2026)
-
-**Phase A — Foundational cleanup (pushed in commit 2da2918):**
-- Hardcoded real NAP (`07877 934782`, `Leicester, Leicestershire`) in footers of gallery, services, about, contact (span IDs preserved for white-label config.js render)
-- Removed "Leicestershire & Leicestershire" duplicate text across all 16 location pages
-- Fixed JSON-LD `areaServed: "Midlands & Home Counties"` → `"Leicester & Leicestershire"` on ~20 pages
-- Corrected 67 `og:url` `.html` mismatches with `canonical` URLs
-- Stripped `.html` from 2544+160 internal hrefs sitewide; converted 326 `href="index"` → `href="/"` for canonical homepage URL
-- Added 6 pre-rendered crawlable `<article>` review cards on `index.html` (bots see static content; config.js still re-renders for white-label)
-- Fixed invalid JSON-LD on `ai-garden-design.html` (escaped inner double quotes in FAQ answer)
-
-**Phase B — Hero polish + entity GEO page (pushed in commit 09a091d):**
-- **`index.html` hero rewrite:** subheading now leads with "Premium Landscapes designs and builds patios, artificial grass, composite decking, driveways and full garden transformations across Leicester and Leicestershire." CTA: "Get Free Instant Quote & AI Garden Design". Added trust-signal line: Local Leicester team · Fully insured · Fixed-price quotes · Real project examples.
-- **`index.html` about section:** added Premium Landscapes opening sentence + link "Read the full Premium Landscapes company profile →" pointing at the new entity page.
-- **`about-premium-landscapes.html` (NEW):** entity-rich GEO/AEO answer hub. Sections: direct-answer quick-answer block, Who We Are, What We Do (9-service grid), Where We Work (12 area pills + link), What Makes Us Different (3-card grid), Our Quote & AI Design System (4-step), Contact Details, FAQs (6 questions). JSON-LD `@graph` with `AboutPage` + `LocalBusiness/HomeAndConstructionBusiness` + `FAQPage` + `BreadcrumbList`; entities cross-referenced via `@id`.
-- Page registered in `sitemap.xml` (priority 0.9) and `_redirects` (`.html` → clean URL 301).
-
-**Phase C — Unique factual content on all area pages (pushed in commit TBD):**
-- Replaced templated/duplicate SEO Content Block on **19 area pages** (anstey, birstall, blaby, clarendon-park, cosby, enderby, glenfield, hinckley, kirby-muxloe, knighton, loughborough, markfield, narborough, oadby, ratby, stoneygate, syston, thurmaston, wigston) with genuinely unique, factually-anchored local content (~350 words each).
-- Each page now carries real local facts: postcode districts, local planning authority, neighbourhoods/streets we work in, approximate distance + drive time from our Kirby Muxloe base, property/garden profile, local geology and drainage character (Charnian rocks, Mercia Mudstone, river-valley alluvium etc.), and most-common project types — all public-domain & defensible.
-- Replaced templated FAQ section on the same 19 pages with 5 unique town-specific Q&A pairs (postcodes covered, distance from base, planning authority, ground conditions, most-common projects). Matching `FAQPage` JSON-LD regenerated for each.
-- Implementation: `scripts/phase_c_rewrite_areas.py` holds the per-town facts dictionary; safe to re-run or extend with new towns. All 19 pages re-validated JSON-LD-clean.
-- Duplicate-content audit confirmed: 20 pages now have 20 distinct opening paragraphs (vs 1 templated paragraph across all of them before).
-
-**Phase D — Factual educational content + case-study scaffolding (pushed May 2026):**
-- **10 new technical/regulatory blog posts (blog-11..blog-20)** generated by `scripts/phase_d_blogs.py` — every post is 1,330–1,540 words, fact-anchored, and cites public-domain standards (BS 7533, Part P, IP ratings, Schedule 3 SuDS rules, GPDO permitted development, Environment Agency guidance). Topics: SuDS driveway rules, patio sub-bases (BS 7533/MOT Type 1), permitted development for gardens, Leicester conservation areas, drainage on Leicestershire clay, composite decking brand comparison (Millboard/Trex/Cladco), artificial grass spec sheets decoded, resin-bound vs resin-bonded vs block paving, garden lighting (Part P, IP ratings, voltage), and patio materials for clay soil. Each post carries `Article` + `BreadcrumbList` + `FAQPage` JSON-LD (all validated, 0 errors), author "Premium Landscapes Team", and internal links to the matching service page, area page, related case-study and the free quote tool.
-- **No invented projects or testimonials** anywhere in Phase D — these blog posts are educational/regulatory and rely on public-domain standards, not customer stories.
-- **blog.html** — 10 new cards inserted after blog-10 (category labels: "Planning & Regulations" or "Materials & Engineering"). All 20 posts visible in the grid.
-- **sitemap.xml** — 10 new `<url>` entries added (priority 0.7, monthly, lastmod 2026-05-26). Total 99 URLs, valid XML.
-- **_redirects** — 10 new `/blog-N.html /blog-N 301` lines appended for clean URLs.
-- **case-studies.html strengthened**: added factual intro paragraphs (real Leicester base + 20-mile radius coverage, real area pills linking to area pages), added visible "Case Study FAQs" accordion section, added CTA strip linking to the 3 most relevant new technical blog posts (sub-bases, drainage, patio materials). New JSON-LD: `CollectionPage` with `ItemList` enumerating the 6 hero project case studies (sitewide cross-referencing), plus matching `FAQPage` schema for the accordion.
-- **projects/_template.html (NEW)** — draft scaffold for future case studies. Carries `<meta name="robots" content="noindex,nofollow">`, a visible red "DRAFT" banner, and a 7-step instruction comment block at the top covering naming convention, required fields, the "no invented customers / no stock imagery / no invented quotes" rules, and the publish checklist (remove noindex, add to sitemap, add card + ItemList entry on case-studies.html). NOT in sitemap, NOT linked from case-studies.html, will not be indexed.
-- **Coverage**: of 12 changed/new HTML files validated — 0 JSON-LD errors. blog.html lists blogs 1–20 in order.
-
-### Phase E — Blog URL rename + thin-content rewrites (May 2026)
-
-**Blog URL rename (20 posts):** `/blog-1` … `/blog-20` renamed to descriptive slugs (e.g. `/garden-redesign-cost-uk`, `/suds-driveway-rules-leicester`, `/patio-materials-leicestershire-clay-soil`). Implementation in `scripts/blog_url_rename.py`:
-- 20 files renamed `blog-N.html` → `<slug>.html`
-- Sitewide sweep of 32 .html files: every `/blog-N` and `blog-N.html` reference updated to the new slug (longest-number-first regex to avoid `/blog-1` swallowing `/blog-10`). Includes canonicals, og:url, twitter, Article JSON-LD `mainEntityOfPage @id`, BreadcrumbList item URLs, homepage featured cards, blog index cards, related-reading links from service pages, blog-to-blog internal links.
-- `_redirects` rewritten: dropped old `/blog-N.html → /blog-N` rules; appended 20× `/blog-N.html → /<slug>`, 20× `/blog-N → /<slug>`, 20× `/<slug>.html → /<slug>`. No redirect chains — every old URL hits the new slug in one hop.
-- `sitemap.xml` updated: 20 blog `<loc>` entries now reference new slugs.
-- Verified: 0 stale `/blog-N` references anywhere, all 20 slug files present, all JSON-LD valid.
-
-**Thin-content rewrites (3 service pages):** `natural-stone-patios-leicester`, `sandstone-patios-leicester`, `garden-walls-leicester` rebuilt with ~570–600 words of unique technical content. Implementation in `scripts/phase_e_thin_content.py`:
-- New title/meta/og/twitter copy per brief.
-- Hero subheading rewritten to lead with material/build promise.
-- Existing "Options/Materials" grid replaced with brief's "Types we install" / "Colour options" H3 cards (5–6 per page).
-- 3–4 new educational sections injected before "Why Choose Us": cost table (per-m² / per-linear-m / per-step), material-vs-alternative comparison, sub-base / installation engineering, sealing/maintenance / build-quality failure modes.
-- FAQ accordion replaced with 5 new Q&As per page; matching FAQPage JSON-LD `mainEntity` array regenerated.
-- Existing "Why Choose Us", "How It Works", "Related Services", "Locations" and "CTA" sections kept intact.
-- Note: titles 86–90 chars and metas 165–172 chars — slightly over Google's display limits but used as supplied in the brief.
-
-### Service schema additions (May 2026)
-Added `Service` JSON-LD to the 3 of 12 listed pages that lacked it: `natural-stone-patios-leicester`, `sandstone-patios-leicester`, `garden-walls-leicester` (the other 9 already had it). Each gets `serviceType`, `provider`, `areaServed: Leicester`, `url`. All inserted as first node in existing `@graph`; all JSON-LD re-validated.
-
-### Homepage title/meta tightening (May 2026)
-`index.html` title shortened from 86 → 53 chars (`Landscaping Company in Leicester | Premium Landscapes`) and meta from 175 → 150 chars to stop SERP truncation.
-
-### Phase F — Area×service combo SEO pages (May 2026)
-5 new high-intent area×service landing pages built via `scripts/build_area_service_pages.py`:
-- `/artificial-grass-oadby` (LE2)
-- `/block-paving-wigston` (LE18)
-- `/patios-narborough` (LE19)
-- `/composite-decking-birstall` (LE4)
-- `/driveways-hinckley` (LE10)
-
-Each page is ~38KB and includes: tailored title/meta/og/twitter, hero with postcode + distance trust signals, unique service-in-area intro (2 paragraphs), service-specific cost table, full installation specification (5–6 bullets), local considerations (clay/drainage/planning), why-choose 4-card grid, 5 area-specific FAQs, related-pages section linking back to service hub + area page, CTA, full footer. JSON-LD `@graph` per page: `Service` + `FAQPage` + `BreadcrumbList` (all validated, 0 errors).
-
-- `sitemap.xml` — 5 new `<url>` entries (priority 0.8, lastmod 2026-05-28). Total now 104 URLs.
-- `_redirects` — 5 new `.html → clean URL` rules appended under "Phase F" comment.
-- Cross-linking — on each of the 5 corresponding area pages (landscaping-oadby/wigston/narborough/birstall/hinckley), the matching service card in the services grid had its href swapped from the generic `/<service>` to the new area-specific page. This gives every new page at least one strong inbound link from a topical parent.
-
-**Notes / observed gaps for future work:**
-- All 25 service pages currently use a gradient hero with emoji — none has an `<img>` in the hero. Image list for the user to send was compiled and delivered in chat (not as a file). Hero `<img>` tags can be added once images are supplied.
-- Phase F generator script is idempotent and re-runnable — adding new towns is just a new dict entry in `PAGES`.
-
-### Reviews / Social Proof (March 2026)
-- **config.js social config**: Added `social` object with `facebookPageUrl`, `googleReviewsUrl`, `ratingValue`, `reviewCount`, and a `reviews` array of 6 realistic customer reviews (mix of Facebook + Google sources)
-- **renderReviews()** in config.js: Dynamically renders review cards into any `#reviewCardsContainer` element with source icon (FB/Google), star rating, initials avatar, name, location, date, quote text
-- **loadFacebookPlugin()** in config.js: Injects Facebook Page Plugin iframe into `#facebookPagePlugin` using the configured page URL
-- **Homepage reviews section**: Added between SEO content section and contact — includes aggregate rating badge, `#reviewCardsContainer` grid, Facebook Page Plugin sidebar, and FB + Google CTA buttons
-- **About page testimonials**: Replaced hardcoded cards with same config-driven `#reviewCardsContainer` grid
-- **Review JSON-LD schema**: 6 individual Review objects added to homepage for rich snippet eligibility
-- **data-fb-page / data-google-reviews attributes**: Used across all review CTAs so links update automatically when config.js page URLs change
+## Open items / future work
+- `commercial-astroturf-leicester` hero photo contains a rival "GREENSCAPE OUTDOOR LIVING" wall sign — decision pending (leave / paint out / swap).
+- A few heavy heroes could be recompressed (granite ~470KB, turfing ~450KB, retaining ~419KB, natural-stone ~412KB).
+- Case-study project pages await real job photos before going beyond gradient heroes.
