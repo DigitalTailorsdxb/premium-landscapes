@@ -3361,7 +3361,11 @@ function populateResultShowcase(data, suffix) {
     showcase.classList.remove('hidden');
 
     // --- Customer name ---
-    const customerName = parsed.customerName || quoteData.firstName || 'you';
+    // Use the name the customer actually typed on the form as the source of
+    // truth — it is always correct for the current submission. n8n's echoed
+    // customerName can be stale/wrong (e.g. a mismatched record from the
+    // status-lookup store), so only fall back to it if the form name is missing.
+    const customerName = quoteData.name || quoteData.firstName || parsed.customerName || 'you';
     const nameEl = document.getElementById('resultName' + suffix);
     if (nameEl) nameEl.textContent = customerName;
 
