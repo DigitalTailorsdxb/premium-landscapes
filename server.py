@@ -119,6 +119,18 @@ class PremiumLandscapesHandler(SimpleHTTPRequestHandler):
             self.send_header('Expires', '0')
         super().end_headers()
 
+    def translate_path(self, path):
+        """Serve /foo as foo.html when foo.html exists but /foo/ does not."""
+        translated = super().translate_path(path)
+        # If the translated path doesn't exist and has no extension, try adding .html
+        if not os.path.exists(translated):
+            clean = path.split('?')[0].rstrip('/')
+            if '.' not in os.path.basename(clean):
+                candidate = super().translate_path(clean + '.html')
+                if os.path.exists(candidate):
+                    return candidate
+        return translated
+
     def guess_type(self, path):
         if str(path).endswith('.webp'):
             return 'image/webp'
