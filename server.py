@@ -132,6 +132,8 @@ class PremiumLandscapesHandler(SimpleHTTPRequestHandler):
         return translated
 
     def guess_type(self, path):
+        if str(path).endswith(('.html', '.htm')):
+            return 'text/html; charset=utf-8'
         if str(path).endswith('.webp'):
             return 'image/webp'
         return super().guess_type(path)

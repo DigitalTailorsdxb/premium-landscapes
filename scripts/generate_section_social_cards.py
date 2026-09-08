@@ -513,16 +513,6 @@ EXTRA_PAGES: dict[str, tuple[str, str, str, str, str, str, str, str]] = {
     # Project case-study pages (projects/*.html). Slugs prefixed with
     # "project-" so the generated JPG sits at images/social/project-*.jpg
     # and never clashes with a top-level page slug.
-    "project-artificial-grass-narborough": (
-        "projects/artificial-grass-narborough.html",
-        "images/artificial-turf-family.webp",
-        "Artificial Grass, Narborough",
-        "Real project · Premium Landscapes",
-        "Artificial grass installation in Narborough — real project case study by Premium Landscapes.",
-        "/projects/artificial-grass-narborough",
-        "Artificial Grass Installation, Narborough",
-        "Real artificial grass installation in Narborough by Premium Landscapes — pet- and family-friendly lawn case study.",
-    ),
     "project-back-garden-patio-birstall": (
         "projects/back-garden-patio-birstall.html",
         "images/projects/birstall/birstall-4.jpg",
@@ -542,16 +532,6 @@ EXTRA_PAGES: dict[str, tuple[str, str, str, str, str, str, str, str]] = {
         "/projects/composite-decking-kirby-muxloe",
         "Composite Decking Installation, Kirby Muxloe",
         "Composite decking installation in Kirby Muxloe by Premium Landscapes — full project case study.",
-    ),
-    "project-composite-decking-wigston": (
-        "projects/composite-decking-wigston.html",
-        "images/decking-hero.webp",
-        "Composite Decking, Wigston",
-        "Real project · Premium Landscapes",
-        "Composite decking project in Wigston by Premium Landscapes — full case study.",
-        "/projects/composite-decking-wigston",
-        "Composite Decking Project, Wigston",
-        "Composite decking project in Wigston by Premium Landscapes — full case study.",
     ),
     "project-driveway-kirby-muxloe": (
         "projects/driveway-kirby-muxloe.html",
@@ -582,26 +562,6 @@ EXTRA_PAGES: dict[str, tuple[str, str, str, str, str, str, str, str]] = {
         "/projects/full-garden-design-evington",
         "Full Garden Design, Evington Leicester",
         "Full garden design and build in Evington, Leicester by Premium Landscapes — complete project case study.",
-    ),
-    "project-full-garden-makeover-oadby": (
-        "projects/full-garden-makeover-oadby.html",
-        "images/after-garden.webp",
-        "Full Garden Makeover, Oadby",
-        "Design · Build · Real project",
-        "Full garden makeover in Oadby — real project case study by Premium Landscapes.",
-        "/projects/full-garden-makeover-oadby",
-        "Full Garden Makeover, Oadby",
-        "Full garden makeover in Oadby by Premium Landscapes — design, build, plant and finish case study.",
-    ),
-    "project-porcelain-patio-leicester": (
-        "projects/porcelain-patio-leicester.html",
-        "images/gallery-patio.webp",
-        "Porcelain Patio, Leicester",
-        "Real project · Premium Landscapes",
-        "Porcelain patio transformation in Leicester — real project case study by Premium Landscapes.",
-        "/projects/porcelain-patio-leicester",
-        "Porcelain Patio Transformation, Leicester",
-        "Porcelain patio transformation in Leicester by Premium Landscapes — full project case study.",
     ),
     "project-tiered-garden-makeover-peterborough": (
         "projects/tiered-garden-makeover-peterborough.html",
