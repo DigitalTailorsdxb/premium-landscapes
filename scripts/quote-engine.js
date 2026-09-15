@@ -460,6 +460,34 @@ let lastWebhookResult = null;
 // Stored at submission time so the mobile-fallback polling can fetch by requestId
 // even when the original fetch was killed by iOS background suspension / cellular NAT.
 let lastSubmissionRequestId = null;
+let metaLeadEventSent = false;
+
+function hasMarketingConsent() {
+    try {
+        return localStorage.getItem('pl_cookie_consent') === 'accepted';
+    } catch (e) {
+        return false;
+    }
+}
+
+function fireMetaLeadEvent() {
+    if (metaLeadEventSent || !hasMarketingConsent()) return;
+
+    if (typeof window.__plFireFbPixel === 'function') {
+        window.__plFireFbPixel();
+    }
+    if (typeof window.fbq !== 'function') return;
+
+    const eventId = lastSubmissionRequestId || ('LEAD-' + Date.now());
+    window.fbq('track', 'Lead', {
+        content_name: 'Website Quote Request',
+        content_category: 'Landscaping Quote'
+    }, {
+        eventID: eventId
+    });
+    metaLeadEventSent = true;
+    console.log('✅ Meta Pixel Lead event fired after confirmed quote success:', eventId);
+}
 
 // ============================================================================
 // MOBILE FALLBACK — RESULT POLLING
@@ -576,6 +604,7 @@ function startQuoteResultPolling(suffix) {
                 if (parsed.quoteTotal || parsed.imageUrl || parsed.pdfUrl) {
                     console.log('✅ Polling recovered result on attempt', pollingState.attempts, parsed);
                     lastWebhookResult = result;
+                    fireMetaLeadEvent();
                     populateResultShowcase(result, suffix);
                     stopQuoteResultPolling();
                     return;
@@ -608,6 +637,7 @@ function onIndividualWebhookComplete(success, result) {
 
     if (success) {
         console.log('✅ Individual products webhook completed successfully');
+        if (!result?.demo) fireMetaLeadEvent();
 
         // Fast-forward overlay animation immediately so results show now
         if (typeof SubmissionOverlay !== 'undefined' && SubmissionOverlay.isVisible && SubmissionOverlay.isVisible()) {
@@ -795,6 +825,7 @@ function onWebhookComplete(success, result) {
 
     if (success) {
         console.log('✅ Webhook completed successfully');
+        if (!result?.demo) fireMetaLeadEvent();
 
         const overlay = document.getElementById('submissionOverlay');
         const overlayVisible = overlay && !overlay.classList.contains('hidden') && overlay.style.display !== 'none';
@@ -2740,9 +2771,6 @@ async function submitQuote() {
     }
     isSubmittingQuote = true;
 
-    // Fire Meta Pixel Lead event at the moment of quote submission (covers both paths)
-    if (typeof fbq === 'function') { fbq('track', 'Lead'); }
-
     console.log('🚀 SUBMIT QUOTE FUNCTION CALLED - Version: 20251028-FINAL');
     console.log('Current quoteData:', quoteData);
     
@@ -2800,6 +2828,7 @@ async function submitQuote() {
     // Determine quote mode and if image is attached
     const isFullRedesignMode = quoteData.quoteMode === 'full-redesign';
     const hasImageAttached = quoteData.aiDesign && (aiDesignFiles.length > 0 || quoteData.files.length > 0);
+    metaLeadEventSent = false;
     console.log('🚀 SUBMIT QUOTE - Mode:', isFullRedesignMode ? 'FULL REDESIGN' : 'INDIVIDUAL PRODUCTS');
     console.log('🖼️ SUBMIT QUOTE - Has image for AI design:', hasImageAttached);
     
@@ -3254,6 +3283,9 @@ function prepareWebhookPayload() {
             formVersion: '2.0',
             timestamp: new Date().toISOString(),
             requestId: requestId, // Unique ID to detect duplicate webhook calls
+            metaEventId: requestId, // Reuse for browser/CAPI event deduplication
+            metaConsentGranted: hasMarketingConsent(),
+            eventSourceUrl: window.location.href,
             quoteType: isFullRedesign ? 'full_garden_redesign' : 'individual_products',
             hasPhoto: !!(quoteData.aiDesign && (aiDesignFiles.length > 0 || quoteData.files.length > 0)),
             hasMaterials: false,
