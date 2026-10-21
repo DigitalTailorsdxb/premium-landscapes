@@ -1,0 +1,1 @@
+- [AI search policy](ai-search-policy.md) — allow AI search and user retrieval while retaining training opt-outs; verify Cloudflare rules separately.
