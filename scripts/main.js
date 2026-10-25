@@ -84,21 +84,23 @@ document.addEventListener('DOMContentLoaded', function () {
             document.body.classList.add('on-quote-page');
         } else {
             // Get phone from config if available
-            const phone = (typeof brandConfig !== 'undefined' && brandConfig.contact && brandConfig.contact.phone)
-                ? brandConfig.contact.phone
-                : '0116 000 0000';
-            const phoneTel = phone.replace(/\s+/g, '');
+            const config = typeof brandConfig !== 'undefined' ? brandConfig : {};
+            const phone = config.phone || config.contact?.phone || '07877 934782';
+            const phoneTel = phone.replace(/[^\d+]/g, '');
+            const whatsappPhone = (config.whatsapp || '447877934782').replace(/\D/g, '');
+            const whatsappMessage = encodeURIComponent("Hi, I'd like to discuss my garden project.");
+            const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${whatsappMessage}`;
 
             const bar = document.createElement('div');
             bar.className = 'mobile-bottom-cta';
             bar.innerHTML = `
-                <a href="tel:${phoneTel}" class="cta-call" aria-label="Call us">
+                <a href="tel:${phoneTel}" class="cta-call" aria-label="Call Premium Landscapes">
                     <i class="fas fa-phone"></i>
                     <span>Call</span>
                 </a>
-                <a href="quote.html" class="cta-quote" aria-label="Get instant quote and AI design">
-                    <i class="fas fa-magic"></i>
-                    <span>Instant Quote &amp; Design</span>
+                <a href="${whatsappUrl}" class="cta-whatsapp" target="_blank" rel="noopener noreferrer" aria-label="Chat with Premium Landscapes on WhatsApp">
+                    <i class="fab fa-whatsapp" aria-hidden="true"></i>
+                    <span>Chat on WhatsApp</span>
                 </a>`;
             document.body.appendChild(bar);
         }

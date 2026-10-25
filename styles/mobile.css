@@ -101,25 +101,30 @@ body.menu-open {
         background: #dbeafe;
         transform: scale(0.97);
     }
-    .mobile-bottom-cta .cta-quote {
+    .mobile-bottom-cta .cta-whatsapp {
         flex: 1;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
         height: 50px;
-        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        background: #128c48;
         color: white;
         border-radius: 14px;
         font-weight: 700;
         font-size: 15px;
         text-decoration: none;
         transition: all 0.2s ease;
-        box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+        box-shadow: 0 4px 14px rgba(18,140,72,0.25);
     }
-    .mobile-bottom-cta .cta-quote:active {
+    .mobile-bottom-cta .cta-whatsapp:active {
         opacity: 0.9;
         transform: scale(0.98);
+    }
+    .mobile-bottom-cta .cta-whatsapp:focus-visible,
+    .mobile-bottom-cta .cta-call:focus-visible {
+        outline: 3px solid #1e3a8a;
+        outline-offset: 3px;
     }
     /* Push page content up so it's not hidden behind the bar */
     body:not(.no-bottom-cta) {

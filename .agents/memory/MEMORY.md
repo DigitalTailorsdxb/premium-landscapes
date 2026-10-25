@@ -1,1 +1,3 @@
 - [AI search policy](ai-search-policy.md) — allow AI search and user retrieval while retaining training opt-outs; verify Cloudflare rules separately.
+- [Mobile contact priority](mobile-contact-priority.md) — WhatsApp is the main bottom-bar action, with Call secondary; do not restore instant quotes there.
+- [Company-first positioning](company-positioning.md) — lead with 15 years’ experience, quality, detail, collaboration and budgets; AI quoting is secondary.
